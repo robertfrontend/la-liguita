@@ -18,9 +18,9 @@ export function Leaderboard() {
     setIsMounted(true);
   }, []);
 
-  const handleAddPlayer = () => {
+  const handleAddPlayer = async () => {
     if (newPlayerName.trim()) {
-      addPlayer(newPlayerName.trim());
+      await addPlayer(newPlayerName.trim());
       setNewPlayerName("");
       setIsAdding(false);
     }

@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { TopNav } from "@/components/layout/TopNav";
 import { BottomNav } from "@/components/layout/BottomNav";
+
+import { AuthProvider } from "@/components/providers/AuthProvider";
+
+import { DataSubscriber } from "@/components/providers/DataSubscriber";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,10 +23,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} bg-[var(--background)] text-[var(--foreground)]`}>
-        <main className="min-h-screen pb-20">
-          {children}
-        </main>
-        <BottomNav />
+        <AuthProvider>
+          <DataSubscriber />
+          <TopNav />
+          <main className="min-h-screen pt-16 pb-20">
+            {children}
+          </main>
+          <BottomNav />
+        </AuthProvider>
       </body>
     </html>
   );

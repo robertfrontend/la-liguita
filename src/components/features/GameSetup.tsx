@@ -5,16 +5,30 @@ import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { UserPlus, PlayCircle, Shuffle } from "lucide-react";
+import { UserPlus, PlayCircle, Shuffle, Plus, X, Check } from "lucide-react";
 
 export function GameSetup() {
   const router = useRouter();
-  const { players, startGame } = useStore();
+  const { players, startGame, addPlayer } = useStore();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [step, setStep] = useState<"select" | "teams">("select");
   const [teamA, setTeamA] = useState<string[]>([]);
   const [teamB, setTeamB] = useState<string[]>([]);
   const [isMounted, setIsMounted] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [newPlayerName, setNewPlayerName] = useState("");
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const handleAddPlayer = async () => {
+    if (newPlayerName.trim()) {
+      await addPlayer(newPlayerName.trim());
+      setNewPlayerName("");
+      setIsAdding(false);
+    }
+  };
 
   useEffect(() => {
     setIsMounted(true);
@@ -44,54 +58,94 @@ export function GameSetup() {
 
   const handleStartGame = () => {
     startGame(teamA, teamB);
-    const id = useStore.getState().activeGame?.id; // Access directly to be sure, or rely on store update
-    // Since zustand updates are sync usually, we can expect activeGame to be set.
-    // But better to just redirect to /game/live or something.
-    // Wait, the store updates activeGame.
-    // I need the ID to redirect.
-    // Let's get it from the store state after call.
-    const gameId = useStore.getState().activeGame?.id;
-    if (gameId) {
-      router.push(`/game/${gameId}`);
-    }
+    // Redirect logic handled via store or direct navigation
+    // Better to wait for store activeGame to be set.
+    // Since we await store actions if needed, but startGame is async now (updated previously).
+    // Let's assume we can navigate after a short delay or check store.
+    // For now simple push.
+    setTimeout(() => {
+        const gameId = useStore.getState().activeGame?.id;
+        if (gameId) router.push(`/game/${gameId}`);
+    }, 100);
   };
 
   if (step === "select") {
     return (
       <div className="w-full max-w-md mx-auto p-4 pb-24">
-        <h1 className="text-2xl font-bold mb-6 text-zinc-900 flex items-center gap-2">
-          <UserPlus className="text-orange-500" />
-          Select Players
-        </h1>
+        <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold text-zinc-900 flex items-center gap-2">
+            <UserPlus className="text-orange-500" />
+            Select Players
+            </h1>
+            <button
+            onClick={() => setIsAdding(!isAdding)}
+            className="p-2 bg-white border border-zinc-200 rounded-full shadow-sm text-zinc-500 hover:text-orange-500 hover:border-orange-500 transition-colors"
+            >
+            {isAdding ? <X size={20} /> : <Plus size={20} />}
+            </button>
+        </div>
+
+        {isAdding && (
+            <div className="mb-6 p-4 bg-white rounded-lg border border-orange-200 shadow-sm animate-in fade-in slide-in-from-top-2">
+            <h3 className="text-sm font-bold text-zinc-500 mb-3 uppercase tracking-wider">New Player</h3>
+            <div className="flex gap-2">
+                <input
+                autoFocus
+                type="text"
+                placeholder="Enter player name..."
+                value={newPlayerName}
+                onChange={(e) => setNewPlayerName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAddPlayer()}
+                className="flex-1 px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-medium"
+                />
+                <button
+                onClick={handleAddPlayer}
+                disabled={!newPlayerName.trim()}
+                className="bg-orange-500 text-white p-2 rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                <Check size={24} />
+                </button>
+            </div>
+            </div>
+        )}
         
         <p className="text-zinc-500 mb-4">
           Select 6 players to start ({selectedIds.length}/6)
         </p>
 
-        <div className="grid grid-cols-2 gap-3 mb-8">
-          {players.map((player) => {
-            const isSelected = selectedIds.includes(player.id);
-            return (
-              <button
-                key={player.id}
-                onClick={() => togglePlayer(player.id)}
-                disabled={!isSelected && selectedIds.length >= 6}
-                className={cn(
-                  "flex items-center p-3 rounded-lg border transition-all shadow-sm",
-                  isSelected
-                    ? "bg-orange-500 border-orange-500 text-white shadow-orange-500/20"
-                    : "bg-white border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50",
-                  !isSelected && selectedIds.length >= 6 && "opacity-50 cursor-not-allowed"
-                )}
-              >
-                <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center font-bold mr-3 text-sm">
-                  {player.avatar || player.name.slice(0, 2)}
-                </div>
-                <span className="font-medium truncate">{player.name}</span>
-              </button>
-            );
-          })}
-        </div>
+        {players.length === 0 ? (
+            <div className="text-center p-8 bg-zinc-50 rounded-xl border border-dashed border-zinc-300">
+                <p className="text-zinc-500 mb-4">No players found. Add at least 6 players to start a game.</p>
+                <Button onClick={() => setIsAdding(true)} variant="outline">
+                    Add Players First
+                </Button>
+            </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 mb-8">
+            {players.map((player) => {
+              const isSelected = selectedIds.includes(player.id);
+              return (
+                <button
+                  key={player.id}
+                  onClick={() => togglePlayer(player.id)}
+                  disabled={!isSelected && selectedIds.length >= 6}
+                  className={cn(
+                    "flex items-center p-3 rounded-lg border transition-all shadow-sm",
+                    isSelected
+                      ? "bg-orange-500 border-orange-500 text-white shadow-orange-500/20"
+                      : "bg-white border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50",
+                    !isSelected && selectedIds.length >= 6 && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center font-bold mr-3 text-sm">
+                    {player.avatar || player.name.slice(0, 2)}
+                  </div>
+                  <span className="font-medium truncate">{player.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         <Button
           className="w-full h-12 text-lg bg-zinc-900 text-white hover:bg-zinc-800"
