@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { UserPlus, PlayCircle, Shuffle, Plus, X, Check } from "lucide-react";
+import { UserPlus, PlayCircle, Shuffle, Plus, X, Check, ArrowRightLeft } from "lucide-react";
 
 export function GameSetup() {
   const router = useRouter();
@@ -14,9 +14,11 @@ export function GameSetup() {
   const [step, setStep] = useState<"select" | "teams">("select");
   const [teamA, setTeamA] = useState<string[]>([]);
   const [teamB, setTeamB] = useState<string[]>([]);
+  // ... other existing state ...
   const [isMounted, setIsMounted] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [newPlayerName, setNewPlayerName] = useState("");
+  const [selectedSwapId, setSelectedSwapId] = useState<string | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -29,10 +31,6 @@ export function GameSetup() {
       setIsAdding(false);
     }
   };
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   if (!isMounted) return null;
 
@@ -56,13 +54,51 @@ export function GameSetup() {
     setStep("teams");
   };
 
+  const handlePlayerSwapRef = (id: string) => {
+    if (!selectedSwapId) {
+      setSelectedSwapId(id);
+      return;
+    }
+
+    if (selectedSwapId === id) {
+      setSelectedSwapId(null);
+      return;
+    }
+
+    // Perform swap if valid
+    const isA = teamA.includes(id);
+    const sourceIsA = teamA.includes(selectedSwapId);
+
+    if (isA === sourceIsA) {
+      // Same team, just switch selection
+      setSelectedSwapId(id);
+    } else {
+      // Swap across teams
+      const newTeamA = [...teamA];
+      const newTeamB = [...teamB];
+
+      if (sourceIsA) {
+        // Swap selected (from A) with clicked (from B)
+        const idxA = newTeamA.indexOf(selectedSwapId);
+        const idxB = newTeamB.indexOf(id);
+        newTeamA[idxA] = id;
+        newTeamB[idxB] = selectedSwapId;
+      } else {
+        // Swap selected (from B) with clicked (from A)
+        const idxB = newTeamB.indexOf(selectedSwapId);
+        const idxA = newTeamA.indexOf(id);
+        newTeamB[idxB] = id;
+        newTeamA[idxA] = selectedSwapId;
+      }
+
+      setTeamA(newTeamA);
+      setTeamB(newTeamB);
+      setSelectedSwapId(null);
+    }
+  };
+
   const handleStartGame = () => {
     startGame(teamA, teamB);
-    // Redirect logic handled via store or direct navigation
-    // Better to wait for store activeGame to be set.
-    // Since we await store actions if needed, but startGame is async now (updated previously).
-    // Let's assume we can navigate after a short delay or check store.
-    // For now simple push.
     setTimeout(() => {
         const gameId = useStore.getState().activeGame?.id;
         if (gameId) router.push(`/game/${gameId}`);
@@ -70,7 +106,11 @@ export function GameSetup() {
   };
 
   if (step === "select") {
-    return (
+     // ... render select step (unchanged relative to this replacement scope if purely for teams logic, but we need to keep the file valid)
+     // To avoid massive replacement, I will try to target the file such that I replace imports and the component body logic, but I can't easily skip the middle 'return' block.
+     // I'll provide the implementation for 'if (step === "teams")' block specifically if possible? No, I need state definitions.
+     // I'll replace everything but keep the `if (step === "select")` content same (copy-pasted).
+     return (
       <div className="w-full max-w-md mx-auto p-4 pb-24">
         <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-zinc-900 flex items-center gap-2">
@@ -165,13 +205,31 @@ export function GameSetup() {
           Preview Matchup
         </h1>
 
+        <p className="text-sm text-zinc-500 mb-4">Tap two players to swap them between teams.</p>
+
         <div className="space-y-6 mb-8">
           <div className="bg-white rounded-xl p-4 border border-zinc-200 shadow-sm">
-            <h3 className="text-orange-500 font-bold mb-3 uppercase tracking-wider text-sm">Team A</h3>
+            <h3 className="text-orange-500 font-bold mb-3 uppercase tracking-wider text-sm flex justify-between">
+                Team A
+                <span className="text-xs text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-full">Tap to swap</span>
+            </h3>
             <div className="space-y-2">
               {teamA.map(id => {
                  const p = players.find(x => x.id === id);
-                 return <div key={id} className="text-zinc-900 font-medium pl-2 border-l-2 border-orange-500">{p?.name}</div>
+                 const isSelected = selectedSwapId === id;
+                 return (
+                    <div 
+                        key={id} 
+                        onClick={() => handlePlayerSwapRef(id)}
+                        className={cn(
+                            "flex items-center justify-between text-zinc-900 font-medium pl-3 pr-2 py-2 border-l-4 border-orange-500 bg-zinc-50 rounded-r-md cursor-pointer transition-all active:scale-95",
+                            isSelected ? "ring-2 ring-orange-500 bg-orange-50" : "hover:bg-zinc-100"
+                        )}
+                    >
+                        <span>{p?.name}</span>
+                        {isSelected && <ArrowRightLeft size={16} className="text-orange-500 animate-pulse" />}
+                    </div>
+                 )
               })}
             </div>
           </div>
@@ -181,11 +239,27 @@ export function GameSetup() {
           </div>
 
           <div className="bg-white rounded-xl p-4 border border-zinc-200 shadow-sm">
-            <h3 className="text-blue-500 font-bold mb-3 uppercase tracking-wider text-sm">Team B</h3>
+            <h3 className="text-blue-500 font-bold mb-3 uppercase tracking-wider text-sm flex justify-between">
+                Team B
+                <span className="text-xs text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-full">Tap to swap</span>
+            </h3>
             <div className="space-y-2">
               {teamB.map(id => {
                  const p = players.find(x => x.id === id);
-                 return <div key={id} className="text-zinc-900 font-medium pl-2 border-l-2 border-blue-500">{p?.name}</div>
+                 const isSelected = selectedSwapId === id;
+                 return (
+                    <div 
+                        key={id} 
+                        onClick={() => handlePlayerSwapRef(id)}
+                        className={cn(
+                            "flex items-center justify-between text-zinc-900 font-medium pl-3 pr-2 py-2 border-l-4 border-blue-500 bg-zinc-50 rounded-r-md cursor-pointer transition-all active:scale-95",
+                            isSelected ? "ring-2 ring-blue-500 bg-blue-50" : "hover:bg-zinc-100"
+                        )}
+                    >
+                        <span>{p?.name}</span>
+                        {isSelected && <ArrowRightLeft size={16} className="text-blue-500 animate-pulse" />}
+                    </div>
+                 )
               })}
             </div>
           </div>
@@ -194,7 +268,7 @@ export function GameSetup() {
         <div className="flex gap-3">
           <Button variant="outline" className="flex-1 border-zinc-200 text-zinc-700 hover:bg-zinc-50" onClick={handleCreateTeams}>
             <Shuffle className="mr-2 h-4 w-4" />
-            Shuffle
+            Reshuffle
           </Button>
           <Button className="flex-[2] bg-orange-500 text-white hover:bg-orange-600" size="lg" onClick={handleStartGame}>
             Start Game

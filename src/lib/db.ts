@@ -57,10 +57,15 @@ export const updatePlayerStatsInDb = async (player: Player) => {
 // --- Games ---
 
 export const subscribeToHistory = (callback: (games: Game[]) => void) => {
-  const q = query(collection(db, GAMES_COLLECTION), where("isFinished", "==", true), orderBy("date", "desc"));
+  // Removed orderBy to avoid needing a composite index. Sorting in client.
+  const q = query(collection(db, GAMES_COLLECTION), where("isFinished", "==", true));
   return onSnapshot(q, (snapshot) => {
     const games = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Game));
+    // Sort by date desc
+    games.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     callback(games);
+  }, (error) => {
+    console.error("Error subscribing to history:", error);
   });
 };
 
@@ -73,18 +78,22 @@ export const subscribeToActiveGame = (callback: (game: Game | null) => void) => 
   // Let's query for the most recent unfinished game.
   const q = query(
     collection(db, GAMES_COLLECTION), 
-    where("isFinished", "==", false), 
-    orderBy("date", "desc"), 
-    // limit(1) // Firestore doesn't like limiting on snapshot sometimes with multiple potential matches, but let's try.
+    where("isFinished", "==", false)
+    // Removed orderBy to avoid index issues.
   );
   
   return onSnapshot(q, (snapshot) => {
     if (snapshot.empty) {
       callback(null);
     } else {
-      const doc = snapshot.docs[0];
-      callback({ id: doc.id, ...doc.data() } as Game);
+      const games = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Game));
+      // Sort to get most recent
+      games.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      
+      callback(games[0]);
     }
+  }, (error) => {
+    console.error("Error subscribing to active game:", error);
   });
 };
 
