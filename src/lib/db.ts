@@ -44,6 +44,26 @@ export const subscribeToLeagues = (userId: string, callback: (leagues: League[])
   });
 };
 
+export const getLeague = async (leagueId: string) => {
+  const docRef = doc(db, LEAGUES_COLLECTION, leagueId);
+  const snap = await getDoc(docRef);
+  if (snap.exists()) {
+    return { id: snap.id, ...snap.data() } as League;
+  }
+  return null;
+};
+
+export const subscribeToLeague = (leagueId: string, callback: (league: League | null) => void) => {
+    const docRef = doc(db, LEAGUES_COLLECTION, leagueId);
+    return onSnapshot(docRef, (snap) => {
+        if (snap.exists()) {
+            callback({ id: snap.id, ...snap.data() } as League);
+        } else {
+            callback(null);
+        }
+    });
+};
+
 // --- Players ---
 
 export const subscribeToPlayers = (leagueId: string, callback: (players: Player[]) => void) => {

@@ -29,6 +29,11 @@ export default function Home() {
             View Leaderboard
         </Link>
       </div>
+
+      <div className="mt-24 text-xs text-zinc-400 font-medium animate-in fade-in slide-in-from-bottom-4 duration-1000">
+         <p>Created by <a href="https://linkedin.com/in/robertfrontend" target="_blank" rel="noopener noreferrer" className="text-zinc-600 font-bold hover:text-orange-500 transition-colors underline decoration-dotted underline-offset-2">RobertFrontend</a></p>
+         <p>with <span className="text-red-500">❤️</span> from <span className="text-zinc-600 font-bold">Boston, MA</span></p>
+      </div>
     </div>
   );
 }

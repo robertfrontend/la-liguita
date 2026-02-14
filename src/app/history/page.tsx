@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useStore } from "@/lib/store";
-import { CalendarDays, Trash2 } from "lucide-react";
+import { CalendarDays, Trash2, ExternalLink } from "lucide-react";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import { cn } from "@/lib/utils";
 
 export default function HistoryPage() {
   const history = useStore((state) => state.history);
   const players = useStore((state) => state.players);
+  const activeLeague = useStore((state) => state.activeLeague);
   const deleteGame = useStore((state) => state.deleteGame);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -41,10 +43,21 @@ export default function HistoryPage() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen p-4 pb-24 bg-white">
-        <h1 className="text-2xl font-bold mb-6 text-zinc-900 flex items-center gap-2">
-          <CalendarDays className="text-orange-500" />
-          Game History
-        </h1>
+        <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold text-zinc-900 flex items-center gap-2">
+            <CalendarDays className="text-orange-500" />
+            Game History
+            </h1>
+            {activeLeague && (
+               <Link 
+                  href={`/league/${activeLeague.id}/history`}
+                  target="_blank"
+                  className="flex items-center gap-2 text-xs font-bold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-full hover:bg-orange-100 transition-colors border border-orange-100"
+               >
+                  Public View <ExternalLink size={14} />
+               </Link>
+            )}
+        </div>
 
         <div className="space-y-4">
           {history.map((game) => {
