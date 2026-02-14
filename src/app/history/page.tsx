@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useStore } from "@/lib/store";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, Trash2 } from "lucide-react";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
+import { cn } from "@/lib/utils";
 
 export default function HistoryPage() {
   const history = useStore((state) => state.history);
   const players = useStore((state) => state.players);
+  const deleteGame = useStore((state) => state.deleteGame);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -17,6 +19,12 @@ export default function HistoryPage() {
   if (!isMounted) return null;
 
   const getPlayerName = (id: string) => players.find((p) => p.id === id)?.name || "Unknown";
+
+  const handleDelete = async (gameId: string) => {
+      if (confirm("Are you sure you want to delete this game? Player stats will be reverted.")) {
+          await deleteGame(gameId);
+      }
+  };
 
   if (history.length === 0) {
     return (
@@ -44,7 +52,16 @@ export default function HistoryPage() {
             return (
               <div key={game.id} className="bg-white rounded-xl p-4 border border-zinc-200 shadow-sm">
                 <div className="flex justify-between items-center mb-4 text-xs text-zinc-400 uppercase tracking-widest font-bold">
-                   <span>{new Date(game.date).toLocaleDateString()}</span>
+                   <div className="flex items-center gap-3">
+                       <button 
+                           onClick={() => handleDelete(game.id)} 
+                           className="w-8 h-8 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors shadow-sm"
+                           title="Delete Game"
+                       >
+                           <Trash2 className="w-4 h-4" />
+                       </button>
+                       <span>{new Date(game.date).toLocaleDateString()}</span>
+                   </div>
                    <span className={isTeamAWinner ? "text-orange-600" : "text-blue-600"}>
                      {isTeamAWinner ? "Team A Won" : "Team B Won"}
                    </span>

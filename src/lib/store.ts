@@ -6,7 +6,8 @@ import {
   createGameInDb, 
   updateGameInDb, 
   updatePlayerStatsInDb,
-  createLeague 
+  createLeague,
+  deleteGameFromDb
 } from './db';
 
 interface StoreState {
@@ -30,6 +31,7 @@ interface StoreState {
   finishGame: () => Promise<void>;
   resetActiveGame: () => void;
   addPlayer: (name: string) => Promise<void>;
+  deleteGame: (gameId: string) => Promise<void>;
 }
 
 export const useStore = create<StoreState>()(
@@ -135,9 +137,7 @@ export const useStore = create<StoreState>()(
             ...updates
           },
         });
-
-        // DB update removed to save bandwidth/costs.
-        // The game state will be saved to DB only when the game finishes.
+        // DB update removed to save bandwidth/costs
       },
 
       finishGame: async () => {
@@ -193,6 +193,16 @@ export const useStore = create<StoreState>()(
             return;
         }
         await addPlayerToDb(activeLeague.id, name);
+      },
+
+      deleteGame: async (gameId) => {
+        const { activeLeague } = get();
+        if (!activeLeague) return;
+        
+        await deleteGameFromDb(activeLeague.id, gameId);
+        
+        const { history } = get();
+        set({ history: history.filter(g => g.id !== gameId) });
       }
     }),
     {

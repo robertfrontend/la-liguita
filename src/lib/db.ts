@@ -2,9 +2,11 @@ import { db } from "./firebase";
 import { 
   collection, 
   doc, 
+  getDoc, 
   getDocs, 
   updateDoc, 
   addDoc, 
+  deleteDoc,
   query, 
   where, 
   orderBy, 
@@ -135,6 +137,43 @@ export const createGameInDb = async (leagueId: string, teamA: string[], teamB: s
 export const updateGameInDb = async (leagueId: string, gameId: string, updates: Partial<Game>) => {
   const gameRef = doc(db, LEAGUES_COLLECTION, leagueId, GAMES_SUBCOLLECTION, gameId);
   await updateDoc(gameRef, updates);
+};
+
+export const deleteGameFromDb = async (leagueId: string, gameId: string) => {
+  const gameRef = doc(db, LEAGUES_COLLECTION, leagueId, GAMES_SUBCOLLECTION, gameId);
+  const gameSnap = await getDoc(gameRef);
+  
+  if (!gameSnap.exists()) return;
+  
+  const game = { id: gameSnap.id, ...gameSnap.data() } as Game;
+  
+  // Revert player stats only if the game was finished
+  if (game.isFinished) {
+    const playerIds = [...game.teamA, ...game.teamB];
+    const updates = playerIds.map(async (pid) => {
+        const playerRef = doc(db, LEAGUES_COLLECTION, leagueId, PLAYERS_SUBCOLLECTION, pid);
+        const playerSnap = await getDoc(playerRef);
+        
+        if (playerSnap.exists()) {
+            const player = playerSnap.data() as Player;
+            const gameStats = game.playerStats[pid] || { points: 0, assists: 0 };
+            
+            const isTeamA = game.teamA.includes(pid);
+            const isTeamB = game.teamB.includes(pid);
+            const won = (isTeamA && game.winner === 'A') || (isTeamB && game.winner === 'B');
+            
+            await updateDoc(playerRef, {
+                gamesPlayed: Math.max(0, player.gamesPlayed - 1),
+                wins: won ? Math.max(0, player.wins - 1) : player.wins,
+                totalPoints: Math.max(0, player.totalPoints - gameStats.points),
+                totalAssists: Math.max(0, player.totalAssists - gameStats.assists),
+            });
+        }
+    });
+    await Promise.all(updates);
+  }
+  
+  await deleteDoc(gameRef);
 };
 
 // Use Collection Group for viewing a shared game by ID without knowing the league?
