@@ -1,7 +1,16 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged, User, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { 
+  onAuthStateChanged, 
+  User, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  signOut,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile
+} from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter, usePathname } from "next/navigation";
 
@@ -9,6 +18,8 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -16,6 +27,8 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   signInWithGoogle: async () => {},
+  signInWithEmail: async () => {},
+  signUpWithEmail: async () => {},
   logout: async () => {},
 });
 
@@ -51,6 +64,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       router.push("/"); // Redirect after login
     } catch (error) {
       console.error("Error signing in with Google", error);
+      throw error;
+    }
+  };
+
+  const signInWithEmail = async (email: string, password: string) => {
+    if (!auth) return;
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+        router.push("/");
+    } catch (error) {
+        console.error("Error signing in with Email", error);
+        throw error;
+    }
+  };
+
+  const signUpWithEmail = async (email: string, password: string, name: string) => {
+    if (!auth) return;
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(userCredential.user, {
+            displayName: name
+        });
+        // Force refresh user to get display name? 
+        // onAuthStateChanged handles it, but user object might need refresh.
+        // Usually updateProfile updates the current user object in place or triggers auth state change.
+        router.push("/");
+    } catch (error) {
+        console.error("Error signing up with Email", error);
+        throw error;
     }
   };
 
@@ -61,7 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, logout }}>
       {children}
     </AuthContext.Provider>
   );
