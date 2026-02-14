@@ -4,7 +4,10 @@ import { Trophy, PlayCircle } from "lucide-react";
 export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center p-6 text-center bg-[var(--background)] h-[calc(100vh-8rem)]">
-      <div className="mb-12">
+      <div className="flex justify-center w-full -mb-4">
+          <img src="/logo.png" alt="La Liguita Logo" className="w-64 h-64 object-contain drop-shadow-sm" />
+      </div>
+      <div className="mb-10 relative z-10">
         <h1 className="text-4xl font-extrabold tracking-tight text-zinc-900 mb-4">
           Welcome to the Court
         </h1>

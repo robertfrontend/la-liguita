@@ -15,6 +15,8 @@ export const metadata: Metadata = {
   description: "Track stats, climb the leaderboard, and dominate the game.",
   icons: {
     icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
   },
 };
 
