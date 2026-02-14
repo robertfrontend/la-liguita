@@ -38,19 +38,21 @@ export function GameSetup() {
     if (selectedIds.includes(id)) {
       setSelectedIds(selectedIds.filter((pid) => pid !== id));
     } else {
-      if (selectedIds.length < 6) {
+      if (selectedIds.length < 10) {
         setSelectedIds([...selectedIds, id]);
       }
     }
   };
 
   const handleCreateTeams = () => {
-    if (selectedIds.length !== 6) return;
+    const count = selectedIds.length;
+    if (count < 4 || count > 10 || count % 2 !== 0) return;
     
     // Randomly shuffle and split
     const shuffled = [...selectedIds].sort(() => Math.random() - 0.5);
-    setTeamA(shuffled.slice(0, 3));
-    setTeamB(shuffled.slice(3, 6));
+    const half = count / 2;
+    setTeamA(shuffled.slice(0, half));
+    setTeamB(shuffled.slice(half));
     setStep("teams");
   };
 
@@ -106,11 +108,9 @@ export function GameSetup() {
   };
 
   if (step === "select") {
-     // ... render select step (unchanged relative to this replacement scope if purely for teams logic, but we need to keep the file valid)
-     // To avoid massive replacement, I will try to target the file such that I replace imports and the component body logic, but I can't easily skip the middle 'return' block.
-     // I'll provide the implementation for 'if (step === "teams")' block specifically if possible? No, I need state definitions.
-     // I'll replace everything but keep the `if (step === "select")` content same (copy-pasted).
-     return (
+       const isValidCount = selectedIds.length >= 4 && selectedIds.length <= 10 && selectedIds.length % 2 === 0;
+
+       return (
       <div className="w-full max-w-md mx-auto p-4 pb-24">
         <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-zinc-900 flex items-center gap-2">
@@ -149,13 +149,18 @@ export function GameSetup() {
             </div>
         )}
         
-        <p className="text-zinc-500 mb-4">
-          Select 6 players to start ({selectedIds.length}/6)
+        <p className="text-zinc-500 mb-4 flex justify-between items-center">
+          <span>Select 4-10 players ({selectedIds.length})</span>
+          {!isValidCount && selectedIds.length > 0 && (
+              <span className="text-xs text-orange-500 font-bold bg-orange-50 px-2 py-1 rounded-full">
+                  {selectedIds.length % 2 !== 0 ? "Need even number" : "Min 4 required"}
+              </span>
+          )}
         </p>
 
         {players.length === 0 ? (
             <div className="text-center p-8 bg-zinc-50 rounded-xl border border-dashed border-zinc-300">
-                <p className="text-zinc-500 mb-4">No players found. Add at least 6 players to start a game.</p>
+                <p className="text-zinc-500 mb-4">No players found. Add at least 4 players to start a game.</p>
                 <Button onClick={() => setIsAdding(true)} variant="outline">
                     Add Players First
                 </Button>
@@ -168,13 +173,13 @@ export function GameSetup() {
                 <button
                   key={player.id}
                   onClick={() => togglePlayer(player.id)}
-                  disabled={!isSelected && selectedIds.length >= 6}
+                  disabled={!isSelected && selectedIds.length >= 10}
                   className={cn(
                     "flex items-center p-3 rounded-lg border transition-all shadow-sm",
                     isSelected
                       ? "bg-orange-500 border-orange-500 text-white shadow-orange-500/20"
                       : "bg-white border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50",
-                    !isSelected && selectedIds.length >= 6 && "opacity-50 cursor-not-allowed"
+                    !isSelected && selectedIds.length >= 10 && "opacity-50 cursor-not-allowed"
                   )}
                 >
                   <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center font-bold mr-3 text-sm">
@@ -189,10 +194,10 @@ export function GameSetup() {
 
         <Button
           className="w-full h-12 text-lg bg-zinc-900 text-white hover:bg-zinc-800"
-          disabled={selectedIds.length !== 6}
+          disabled={!isValidCount}
           onClick={handleCreateTeams}
         >
-          Create Teams
+          Create Teams ({selectedIds.length / 2} vs {selectedIds.length / 2})
         </Button>
       </div>
     );
