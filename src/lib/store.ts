@@ -66,12 +66,16 @@ export const useStore = create<StoreState>((set, get) => ({
     const currentStats = activeGame.playerStats[playerId] || { points: 0, assists: 0 };
     
     // Calculate new stats
+    // Prevent negative stats
+    const newPoints = Math.max(0, type === 'pts' ? currentStats.points + amount : currentStats.points);
+    const newAssists = Math.max(0, type === 'ast' ? currentStats.assists + amount : currentStats.assists);
+
     const updatedPlayerStats = {
       ...activeGame.playerStats,
       [playerId]: {
         ...currentStats,
-        points: type === 'pts' ? currentStats.points + amount : currentStats.points,
-        assists: type === 'ast' ? currentStats.assists + amount : currentStats.assists,
+        points: newPoints,
+        assists: newAssists,
       },
     };
 
