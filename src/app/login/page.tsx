@@ -2,13 +2,20 @@
 
 import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/Button";
-import { LogIn } from "lucide-react";
+import { LogIn, UserPlus, Mail, Lock, User } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function LoginPage() {
-  const { user, signInWithGoogle, loading } = useAuth();
+  const { user, signInWithGoogle, signInWithEmail, signUpWithEmail, loading } = useAuth();
   const router = useRouter();
+  
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (user && !loading) {
@@ -16,23 +23,117 @@ export default function LoginPage() {
     }
   }, [user, loading, router]);
 
-  if (loading) return null; // Or a spinner
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      if (isSignUp) {
+        await signUpWithEmail(email, password, name);
+      } else {
+        await signInWithEmail(email, password);
+      }
+    } catch (err) {
+      const error = err as { code?: string; message?: string };
+      if (error.code === 'auth/invalid-credential') {
+        setError("Invalid email or password.");
+      } else if (error.code === 'auth/email-already-in-use') {
+        setError("Email already in use.");
+      } else if (error.code === 'auth/weak-password') {
+        setError("Password should be at least 6 characters.");
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (loading) return null; 
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-white">
-      <div className="w-full max-w-sm bg-white rounded-2xl border border-zinc-200 shadow-xl p-8 text-center">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-zinc-50">
+      <div className="w-full max-w-sm bg-white rounded-2xl border border-zinc-200 shadow-xl p-8">
         <div className="flex justify-center mb-6">
           <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center text-orange-500">
-             <LogIn size={32} />
+             {isSignUp ? <UserPlus size={32} /> : <LogIn size={32} />}
           </div>
         </div>
         
-        <h1 className="text-2xl font-bold text-zinc-900 mb-2">Welcome Back</h1>
-        <p className="text-zinc-500 mb-8">Sign in to track your stats and join the league.</p>
+        <h1 className="text-2xl font-bold text-zinc-900 mb-2 text-center">
+          {isSignUp ? "Create Account" : "Welcome Back"}
+        </h1>
+        <p className="text-zinc-500 mb-8 text-center">
+          {isSignUp ? "Sign up to start tracking your stats." : "Sign in to continue to La Liguita."}
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+          {isSignUp && (
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={20} />
+              <input 
+                type="text" 
+                placeholder="Full Name"
+                className="w-full pl-10 pr-4 py-3 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required={isSignUp}
+              />
+            </div>
+          )}
+          
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={20} />
+            <input 
+              type="email" 
+              placeholder="Email Address"
+              className="w-full pl-10 pr-4 py-3 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={20} />
+            <input 
+              type="password" 
+              placeholder="Password"
+              className="w-full pl-10 pr-4 py-3 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+            />
+          </div>
+
+          {error && <p className="text-red-500 text-sm text-center font-medium">{error}</p>}
+
+          <Button 
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full h-12 text-base font-bold bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/20 transition-all active:scale-[0.98]"
+          >
+            {isSubmitting ? "Loading..." : (isSignUp ? "Create Account" : "Sign In")}
+          </Button>
+        </form>
+
+        <div className="relative mb-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-zinc-200"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-zinc-500">Or continue with</span>
+          </div>
+        </div>
 
         <Button 
           onClick={signInWithGoogle}
-          className="w-full h-12 text-base font-medium bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-50 hover:text-zinc-900 flex items-center justify-center gap-3 shadow-sm transition-all"
+          type="button"
+          variant="outline"
+          className="w-full h-12 text-base font-medium bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-50 hover:text-zinc-900 flex items-center justify-center gap-3 shadow-sm transition-all mb-6"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -52,8 +153,21 @@ export default function LoginPage() {
               fill="#EA4335"
             />
           </svg>
-          Sign in with Google
+          Google
         </Button>
+
+        <p className="text-center text-sm text-zinc-500">
+          {isSignUp ? "Already have an account? " : "Don't have an account? "}
+          <button 
+            onClick={() => {
+              setIsSignUp(!isSignUp);
+              setError("");
+            }} 
+            className="font-bold text-orange-600 hover:text-orange-700 hover:underline"
+          >
+            {isSignUp ? "Sign In" : "Sign Up"}
+          </button>
+        </p>
       </div>
     </div>
   );
