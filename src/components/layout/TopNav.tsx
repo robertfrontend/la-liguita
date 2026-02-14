@@ -10,8 +10,8 @@ export function TopNav() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-zinc-200 h-16 flex items-center justify-between px-4 shadow-sm">
-      <Link href="/" className="z-10 relative">
-        <img src="/logo.png" alt="La Liguita" className="w-50 h-50 object-contain" />
+      <Link href="/" className="text-xl font-black tracking-tight text-zinc-900 z-10 relative">
+        La <span className="text-orange-500">Liguita</span>
       </Link>
       
       {user && (
