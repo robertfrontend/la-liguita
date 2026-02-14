@@ -8,7 +8,7 @@ import { Trophy, Award, TrendingUp, UserPlus, X, Check } from "lucide-react";
 type SortKey = "points" | "assists" | "winRate";
 
 export function Leaderboard() {
-  const { players, addPlayer } = useStore();
+  const { players, addPlayer, activeLeague } = useStore();
   const [sortBy, setSortBy] = useState<SortKey>("points");
   const [isMounted, setIsMounted] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
@@ -20,12 +20,16 @@ export function Leaderboard() {
 
   const handleAddPlayer = async () => {
     if (newPlayerName.trim()) {
+      if (!activeLeague) {
+          alert("Please create a league first.");
+          return;
+      }
       await addPlayer(newPlayerName.trim());
       setNewPlayerName("");
       setIsAdding(false);
     }
   };
-
+  
   const sortedPlayers = useMemo(() => {
     return [...players].sort((a, b) => {
       if (sortBy === "points") return b.totalPoints - a.totalPoints;
@@ -41,12 +45,24 @@ export function Leaderboard() {
 
   if (!isMounted) return null;
 
+  if (!activeLeague) {
+      return (
+          <div className="w-full max-w-md mx-auto p-8 text-center mt-12 bg-zinc-50 rounded-2xl border-2 border-dashed border-zinc-200">
+              <Trophy className="w-16 h-16 text-zinc-300 mx-auto mb-4" />
+              <h2 className="text-xl font-bold text-zinc-900 mb-2">No League Selected</h2>
+              <p className="text-zinc-500 mb-6">Create or select a league from the top menu to start tracking players and games.</p>
+              <div className="text-sm text-orange-500 font-bold animate-bounce">
+                  ↑ Check the top menu
+              </div>
+          </div>
+      );
+  }
+
   return (
     <div className="w-full max-w-md mx-auto p-4 pb-24">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-zinc-900 flex items-center gap-2">
-          <Trophy className="text-orange-500" />
-          Leaderboard
+            <span className="text-orange-500 text-xs font-black uppercase tracking-wider bg-orange-100 px-2 py-1 rounded-md">{activeLeague.name}</span>
         </h1>
         <button
           onClick={() => setIsAdding(!isAdding)}

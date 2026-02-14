@@ -1,23 +1,29 @@
 import { create } from 'zustand';
-import type { Game, Player, Team } from './types';
+import type { Game, Player, Team, League } from './types';
 import { 
   addPlayerToDb, 
   createGameInDb, 
   updateGameInDb, 
-  updatePlayerStatsInDb 
+  updatePlayerStatsInDb,
+  createLeague 
 } from './db';
 
 interface StoreState {
   players: Player[];
   activeGame: Game | null;
   history: Game[];
+  leagues: League[];
+  activeLeague: League | null;
   
   // State Setters (for subscriptions)
   setPlayers: (players: Player[]) => void;
   setHistory: (history: Game[]) => void;
   setActiveGame: (game: Game | null) => void;
+  setLeagues: (leagues: League[]) => void;
+  setActiveLeague: (league: League | null) => void;
 
   // Actions
+  createLeague: (name: string, ownerId: string) => Promise<void>;
   startGame: (teamAIds: string[], teamBIds: string[]) => Promise<void>;
   updateStat: (playerId: string, type: 'pts' | 'ast', amount: number) => Promise<void>;
   finishGame: () => Promise<void>;
@@ -29,20 +35,33 @@ export const useStore = create<StoreState>((set, get) => ({
   players: [],
   activeGame: null,
   history: [],
+  leagues: [],
+  activeLeague: null,
 
   setPlayers: (players) => set({ players }),
   setHistory: (history) => set({ history }),
   setActiveGame: (activeGame) => set({ activeGame }),
+  setLeagues: (leagues) => set({ leagues }),
+  setActiveLeague: (activeLeague) => set({ activeLeague }),
+
+  createLeague: async (name, ownerId) => {
+    const newLeague = await createLeague(name, ownerId);
+    set({ activeLeague: newLeague }); // Auto-select new league
+  },
 
   startGame: async (teamAIds, teamBIds) => {
-    // Optimistic update? Better to wait for DB creation to have ID.
-    const newGame = await createGameInDb(teamAIds, teamBIds);
+    const { activeLeague } = get();
+    if (!activeLeague) {
+        alert("Please select a league first");
+        return;
+    }
+    const newGame = await createGameInDb(activeLeague.id, teamAIds, teamBIds);
     set({ activeGame: newGame });
   },
 
   updateStat: async (playerId, type, amount) => {
-    const { activeGame } = get();
-    if (!activeGame) return;
+    const { activeGame, activeLeague } = get();
+    if (!activeGame || !activeLeague) return;
 
     const currentStats = activeGame.playerStats[playerId] || { points: 0, assists: 0 };
     
@@ -84,22 +103,21 @@ export const useStore = create<StoreState>((set, get) => ({
     });
 
     // Write to DB
-    await updateGameInDb(activeGame.id, updates);
+    await updateGameInDb(activeLeague.id, activeGame.id, updates);
   },
 
   finishGame: async () => {
-    const { activeGame, players } = get();
-    if (!activeGame) return;
+    const { activeGame, players, activeLeague } = get();
+    if (!activeGame || !activeLeague) return;
 
     const winner: Team | null = activeGame.scoreA > activeGame.scoreB ? 'A' : activeGame.scoreB > activeGame.scoreA ? 'B' : null;
     
     const finishedUpdates = { isFinished: true, winner: winner || undefined };
 
     // Update game in DB
-    await updateGameInDb(activeGame.id, finishedUpdates);
+    await updateGameInDb(activeLeague.id, activeGame.id, finishedUpdates);
 
     // Update player stats in DB
-    // We need to calculate the new totals for each player involved
     const playerUpdatesPromises = [...activeGame.teamA, ...activeGame.teamB].map(async (pid) => {
         const player = players.find(p => p.id === pid);
         if (!player) return;
@@ -117,19 +135,22 @@ export const useStore = create<StoreState>((set, get) => ({
             totalAssists: player.totalAssists + stats.assists,
         };
         
-        await updatePlayerStatsInDb(updatedPlayer);
+        await updatePlayerStatsInDb(activeLeague.id, updatedPlayer);
     });
 
     await Promise.all(playerUpdatesPromises);
 
     set({ activeGame: null }); 
-    // History will update via subscription
   },
 
   resetActiveGame: () => set({ activeGame: null }),
 
   addPlayer: async (name) => {
-    await addPlayerToDb(name);
-    // State updates via subscription
+    const { activeLeague } = get();
+    if (!activeLeague) {
+        alert("No active league");
+        return;
+    }
+    await addPlayerToDb(activeLeague.id, name);
   }
 }));

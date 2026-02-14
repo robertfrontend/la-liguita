@@ -26,3 +26,10 @@ export type Game = {
   winner?: Team;
   isFinished: boolean;
 };
+
+export type League = {
+  id: string;
+  name: string;
+  ownerId: string;
+  createdAt: string;
+};

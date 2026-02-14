@@ -3,32 +3,56 @@ import {
   collection, 
   doc, 
   getDocs, 
-  setDoc, 
   updateDoc, 
   addDoc, 
   query, 
   where, 
   orderBy, 
   onSnapshot,
-  Timestamp 
+  collectionGroup
 } from "firebase/firestore";
-import type { Player, Game } from "./types";
+import type { Player, Game, League } from "./types";
 
 // Collections
-const PLAYERS_COLLECTION = "players";
-const GAMES_COLLECTION = "games";
+const LEAGUES_COLLECTION = "leagues";
+const PLAYERS_SUBCOLLECTION = "players";
+const GAMES_SUBCOLLECTION = "games";
+
+// --- Leagues ---
+
+export const createLeague = async (name: string, ownerId: string) => {
+  const newLeague = {
+    name,
+    ownerId,
+    createdAt: new Date().toISOString(),
+  };
+  const docRef = await addDoc(collection(db, LEAGUES_COLLECTION), newLeague);
+  return { id: docRef.id, ...newLeague };
+};
+
+export const subscribeToLeagues = (userId: string, callback: (leagues: League[]) => void) => {
+  // Query leagues where user is owner. 
+  // Future: Also where user is a member? For now just owner.
+  const q = query(collection(db, LEAGUES_COLLECTION), where("ownerId", "==", userId));
+  return onSnapshot(q, (snapshot) => {
+    const leagues = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as League));
+    callback(leagues);
+  }, (error) => {
+    console.error("Error subscribing to leagues:", error);
+  });
+};
 
 // --- Players ---
 
-export const subscribeToPlayers = (callback: (players: Player[]) => void) => {
-  const q = query(collection(db, PLAYERS_COLLECTION), orderBy("name"));
+export const subscribeToPlayers = (leagueId: string, callback: (players: Player[]) => void) => {
+  const q = query(collection(db, LEAGUES_COLLECTION, leagueId, PLAYERS_SUBCOLLECTION), orderBy("name"));
   return onSnapshot(q, (snapshot) => {
     const players = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
     callback(players);
   });
 };
 
-export const addPlayerToDb = async (name: string) => {
+export const addPlayerToDb = async (leagueId: string, name: string) => {
   const newPlayer = {
     name,
     gamesPlayed: 0,
@@ -37,15 +61,12 @@ export const addPlayerToDb = async (name: string) => {
     totalAssists: 0,
     avatar: name.slice(0, 2).toUpperCase(),
   };
-  // Use addDoc to let Firestore generate ID, or allow custom IDs if needed.
-  // The current store uses uuid. We can rely on Firestore IDs or stick to uuid.
-  // Let's use Firestore IDs for simplicity in future.
-  const docRef = await addDoc(collection(db, PLAYERS_COLLECTION), newPlayer);
+  const docRef = await addDoc(collection(db, LEAGUES_COLLECTION, leagueId, PLAYERS_SUBCOLLECTION), newPlayer);
   return { id: docRef.id, ...newPlayer };
 };
 
-export const updatePlayerStatsInDb = async (player: Player) => {
-  const playerRef = doc(db, PLAYERS_COLLECTION, player.id);
+export const updatePlayerStatsInDb = async (leagueId: string, player: Player) => {
+  const playerRef = doc(db, LEAGUES_COLLECTION, leagueId, PLAYERS_SUBCOLLECTION, player.id);
   await updateDoc(playerRef, {
     gamesPlayed: player.gamesPlayed,
     wins: player.wins,
@@ -56,12 +77,10 @@ export const updatePlayerStatsInDb = async (player: Player) => {
 
 // --- Games ---
 
-export const subscribeToHistory = (callback: (games: Game[]) => void) => {
-  // Removed orderBy to avoid needing a composite index. Sorting in client.
-  const q = query(collection(db, GAMES_COLLECTION), where("isFinished", "==", true));
+export const subscribeToHistory = (leagueId: string, callback: (games: Game[]) => void) => {
+  const q = query(collection(db, LEAGUES_COLLECTION, leagueId, GAMES_SUBCOLLECTION), where("isFinished", "==", true));
   return onSnapshot(q, (snapshot) => {
     const games = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Game));
-    // Sort by date desc
     games.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     callback(games);
   }, (error) => {
@@ -69,17 +88,10 @@ export const subscribeToHistory = (callback: (games: Game[]) => void) => {
   });
 };
 
-// For active game, we can check if there's any game with isFinished = false?
-// Or we can treat active game as local-first for latency, then save?
-// The user wants "all data in Firebase". So we should sync active game too.
-// This allows multiple people to watch the score live!
-export const subscribeToActiveGame = (callback: (game: Game | null) => void) => {
-  // Assuming only one active game for simplicity for now, or we filter by recent?
-  // Let's query for the most recent unfinished game.
+export const subscribeToActiveGame = (leagueId: string, callback: (game: Game | null) => void) => {
   const q = query(
-    collection(db, GAMES_COLLECTION), 
+    collection(db, LEAGUES_COLLECTION, leagueId, GAMES_SUBCOLLECTION), 
     where("isFinished", "==", false)
-    // Removed orderBy to avoid index issues.
   );
   
   return onSnapshot(q, (snapshot) => {
@@ -87,9 +99,7 @@ export const subscribeToActiveGame = (callback: (game: Game | null) => void) => 
       callback(null);
     } else {
       const games = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Game));
-      // Sort to get most recent
       games.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      
       callback(games[0]);
     }
   }, (error) => {
@@ -97,7 +107,7 @@ export const subscribeToActiveGame = (callback: (game: Game | null) => void) => 
   });
 };
 
-export const createGameInDb = async (teamA: string[], teamB: string[]) => {
+export const createGameInDb = async (leagueId: string, teamA: string[], teamB: string[]) => {
   const newGame = {
     date: new Date().toISOString(),
     teamA,
@@ -108,18 +118,74 @@ export const createGameInDb = async (teamA: string[], teamB: string[]) => {
     isFinished: false,
   };
   
-  // Initialize stats object properly
   const stats: Record<string, any> = {};
   [...teamA, ...teamB].forEach(pid => {
     stats[pid] = { points: 0, assists: 0 };
   });
   newGame.playerStats = stats;
 
-  const docRef = await addDoc(collection(db, GAMES_COLLECTION), newGame);
+  const docRef = await addDoc(collection(db, LEAGUES_COLLECTION, leagueId, GAMES_SUBCOLLECTION), newGame);
+  
+  // Store the ID in the document so we can query it globally via collectionGroup
+  await updateDoc(docRef, { id: docRef.id });
+
   return { id: docRef.id, ...newGame };
 };
 
-export const updateGameInDb = async (gameId: string, updates: Partial<Game>) => {
-  const gameRef = doc(db, GAMES_COLLECTION, gameId);
+export const updateGameInDb = async (leagueId: string, gameId: string, updates: Partial<Game>) => {
+  const gameRef = doc(db, LEAGUES_COLLECTION, leagueId, GAMES_SUBCOLLECTION, gameId);
   await updateDoc(gameRef, updates);
+};
+
+// Use Collection Group for viewing a shared game by ID without knowing the league?
+// Or just require leagueId in context. Ideally we want shareable links.
+// For now, let's assume we can pass leagueId if we know it, or find it.
+// Actually, `subscribeToGame` is best implemented with matching leagueId.
+export const subscribeToGame = (leagueId: string, gameId: string, callback: (game: Game | null) => void) => {
+  if (!leagueId || !gameId) {
+      console.warn("subscribeToGame called with missing args", { leagueId, gameId });
+      callback(null);
+      return () => {};
+  }
+  const docRef = doc(db, LEAGUES_COLLECTION, leagueId, GAMES_SUBCOLLECTION, gameId);
+  return onSnapshot(docRef, (snapshot) => {
+    if (snapshot.exists()) {
+      callback({ id: snapshot.id, ...snapshot.data() } as Game);
+    } else {
+      callback(null);
+    }
+  }, (error) => {
+      console.error("Error subscribing to game:", error);
+      callback(null);
+  });
+};
+
+export const subscribeToGameGlobally = (gameId: string, callback: (game: Game | null) => void) => {
+  if (!gameId) {
+      console.warn("subscribeToGameGlobally called with undefined gameId");
+      callback(null);
+      return () => {};
+  }
+  
+  // Query by 'id' field instead of documentId() to avoid "Invalid document path" error for collectionGroup
+  // Note: This requires an index on 'id' for the 'games' collection group.
+  const q = query(
+      collectionGroup(db, GAMES_SUBCOLLECTION), 
+      where("id", "==", gameId) 
+  );
+  
+  console.log(`Subscribing globally to game: ${gameId}`);
+
+  return onSnapshot(q, (snapshot) => {
+    console.log(`Global snapshot for ${gameId}: ${snapshot.size} docs found`);
+    if (!snapshot.empty) {
+      const doc = snapshot.docs[0];
+      callback({ id: doc.id, ...doc.data() } as Game);
+    } else {
+      callback(null);
+    }
+  }, (error) => {
+      console.error("Error subscribing to global game:", error);
+      callback(null);
+  });
 };
