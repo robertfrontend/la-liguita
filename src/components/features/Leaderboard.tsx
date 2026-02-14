@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { Trophy, Award, TrendingUp, UserPlus, X, Check } from "lucide-react";
+import { Trophy, Award, TrendingUp, UserPlus, X, Check, ExternalLink } from "lucide-react";
 
 type SortKey = "points" | "assists" | "winRate";
 
@@ -63,6 +64,14 @@ export function Leaderboard() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-zinc-900 flex items-center gap-2">
             <span className="text-orange-500 text-xs font-black uppercase tracking-wider bg-orange-100 px-2 py-1 rounded-md">{activeLeague.name}</span>
+            <Link 
+                href={`/league/${activeLeague.id}/leaderboard`}
+                target="_blank"
+                className="ml-2 flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 hover:text-orange-500 bg-zinc-50 px-2 py-1 rounded-full hover:bg-orange-50 transition-colors border border-zinc-200"
+                title="Open Public Leaderboard"
+            >
+                Public <ExternalLink size={10} />
+            </Link>
         </h1>
         <button
           onClick={() => setIsAdding(!isAdding)}
