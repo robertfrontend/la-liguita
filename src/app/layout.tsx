@@ -12,7 +12,10 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "La Liguita - Street Basketball Stats",
-  description: "Track 3-on-3 street basketball stats among friends.",
+  description: "Track stats, climb the leaderboard, and dominate the game.",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({
