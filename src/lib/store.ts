@@ -46,7 +46,14 @@ export const useStore = create<StoreState>()(
       setPlayers: (players) => set({ players }),
       setHistory: (history) => set({ history }),
       setLeagues: (leagues) => set({ leagues }),
-      setActiveLeague: (activeLeague) => set({ activeLeague }),
+      setActiveLeague: (league) => {
+        set({ 
+            activeLeague: league,
+            activeGame: null,
+            players: [],
+            history: []
+        });
+      },
       
       setActiveGame: (incomingGame) => {
         const { activeGame } = get();
@@ -76,9 +83,14 @@ export const useStore = create<StoreState>()(
         set({ activeGame: incomingGame });
       },
 
-      createLeague: async (name, ownerId) => {
+      createLeague: async (name: string, ownerId: string) => {
         const newLeague = await createLeague(name, ownerId);
-        set({ activeLeague: newLeague }); // Auto-select new league
+        set({ 
+            activeLeague: newLeague,
+            players: [],
+            activeGame: null,
+            history: []
+        }); 
       },
 
       startGame: async (teamAIds, teamBIds) => {
