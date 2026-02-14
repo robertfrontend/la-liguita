@@ -74,7 +74,7 @@ export function LeagueSelector() {
       {isOpen && (
         <>
             <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-            <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-zinc-100 p-2 z-50 animate-in fade-in zoom-in-95 duration-200">
+            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-white rounded-xl shadow-xl border border-zinc-100 p-2 z-50 animate-in fade-in zoom-in-95 duration-200">
                 <div className="text-xs font-bold text-zinc-400 px-2 py-2 uppercase tracking-wider">My Leagues</div>
                 <div className="space-y-1 mb-2">
                     {leagues.map(league => (

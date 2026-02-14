@@ -10,13 +10,18 @@ export function TopNav() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-zinc-200 h-16 flex items-center justify-between px-4 shadow-sm">
-      <Link href="/" className="text-xl font-black tracking-tight text-zinc-900">
+      <Link href="/" className="text-xl font-black tracking-tight text-zinc-900 z-10 relative">
         La <span className="text-orange-500">Liguita</span>
       </Link>
       
-      {user ? (
-        <div className="flex items-center gap-3">
+      {user && (
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <LeagueSelector />
+        </div>
+      )}
+
+      {user ? (
+        <div className="flex items-center gap-3 z-10 relative">
           <button 
             onClick={() => {
               if(confirm("Log out?")) logout();
@@ -31,7 +36,7 @@ export function TopNav() {
           </button>
         </div>
       ) : (
-        <Link href="/login" className="px-4 py-2 text-sm font-medium text-orange-500 hover:text-orange-600 transition-colors">
+        <Link href="/login" className="px-4 py-2 text-sm font-medium text-orange-500 hover:text-orange-600 transition-colors z-10 relative">
           Login
         </Link>
       )}
