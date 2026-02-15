@@ -97,7 +97,7 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
   const handleFinish = async () => {
     if (confirm("Are you sure you want to finish the game?")) {
       await finishGame();
-      router.push("/");
+      router.push("/history");
     }
   };
 
