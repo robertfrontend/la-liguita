@@ -1,11 +1,31 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Allow read/write access on all documents to any user signed in to the application
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+    // Allow unauthenticated users to join the waitlist (create) and see the count (read)
+    match /early_access/{document=**} {
+      allow create, read: if true;
+    }
+
+    // 1. Allow anyone to READ leagues (public pages needs this)
+    // 2. Allow only authenticated users to WRITE (create/update leagues)
+    match /leagues/{leagueId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+
+      // 🚨 Subcollections must also explicitly allow public read!
+      
+      // Allow public to read games history
+      match /games/{gameId} {
+        allow read: if true;
+        allow write: if request.auth != null;
+      }
+      
+      // Allow public to read player stats/leaderboard
+      match /players/{playerId} {
+        allow read: if true;
+        allow write: if request.auth != null;
+      }
     }
   }
 }
