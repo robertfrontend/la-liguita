@@ -142,7 +142,16 @@ export const useStore = create<StoreState>()(
             ...updates
           },
         });
-        // DB update removed to save bandwidth/costs
+        
+        // Persist to DB immediately to prevent data loss on reload
+        const { activeLeague } = get();
+        const leagueId = activeGame.leagueId || activeLeague?.id;
+        if (leagueId) {
+             // We don't await this to keep UI snappy, but it runs in background
+             updateGameInDb(leagueId, activeGame.id, updates).catch(err => {
+                 console.error("Failed to persist stats:", err);
+             });
+        }
       },
 
       finishGame: async () => {

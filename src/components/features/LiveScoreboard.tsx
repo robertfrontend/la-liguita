@@ -252,9 +252,8 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
         {canEdit && (
             <div className="space-y-3">
                 <Button 
-                variant="destructive" 
+                className="w-full font-bold h-14 text-sm uppercase tracking-widest bg-blue-600 hover:bg-blue-700 text-white"
                 size="lg" 
-                className="w-full font-bold h-14 text-sm uppercase tracking-widest"
                 onClick={handleFinish}
                 >
                 <CheckCircle className="mr-2 h-5 w-5" />
