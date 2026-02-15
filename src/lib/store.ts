@@ -26,12 +26,13 @@ interface StoreState {
 
   // Actions
   createLeague: (name: string, ownerId: string) => Promise<void>;
-  startGame: (teamAIds: string[], teamBIds: string[]) => Promise<void>;
+  startGame: (teamAIds: string[], teamBIds: string[], teamAName?: string, teamBName?: string) => Promise<void>;
   updateStat: (playerId: string, type: 'pts' | 'ast', amount: number) => Promise<void>;
   finishGame: () => Promise<void>;
   resetActiveGame: () => void;
   addPlayer: (name: string) => Promise<void>;
   deleteGame: (gameId: string) => Promise<void>;
+  updateTeamName: (team: Team, name: string) => Promise<void>;
 }
 
 export const useStore = create<StoreState>()(
@@ -81,13 +82,13 @@ export const useStore = create<StoreState>()(
         set({ activeLeague: newLeague }); // Auto-select new league
       },
 
-      startGame: async (teamAIds, teamBIds) => {
+      startGame: async (teamAIds, teamBIds, teamAName = "Team A", teamBName = "Team B") => {
         const { activeLeague } = get();
         if (!activeLeague) {
             alert("Please select a league first");
             return;
         }
-        const newGame = await createGameInDb(activeLeague.id, teamAIds, teamBIds);
+        const newGame = await createGameInDb(activeLeague.id, teamAIds, teamBIds, teamAName, teamBName);
         set({ activeGame: newGame });
       },
 
@@ -149,7 +150,7 @@ export const useStore = create<StoreState>()(
         // Save FULL game state to DB now
         const finishedUpdates = { 
             isFinished: true, 
-            winner: winner || undefined,
+            winner: winner || null,
             scoreA: activeGame.scoreA,
             scoreB: activeGame.scoreB,
             playerStats: activeGame.playerStats
@@ -203,6 +204,39 @@ export const useStore = create<StoreState>()(
         
         const { history } = get();
         set({ history: history.filter(g => g.id !== gameId) });
+      },
+
+      updateTeamName: async (team: Team, name: string) => {
+        const { activeGame, activeLeague } = get();
+        if (!activeGame) {
+            console.error("No active game found in store");
+            return;
+        }
+
+        const leagueId = activeGame.leagueId || activeLeague?.id;
+
+        if (!leagueId) {
+            console.error("No league ID found for updating team name. Game:", activeGame, "League:", activeLeague);
+            alert("Error: Cannot save team name. Missing league context.");
+            return;
+        }
+
+        const updates = team === 'A' ? { teamAName: name } : { teamBName: name };
+
+        // Optimistic update
+        set({
+            activeGame: {
+                ...activeGame,
+                ...updates
+            }
+        });
+
+        // Persist to DB
+        try {
+            await updateGameInDb(leagueId, activeGame.id, updates);
+        } catch (error) {
+            console.error("Failed to update team name in DB:", error);
+        }
       }
     }),
     {
