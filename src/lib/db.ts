@@ -264,3 +264,13 @@ export const saveEarlyAccessEmail = async (email: string) => {
     createdAt: new Date().toISOString(),
   });
 };
+
+export const subscribeToEarlyAccessCount = (callback: (count: number) => void) => {
+  const q = collection(db, "early_access");
+  return onSnapshot(q, (snapshot) => {
+    callback(snapshot.size);
+  }, (error) => {
+    console.error("Error subscribing to early access count:", error);
+    callback(0);
+  });
+};

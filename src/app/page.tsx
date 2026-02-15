@@ -3,14 +3,23 @@
 import Link from "next/link";
 import { Trophy, PlayCircle, CheckCircle2, ArrowRight } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { useState } from "react";
-import { saveEarlyAccessEmail } from "@/lib/db";
+import { saveEarlyAccessEmail, subscribeToEarlyAccessCount } from "@/lib/db";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const { user, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [hasJoined, setHasJoined] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [totalJoined, setTotalJoined] = useState(0);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToEarlyAccessCount((count) => {
+      setTotalJoined(count);
+    });
+    return () => unsubscribe();
+
+  }, []);
 
   const handleEarlyAccess = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,17 +93,43 @@ export default function Home() {
   return (
     <div className="flex flex-col bg-white min-h-[calc(100vh-4rem)]">
       {/* Hero Section */}
-      <section className="flex flex-col items-center justify-center p-8 text-center pt-20 pb-12">
+      {/* Hero Section */}
+      <section className="flex flex-col items-center justify-center p-8 text-center pt-20 pb-16">
         <h1 className="text-4xl md:text-5xl font-black tracking-tight text-zinc-900 mb-6 max-w-2xl leading-tight">
           Track Your Street <span className="text-orange-500">Basketball</span> Legacy.
         </h1>
-        <p className="text-lg md:text-xl text-zinc-500 max-w-xl mx-auto mb-8 leading-relaxed">
+        <p className="text-lg md:text-xl text-zinc-500 max-w-xl mx-auto mb-10 leading-relaxed">
           La Liguita is the professional stats tracker for your casual games. Create leagues, track points & assists, and see who really owns the court.
         </p>
+
+        <div className="max-w-lg w-full mb-12">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-400 mb-4">
+              {totalJoined > 0 ? (
+                <>Join <span className="text-orange-500">{totalJoined}</span> others on the Waitlist</>
+              ) : (
+                "Join the Waitlist"
+              )}
+            </h2>
+            
+            {hasJoined ? (
+                <div className="bg-green-50 text-green-700 p-4 rounded-xl flex items-center justify-center gap-2 font-medium border border-green-100 animate-in fade-in zoom-in-95">
+                <CheckCircle2 size={20} />
+                You're on the list! We'll be in touch.
+                </div>
+            ) : (
+                <EarlyAccesForm email={email} setEmail={setEmail} isSubmitting={isSubmitting} handleEarlyAccess={handleEarlyAccess}/>
+            )}
+            
+            <div className="mt-4">
+                <Link href="/login" className="text-sm font-medium text-zinc-400 hover:text-orange-500 transition-colors">
+                    Already have an invited account? <span className="underline decoration-dotted">Log in here</span>
+                </Link>
+            </div>
+        </div>
       </section>
 
       {/* How it Works */}
-      <section className="bg-zinc-50 py-16 px-6">
+      <section className="bg-zinc-50 py-16 px-6 border-t border-zinc-100">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-bold text-center text-zinc-900 mb-12">How It Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -113,30 +148,6 @@ export default function Home() {
               <h3 className="font-bold text-lg mb-2">Climb the Ranks</h3>
               <p className="text-zinc-500 text-sm">Automatic leaderboards for wins, MVPs, and top scorers.</p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Early Access Form */}
-      <section className="py-16 px-6 flex flex-col items-center text-center bg-white">
-        <div className="max-w-lg w-full">
-          <h2 className="text-3xl font-extrabold text-zinc-900 mb-4">Join the Waitlist</h2>
-          <p className="text-zinc-500 mb-8">
-            We are currently in private beta. Sign up to get notified when we open up more spots.
-          </p>
-          
-          {hasJoined ? (
-            <div className="bg-green-50 text-green-700 p-4 rounded-xl flex items-center justify-center gap-2 font-medium border border-green-100 animate-in fade-in zoom-in-95">
-              <CheckCircle2 size={20} />
-              You're on the list! We'll be in touch.
-            </div>
-          ) : (
-            <EarlyAccesForm email={email} setEmail={setEmail} isSubmitting={isSubmitting} handleEarlyAccess={handleEarlyAccess}/>
-          )}
-          <div className="mt-8 pt-8 border-t border-zinc-100">
-             <Link href="/login" className="text-sm font-medium text-zinc-400 hover:text-orange-500 transition-colors">
-                Already have an invited account? <span className="underline decoration-dotted">Log in here</span>
-             </Link>
           </div>
         </div>
       </section>

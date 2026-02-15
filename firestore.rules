@@ -2,9 +2,9 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Allow unauthenticated users to join the waitlist
+    // Allow unauthenticated users to join the waitlist (create) and see the count (read)
     match /early_access/{document=**} {
-      allow create: if true;
+      allow create, read: if true;
     }
 
     // 1. Allow anyone to READ leagues (public pages needs this)
