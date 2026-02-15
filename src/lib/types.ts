@@ -20,11 +20,14 @@ export type Game = {
   date: string;
   teamA: string[]; // Player IDs
   teamB: string[]; // Player IDs
+  teamAName?: string;
+  teamBName?: string;
   playerStats: Record<string, GameStats>; // Maps player ID to stats for this game
   scoreA: number;
   scoreB: number;
-  winner?: Team;
+  winner?: Team | null;
   isFinished: boolean;
+  leagueId?: string;
 };
 
 export type League = {

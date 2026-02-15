@@ -63,65 +63,70 @@ export default function HistoryPage() {
           {history.map((game) => {
             const isTeamAWinner = game.scoreA > game.scoreB;
             return (
-              <div key={game.id} className="bg-white rounded-xl p-4 border border-zinc-200 shadow-sm">
-                <div className="flex justify-between items-center mb-4 text-xs text-zinc-400 uppercase tracking-widest font-bold">
-                   <div className="flex items-center gap-3">
-                       <button 
-                           onClick={() => handleDelete(game.id)} 
-                           className="w-8 h-8 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors shadow-sm"
-                           title="Delete Game"
-                       >
-                           <Trash2 className="w-4 h-4" />
-                       </button>
-                       <span>{new Date(game.date).toLocaleDateString()}</span>
-                   </div>
-                   <span className={isTeamAWinner ? "text-orange-600" : "text-blue-600"}>
-                     {isTeamAWinner ? "Team A Won" : "Team B Won"}
-                   </span>
-                </div>
-
-                <div className="flex justify-between items-center mb-6">
-                  <div className="text-center w-1/3">
-                    <div className="text-3xl font-black text-orange-500 tracking-tighter">{game.scoreA}</div>
-                    <div className="text-[10px] text-zinc-400 mt-1 uppercase font-bold tracking-widest">TEAM A</div>
+              <Link href={`/history/${game.id}`} key={game.id} className="block group">
+                <div className="bg-white rounded-xl p-4 border border-zinc-200 shadow-sm group-hover:border-orange-500/50 transition-colors">
+                  <div className="flex justify-between items-center mb-4 text-xs text-zinc-400 uppercase tracking-widest font-bold">
+                     <div className="flex items-center gap-3">
+                         <button 
+                             onClick={(e) => {
+                                 e.preventDefault();
+                                 handleDelete(game.id);
+                             }} 
+                             className="w-8 h-8 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors shadow-sm"
+                             title="Delete Game"
+                         >
+                             <Trash2 className="w-4 h-4" />
+                         </button>
+                         <span>{new Date(game.date).toLocaleDateString()}</span>
+                     </div>
+                     <span className={isTeamAWinner ? "text-orange-600" : "text-blue-600"}>
+                       {isTeamAWinner ? `${game.teamAName || "Team A"} Won` : `${game.teamBName || "Team B"} Won`}
+                     </span>
                   </div>
-                  <div className="text-zinc-200 font-bold italic text-xl">VS</div>
-                  <div className="text-center w-1/3">
-                    <div className="text-3xl font-black text-blue-600 tracking-tighter">{game.scoreB}</div>
-                    <div className="text-[10px] text-zinc-400 mt-1 uppercase font-bold tracking-widest">TEAM B</div>
+
+                  <div className="flex justify-between items-center mb-6">
+                    <div className="text-center w-1/3">
+                      <div className="text-3xl font-black text-orange-500 tracking-tighter">{game.scoreA}</div>
+                      <div className="text-[10px] text-zinc-400 mt-1 uppercase font-bold tracking-widest truncate">{game.teamAName || "TEAM A"}</div>
+                    </div>
+                    <div className="text-zinc-200 font-bold italic text-xl">VS</div>
+                    <div className="text-center w-1/3">
+                      <div className="text-3xl font-black text-blue-600 tracking-tighter">{game.scoreB}</div>
+                      <div className="text-[10px] text-zinc-400 mt-1 uppercase font-bold tracking-widest truncate">{game.teamBName || "TEAM B"}</div>
+                    </div>
+                  </div>
+
+                  {/* Player Stats Summary */}
+                  <div className="space-y-2 border-t border-zinc-100 pt-4">
+                     <div className="grid grid-cols-2 gap-4 text-xs">
+                        <div>
+                            <h4 className="text-orange-600 font-bold mb-2 uppercase tracking-wider truncate">{game.teamAName || "Team A"}</h4>
+                            {game.teamA.map(pid => {
+                                const stats = game.playerStats[pid] || { points: 0, assists: 0 };
+                                return (
+                                    <div key={pid} className="flex justify-between mb-1 text-zinc-600">
+                                        <span className="font-medium">{getPlayerName(pid)}</span>
+                                        <span className="font-mono text-zinc-400">{stats.points}pts</span>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                        <div>
+                            <h4 className="text-blue-600 font-bold mb-2 uppercase tracking-wider truncate">{game.teamBName || "Team B"}</h4>
+                            {game.teamB.map(pid => {
+                                const stats = game.playerStats[pid] || { points: 0, assists: 0 };
+                                return (
+                                    <div key={pid} className="flex justify-between mb-1 text-zinc-600">
+                                        <span className="font-medium">{getPlayerName(pid)}</span>
+                                        <span className="font-mono text-zinc-400">{stats.points}pts</span>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                     </div>
                   </div>
                 </div>
-
-                {/* Player Stats Summary */}
-                <div className="space-y-2 border-t border-zinc-100 pt-4">
-                   <div className="grid grid-cols-2 gap-4 text-xs">
-                      <div>
-                          <h4 className="text-orange-600 font-bold mb-2 uppercase tracking-wider">Team A</h4>
-                          {game.teamA.map(pid => {
-                              const stats = game.playerStats[pid] || { points: 0, assists: 0 };
-                              return (
-                                  <div key={pid} className="flex justify-between mb-1 text-zinc-600">
-                                      <span className="font-medium">{getPlayerName(pid)}</span>
-                                      <span className="font-mono text-zinc-400">{stats.points}pts</span>
-                                  </div>
-                              )
-                          })}
-                      </div>
-                      <div>
-                          <h4 className="text-blue-600 font-bold mb-2 uppercase tracking-wider">Team B</h4>
-                          {game.teamB.map(pid => {
-                              const stats = game.playerStats[pid] || { points: 0, assists: 0 };
-                              return (
-                                  <div key={pid} className="flex justify-between mb-1 text-zinc-600">
-                                      <span className="font-medium">{getPlayerName(pid)}</span>
-                                      <span className="font-mono text-zinc-400">{stats.points}pts</span>
-                                  </div>
-                              )
-                          })}
-                      </div>
-                   </div>
-                </div>
-              </div>
+              </Link>
             );
           })}
         </div>

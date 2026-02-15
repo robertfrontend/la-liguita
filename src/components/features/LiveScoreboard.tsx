@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Pencil } from "lucide-react";
 import { Team, Game } from "@/lib/types";
 import { subscribeToGameGlobally, subscribeToGame } from "@/lib/db";
 
 export function LiveScoreboard({ gameId }: { gameId: string }) {
   const router = useRouter();
-  const { activeGame, activeLeague, players, updateStat, finishGame } = useStore();
+  const { activeGame, activeLeague, players, updateStat, finishGame, updateTeamName } = useStore();
   const [game, setGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(true);
   const [debugError, setDebugError] = useState<string | null>(null);
@@ -97,7 +97,7 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
   const handleFinish = async () => {
     if (confirm("Are you sure you want to finish the game?")) {
       await finishGame();
-      router.push("/");
+      router.push("/history");
     }
   };
 
@@ -158,6 +158,43 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
 
   const isWinnerA = game.isFinished && game.scoreA > game.scoreB;
   const isWinnerB = game.isFinished && game.scoreB > game.scoreA;
+  
+  const EditableTeamName = ({ team, currentName, isWinner }: { team: 'A' | 'B', currentName?: string, isWinner: boolean }) => {
+      const [isEditing, setIsEditing] = useState(false);
+      const [name, setName] = useState(currentName || (team === 'A' ? "Team A" : "Team B"));
+      
+      const handleSave = () => {
+          if (name.trim()) {
+              updateTeamName(team, name.trim());
+          }
+          setIsEditing(false);
+      };
+
+      if (isEditing) {
+          return (
+              <div className="flex items-center gap-1 mb-1 justify-center w-full">
+                  <input
+                      autoFocus
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      onBlur={handleSave}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                      className="w-full text-center text-lg font-black uppercase tracking-tight border-b-2 border-orange-500 outline-none bg-transparent"
+                  />
+              </div>
+          );
+      }
+
+      return (
+          <div className="flex items-center gap-2 mb-1 group cursor-pointer hover:bg-zinc-50 px-2 py-1 rounded-lg transition-colors" onClick={() => canEdit && setIsEditing(true)}>
+             <span className={cn("text-sm md:text-md font-black uppercase tracking-wider", isWinner ? (team === 'A' ? "text-orange-600" : "text-blue-600") : "text-zinc-500")}>
+                 {currentName || (team === 'A' ? "Team A" : "Team B")}
+             </span>
+             {canEdit && <Pencil size={14} className="text-zinc-300 group-hover:text-zinc-900 transition-colors" />}
+          </div>
+      );
+  };
 
   return (
     <div className="min-h-screen bg-white pb-32">
@@ -178,7 +215,7 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
 
         <div className="flex justify-between items-center max-w-md mx-auto">
           <div className="flex flex-col items-center w-1/3">
-            <span className={cn("text-xs font-bold mb-1 uppercase tracking-widest", isWinnerA ? "text-orange-600" : "text-zinc-500 md:text-orange-500")}>Team A</span>
+            <EditableTeamName team="A" currentName={game.teamAName} isWinner={isWinnerA} />
             <span className="text-4xl font-black text-orange-500 tracking-tighter">{game.scoreA}</span>
             {isWinnerA && <span className="text-[10px] text-white bg-orange-500 px-2 py-0.5 rounded-full mt-1 font-bold uppercase">Winner</span>}
           </div>
@@ -186,7 +223,7 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
           <div className="text-zinc-300 font-black text-xl italic opacity-50">VS</div>
           
           <div className="flex flex-col items-center w-1/3">
-            <span className={cn("text-xs font-bold mb-1 uppercase tracking-widest", isWinnerB ? "text-blue-600" : "text-zinc-500 md:text-blue-600")}>Team B</span>
+            <EditableTeamName team="B" currentName={game.teamBName} isWinner={isWinnerB} />
             <span className="text-4xl font-black text-blue-600 tracking-tighter">{game.scoreB}</span>
             {isWinnerB && <span className="text-[10px] text-white bg-blue-600 px-2 py-0.5 rounded-full mt-1 font-bold uppercase">Winner</span>}
           </div>
@@ -196,7 +233,7 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
       <div className="max-w-md mx-auto p-4 space-y-8">
         {/* Team A Roster */}
         <div>
-          <h3 className="text-xs font-bold text-orange-500 uppercase tracking-widest mb-3 pl-1">Team A</h3>
+          <h3 className="text-xs font-bold text-orange-500 uppercase tracking-widest mb-3 pl-1">{game.teamAName || "Team A"}</h3>
           {game.teamA.map(pid => (
             <PlayerRow key={pid} playerId={pid} team="A" />
           ))}
@@ -204,7 +241,7 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
 
         {/* Team B Roster */}
         <div>
-          <h3 className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-3 pl-1">Team B</h3>
+          <h3 className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-3 pl-1">{game.teamBName || "Team B"}</h3>
           {game.teamB.map(pid => (
             <PlayerRow key={pid} playerId={pid} team="B" />
           ))}

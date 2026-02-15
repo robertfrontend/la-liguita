@@ -14,7 +14,8 @@ export function GameSetup() {
   const [step, setStep] = useState<"select" | "teams">("select");
   const [teamA, setTeamA] = useState<string[]>([]);
   const [teamB, setTeamB] = useState<string[]>([]);
-  // ... other existing state ...
+  const [teamAName, setTeamAName] = useState("Team A");
+  const [teamBName, setTeamBName] = useState("Team B");
   const [isMounted, setIsMounted] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [newPlayerName, setNewPlayerName] = useState("");
@@ -100,7 +101,7 @@ export function GameSetup() {
   };
 
   const handleStartGame = () => {
-    startGame(teamA, teamB);
+    startGame(teamA, teamB, teamAName, teamBName);
     setTimeout(() => {
         const gameId = useStore.getState().activeGame?.id;
         if (gameId) router.push(`/game/${gameId}`);
@@ -214,10 +215,15 @@ export function GameSetup() {
 
         <div className="space-y-6 mb-8">
           <div className="bg-white rounded-xl p-4 border border-zinc-200 shadow-sm">
-            <h3 className="text-orange-500 font-bold mb-3 uppercase tracking-wider text-sm flex justify-between">
-                Team A
+            <div className="flex justify-between items-center mb-3">
+                <input
+                    type="text"
+                    value={teamAName}
+                    onChange={(e) => setTeamAName(e.target.value)}
+                    className="text-orange-500 font-bold uppercase tracking-wider text-sm bg-transparent border-b border-transparent focus:border-orange-500 hover:border-zinc-200 outline-none w-32 transition-colors"
+                />
                 <span className="text-xs text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-full">Tap to swap</span>
-            </h3>
+            </div>
             <div className="space-y-2">
               {teamA.map(id => {
                  const p = players.find(x => x.id === id);
@@ -244,10 +250,15 @@ export function GameSetup() {
           </div>
 
           <div className="bg-white rounded-xl p-4 border border-zinc-200 shadow-sm">
-            <h3 className="text-blue-500 font-bold mb-3 uppercase tracking-wider text-sm flex justify-between">
-                Team B
+            <div className="flex justify-between items-center mb-3">
+                <input
+                    type="text"
+                    value={teamBName}
+                    onChange={(e) => setTeamBName(e.target.value)}
+                    className="text-blue-500 font-bold uppercase tracking-wider text-sm bg-transparent border-b border-transparent focus:border-blue-500 hover:border-zinc-200 outline-none w-32 transition-colors"
+                />
                 <span className="text-xs text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-full">Tap to swap</span>
-            </h3>
+            </div>
             <div className="space-y-2">
               {teamB.map(id => {
                  const p = players.find(x => x.id === id);

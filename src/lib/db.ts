@@ -129,16 +129,21 @@ export const subscribeToActiveGame = (leagueId: string, callback: (game: Game | 
   });
 };
 
-export const createGameInDb = async (leagueId: string, teamA: string[], teamB: string[]) => {
+export const createGameInDb = async (leagueId: string, teamA: string[], teamB: string[], teamAName: string = "Team A", teamBName: string = "Team B") => {
   const newGame = {
     date: new Date().toISOString(),
     teamA,
     teamB,
+    teamAName,
+    teamBName,
     playerStats: {}, 
     scoreA: 0,
     scoreB: 0,
     isFinished: false,
+    leagueId,
   };
+  
+  console.log("Creating game in DB:", newGame);
   
   const stats: Record<string, any> = {};
   [...teamA, ...teamB].forEach(pid => {
@@ -155,6 +160,7 @@ export const createGameInDb = async (leagueId: string, teamA: string[], teamB: s
 };
 
 export const updateGameInDb = async (leagueId: string, gameId: string, updates: Partial<Game>) => {
+  console.log(`Updating game ${gameId} in league ${leagueId} with:`, updates);
   const gameRef = doc(db, LEAGUES_COLLECTION, leagueId, GAMES_SUBCOLLECTION, gameId);
   await updateDoc(gameRef, updates);
 };
