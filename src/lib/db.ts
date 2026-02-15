@@ -245,7 +245,11 @@ export const subscribeToGameGlobally = (gameId: string, callback: (game: Game | 
     console.log(`Global snapshot for ${gameId}: ${snapshot.size} docs found`);
     if (!snapshot.empty) {
       const doc = snapshot.docs[0];
-      callback({ id: doc.id, ...doc.data() } as Game);
+      const data = doc.data();
+      // Ensure we have a leagueId, extracting from path if necessary (leagues/{leagueId}/games/{gameId})
+      const leagueId = data.leagueId || doc.ref.parent.parent?.id;
+      
+      callback({ id: doc.id, ...data, leagueId } as Game);
     } else {
       callback(null);
     }
