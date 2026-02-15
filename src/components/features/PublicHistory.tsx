@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Game, League, Player } from "@/lib/types";
 import { subscribeToLeague, subscribeToHistory, subscribeToPlayers } from "@/lib/db";
 import { CalendarDays, Trophy } from "lucide-react";
+import Link from "next/link";
 
 export function PublicHistory({ leagueId }: { leagueId: string }) {
   const [league, setLeague] = useState<League | null>(null);
@@ -63,7 +64,8 @@ export function PublicHistory({ leagueId }: { leagueId: string }) {
              history.map((game) => {
                 const isTeamAWinner = game.scoreA > game.scoreB;
                 return (
-                  <div key={game.id} className="bg-white rounded-xl p-4 border border-zinc-200 shadow-sm">
+                  <Link href={`/history/${game.id}`} key={game.id} className="block group">
+                  <div className="bg-white rounded-xl p-4 border border-zinc-200 shadow-sm group-hover:border-orange-500/50 transition-colors">
                     <div className="flex justify-between items-center mb-4 text-xs text-zinc-400 uppercase tracking-widest font-bold">
                        <span>{new Date(game.date).toLocaleDateString()}</span>
                        <span className={isTeamAWinner ? "text-orange-600" : "text-blue-600"}>
@@ -113,6 +115,7 @@ export function PublicHistory({ leagueId }: { leagueId: string }) {
                        </div>
                     </div>
                   </div>
+                  </Link>
                 );
              })
           )}

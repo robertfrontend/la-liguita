@@ -7,6 +7,11 @@ service cloud.firestore {
       allow create, read: if true;
     }
 
+    // Explicitly allow collection group queries for games
+    match /{path=**}/games/{gameId} {
+      allow read: if true;
+    }
+
     // 1. Allow anyone to READ leagues (public pages needs this)
     // 2. Allow only authenticated users to WRITE (create/update leagues)
     match /leagues/{leagueId} {
