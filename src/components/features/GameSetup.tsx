@@ -22,6 +22,8 @@ export function GameSetup() {
   const [selectedSwapId, setSelectedSwapId] = useState<string | null>(null);
 
   useEffect(() => {
+    // Reset any active game state when starting a new setup
+    useStore.getState().resetActiveGame();
     setIsMounted(true);
   }, []);
 
@@ -100,12 +102,10 @@ export function GameSetup() {
     }
   };
 
-  const handleStartGame = () => {
-    startGame(teamA, teamB, teamAName, teamBName);
-    setTimeout(() => {
-        const gameId = useStore.getState().activeGame?.id;
-        if (gameId) router.push(`/game/${gameId}`);
-    }, 100);
+  const handleStartGame = async () => {
+    await startGame(teamA, teamB, teamAName, teamBName);
+    const gameId = useStore.getState().activeGame?.id;
+    if (gameId) router.push(`/game/${gameId}`);
   };
 
   if (step === "select") {

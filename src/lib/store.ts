@@ -68,10 +68,14 @@ export const useStore = create<StoreState>()(
            }
         }
         // If local thinks we are playing, but DB says null (not found yet? or finished?), keep local
-        // This handles the case where a game is just created locally, but the DB subscription hasn't caught up,
-        // or if the DB somehow reports no active game while the local state still has one that's not finished.
         if (activeGame && !activeGame.isFinished && incomingGame === null) {
             return;
+        }
+
+        // PROTECTION: If we have a newer active game locally, don't let an older DB game overwrite it
+        // This handles race conditions where creating a new game hasn't propagated to the subscription yet
+        if (activeGame && incomingGame && new Date(activeGame.date).getTime() > new Date(incomingGame.date).getTime()) {
+             return;
         }
 
         set({ activeGame: incomingGame });
