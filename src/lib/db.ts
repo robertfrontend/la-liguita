@@ -248,3 +248,19 @@ export const subscribeToGameGlobally = (gameId: string, callback: (game: Game | 
       callback(null);
   });
 };
+// --- Early Access ---
+
+export const saveEarlyAccessEmail = async (email: string) => {
+  if (!email) return;
+  
+  // Use email as doc ID to prevent duplicates if we want, or just addDoc allow duplicates.
+  // Let's use addDoc for now but query first? 
+  // No, just addDoc is fine, or simple duplicate check.
+  // Actually, let's use the email as the document ID so they can't sign up twice easily
+  // But emails might have special chars illegal in doc IDs... better to use addDoc.
+  
+  await addDoc(collection(db, "early_access"), {
+    email: email,
+    createdAt: new Date().toISOString(),
+  });
+};
