@@ -133,24 +133,30 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
         </div>
 
         {canEdit && (
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-1">
             <button
                 onClick={() => updateStat(playerId, 'pts', 1)}
-                className="bg-white hover:bg-orange-500 hover:text-white hover:border-orange-500 text-zinc-700 py-2 rounded-md font-bold text-xs transition-colors border border-zinc-200 shadow-sm"
+                className="bg-white hover:bg-orange-500 hover:text-white hover:border-orange-500 text-zinc-700 py-2 rounded-md font-bold text-[10px] md:text-xs transition-colors border border-zinc-200 shadow-sm"
             >
                 +1 PTS
             </button>
             <button
                 onClick={() => updateStat(playerId, 'pts', -1)}
-                className="bg-white hover:bg-red-500 hover:text-white hover:border-red-500 text-zinc-700 py-2 rounded-md font-bold text-xs transition-colors border border-zinc-200 shadow-sm"
+                className="bg-white hover:bg-red-500 hover:text-white hover:border-red-500 text-zinc-700 py-2 rounded-md font-bold text-[10px] md:text-xs transition-colors border border-zinc-200 shadow-sm"
             >
                 -1 PTS
             </button>
             <button
                 onClick={() => updateStat(playerId, 'ast', 1)}
-                className="bg-white hover:bg-blue-500 hover:text-white hover:border-blue-500 text-zinc-700 py-2 rounded-md font-bold text-xs transition-colors border border-zinc-200 shadow-sm"
+                className="bg-white hover:bg-blue-500 hover:text-white hover:border-blue-500 text-zinc-700 py-2 rounded-md font-bold text-[10px] md:text-xs transition-colors border border-zinc-200 shadow-sm"
             >
-                AST
+                +1 AST
+            </button>
+            <button
+                onClick={() => updateStat(playerId, 'ast', -1)}
+                className="bg-white hover:bg-red-500 hover:text-white hover:border-red-500 text-zinc-700 py-2 rounded-md font-bold text-[10px] md:text-xs transition-colors border border-zinc-200 shadow-sm"
+            >
+                -1 AST
             </button>
             </div>
         )}
