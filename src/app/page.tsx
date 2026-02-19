@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Trophy, PlayCircle, CheckCircle2, ArrowRight } from "lucide-react";
+import { Trophy, PlayCircle, CheckCircle2, ArrowRight, Github } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { saveEarlyAccessEmail, subscribeToEarlyAccessCount } from "@/lib/db";
 import { useEffect, useState } from "react";
@@ -93,8 +93,17 @@ export default function Home() {
   return (
     <div className="flex flex-col bg-white min-h-[calc(100vh-4rem)]">
       {/* Hero Section */}
-      {/* Hero Section */}
       <section className="flex flex-col items-center justify-center p-8 text-center pt-20 pb-16">
+        <a 
+          href="https://github.com/robertfrontend/la-liguita" 
+          target="_blank" 
+          rel="noreferrer"
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 text-zinc-600 text-sm font-medium mb-6 hover:bg-zinc-200 transition-colors"
+        >
+          <Github size={16} />
+          <span>Star us on GitHub</span>
+        </a>
+
         <h1 className="text-4xl md:text-5xl font-black tracking-tight text-zinc-900 mb-6 max-w-2xl leading-tight">
           Track Your Street <span className="text-orange-500">Basketball</span> Legacy.
         </h1>
@@ -152,8 +161,13 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="py-8 text-center text-xs text-zinc-400 bg-zinc-50 border-t border-zinc-100">
-         <p>Created by <a href="https://linkedin.com/in/robertfrontend" target="_blank" rel="noopener noreferrer" className="text-zinc-600 font-bold hover:text-orange-500 transition-colors">RobertFrontend</a> with ❤️</p>
+      <div className="py-8 bg-zinc-50 border-t border-zinc-100 flex flex-col items-center justify-center gap-4">
+         <p className="text-xs text-zinc-400">Created by <a href="https://linkedin.com/in/robertfrontend" target="_blank" rel="noopener noreferrer" className="text-zinc-600 font-bold hover:text-orange-500 transition-colors">RobertFrontend</a> with ❤️</p>
+         
+         <a href="https://github.com/robertfrontend/la-liguita" target="_blank" rel="noopener noreferrer" className="text-zinc-400 hover:text-zinc-900 transition-colors flex items-center gap-2 text-sm">
+            <Github size={18} />
+            <span className="font-medium">Open Source</span>
+         </a>
       </div>
     </div>
   );

@@ -32,7 +32,7 @@ Built with **Next.js**, **Firebase**, and **Tailwind CSS**.
 
 1.  **Clone the repository**:
     ```bash
-    git clone https://github.com/yourusername/la-liguita.git
+    git clone https://github.com/robertfrontend/la-liguita.git
     cd la-liguita
     ```
 

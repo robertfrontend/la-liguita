@@ -7,7 +7,7 @@ Thank you for your interest in contributing to La Liguita! We welcome contributi
 1.  **Fork the repository** on GitHub.
 2.  **Clone your fork** locally:
     ```bash
-    git clone https://github.com/Start-End-Labs/la-liguita.git
+    git clone https://github.com/robertfrontend/la-liguita.git
     cd la-liguita
     ```
 3.  **Install dependencies**:
