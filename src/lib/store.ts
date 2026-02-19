@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Game, Player, Team, League } from './types';
+import type { Game, Player, Team, League, Sport } from './types';
 import { 
   addPlayerToDb, 
   createGameInDb, 
@@ -25,7 +25,7 @@ interface StoreState {
   setActiveLeague: (league: League | null) => void;
 
   // Actions
-  createLeague: (name: string, ownerId: string) => Promise<void>;
+  createLeague: (name: string, ownerId: string, sport: Sport) => Promise<void>;
   startGame: (teamAIds: string[], teamBIds: string[], teamAName?: string, teamBName?: string) => Promise<void>;
   updateStat: (playerId: string, type: 'pts' | 'ast', amount: number) => Promise<void>;
   finishGame: () => Promise<void>;
@@ -88,14 +88,15 @@ export const useStore = create<StoreState>()(
         set({ activeGame: incomingGame });
       },
 
-      createLeague: async (name: string, ownerId: string) => {
-        const newLeague = await createLeague(name, ownerId);
+      createLeague: async (name, ownerId, sport) => {
+        const newLeague = await createLeague(name, ownerId, sport);
         set({ 
             activeLeague: newLeague,
             players: [],
             activeGame: null,
             history: []
-        }); 
+        });
+      },
       },
 
       startGame: async (teamAIds, teamBIds, teamAName = "Team A", teamBName = "Team B") => {

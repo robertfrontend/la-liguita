@@ -47,8 +47,8 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
                             }
                             setLoading(false);
                         });
-                    } catch (e: any) {
-                        setDebugError(e.message);
+                    } catch (e) {
+                        setDebugError(e instanceof Error ? e.message : String(e));
                         setLoading(false);
                     }
                 }
@@ -69,8 +69,8 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
             }
             setLoading(false);
         });
-    } catch (e: any) {
-         setDebugError(e.message);
+    } catch (e) {
+         setDebugError(e instanceof Error ? e.message : String(e));
          setLoading(false);
     }
 
@@ -96,6 +96,12 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
   const canEdit = activeGame?.id === game.id;
   const getPlayer = (id: string) => players.find((p) => p.id === id);
 
+  const isBasketball = game.sport !== 'soccer';
+  const teamAColor = isBasketball ? "text-orange-500" : "text-green-600";
+  const teamAColorWinner = isBasketball ? "text-orange-600" : "text-green-600";
+  const teamAColorBg = isBasketball ? "bg-orange-500" : "bg-green-600";
+  const teamAColorBorder = isBasketball ? "border-l-orange-500" : "border-l-green-600";
+
   const handleFinish = async () => {
     if (confirm("Are you sure you want to finish the game?")) {
       await finishGame();
@@ -110,10 +116,13 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
     const displayName = player ? player.name : "Unknown";
     const displayAvatar = player ? (player.avatar || player.name.substring(0, 2)) : "?";
 
+    const pointLabel = isBasketball ? 'PTS' : 'GLS';
+    const assistLabel = 'AST';
+
     return (
       <div className={cn(
         "bg-white rounded-xl p-3 border mb-3 shadow-sm",
-        team === 'A' ? "border-l-4 border-l-orange-500 border-zinc-200" : "border-l-4 border-l-blue-500 border-zinc-200",
+        team === 'A' ? cn("border-l-4 border-zinc-200", teamAColorBorder) : "border-l-4 border-l-blue-500 border-zinc-200",
       )}>
         <div className="flex justify-between items-center mb-3">
           <div className="flex items-center gap-3">
@@ -123,7 +132,7 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
             <div>
               <div className="font-bold text-sm text-zinc-900">{displayName}</div>
               <div className="text-[10px] text-zinc-500 uppercase tracking-wider">
-                {stats.points} PTS • {stats.assists} AST
+                {stats.points} {pointLabel} • {stats.assists} {assistLabel}
               </div>
             </div>
           </div>
@@ -136,27 +145,30 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
             <div className="grid grid-cols-4 gap-1">
             <button
                 onClick={() => updateStat(playerId, 'pts', 1)}
-                className="bg-white hover:bg-orange-500 hover:text-white hover:border-orange-500 text-zinc-700 py-2 rounded-md font-bold text-[10px] md:text-xs transition-colors border border-zinc-200 shadow-sm"
+                className={cn(
+                    "bg-white hover:text-white py-2 rounded-md font-bold text-[10px] md:text-xs transition-colors border border-zinc-200 shadow-sm",
+                    isBasketball ? "hover:bg-orange-500 hover:border-orange-500" : "hover:bg-green-600 hover:border-green-600"
+                )}
             >
-                +1 PTS
+                +1 {pointLabel}
             </button>
             <button
                 onClick={() => updateStat(playerId, 'pts', -1)}
                 className="bg-white hover:bg-red-500 hover:text-white hover:border-red-500 text-zinc-700 py-2 rounded-md font-bold text-[10px] md:text-xs transition-colors border border-zinc-200 shadow-sm"
             >
-                -1 PTS
+                -1 {pointLabel}
             </button>
             <button
                 onClick={() => updateStat(playerId, 'ast', 1)}
                 className="bg-white hover:bg-blue-500 hover:text-white hover:border-blue-500 text-zinc-700 py-2 rounded-md font-bold text-[10px] md:text-xs transition-colors border border-zinc-200 shadow-sm"
             >
-                +1 AST
+                +1 {assistLabel}
             </button>
             <button
                 onClick={() => updateStat(playerId, 'ast', -1)}
                 className="bg-white hover:bg-red-500 hover:text-white hover:border-red-500 text-zinc-700 py-2 rounded-md font-bold text-[10px] md:text-xs transition-colors border border-zinc-200 shadow-sm"
             >
-                -1 AST
+                -1 {assistLabel}
             </button>
             </div>
         )}
@@ -196,7 +208,7 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
 
       return (
           <div className="flex items-center gap-2 mb-1 group cursor-pointer hover:bg-zinc-50 px-2 py-1 rounded-lg transition-colors" onClick={() => canEdit && setIsEditing(true)}>
-             <span className={cn("text-sm md:text-md font-black uppercase tracking-wider", isWinner ? (team === 'A' ? "text-orange-600" : "text-blue-600") : "text-zinc-500")}>
+             <span className={cn("text-sm md:text-md font-black uppercase tracking-wider", isWinner ? (team === 'A' ? teamAColorWinner : "text-blue-600") : "text-zinc-500")}>
                  {currentName || (team === 'A' ? "Team A" : "Team B")}
              </span>
              {canEdit && <Pencil size={14} className="text-zinc-300 group-hover:text-zinc-900 transition-colors" />}
@@ -224,8 +236,8 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
         <div className="flex justify-between items-center max-w-md mx-auto">
           <div className="flex flex-col items-center w-1/3">
             <EditableTeamName team="A" currentName={game.teamAName} isWinner={isWinnerA} />
-            <span className="text-4xl font-black text-orange-500 tracking-tighter">{game.scoreA}</span>
-            {isWinnerA && <span className="text-[10px] text-white bg-orange-500 px-2 py-0.5 rounded-full mt-1 font-bold uppercase">Winner</span>}
+            <span className={cn("text-4xl font-black tracking-tighter", teamAColor)}>{game.scoreA}</span>
+            {isWinnerA && <span className={cn("text-[10px] text-white px-2 py-0.5 rounded-full mt-1 font-bold uppercase", teamAColorBg)}>Winner</span>}
           </div>
           
           <div className="text-zinc-300 font-black text-xl italic opacity-50">VS</div>
@@ -241,7 +253,7 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
       <div className="max-w-md mx-auto p-4 space-y-8">
         {/* Team A Roster */}
         <div>
-          <h3 className="text-xs font-bold text-orange-500 uppercase tracking-widest mb-3 pl-1">{game.teamAName || "Team A"}</h3>
+          <h3 className={cn("text-xs font-bold uppercase tracking-widest mb-3 pl-1", teamAColor)}>{game.teamAName || "Team A"}</h3>
           {game.teamA.map(pid => (
             <PlayerRow key={pid} playerId={pid} team="A" />
           ))}
