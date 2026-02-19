@@ -1,4 +1,4 @@
-# La Liguita ⚽️
+# La Liguita 🏀
 
 La Liguita is a modern web application designed to manage casual sports leagues. It allows users to track games, manage teams, record scores in real-time, and view player statistics and leaderboards.
 
