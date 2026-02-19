@@ -198,25 +198,25 @@ export function LeagueSelector() {
     <div className="relative">
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 hover:bg-zinc-100 rounded-lg transition-colors group"
+        className="flex items-center gap-2 px-3 py-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors group"
       >
-        <div className="w-8 h-8 bg-orange-100 rounded-md flex items-center justify-center text-orange-600 group-hover:bg-orange-200 transition-colors">
+        <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-md flex items-center justify-center text-orange-600 dark:text-orange-500 group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition-colors">
             <Trophy size={16} />
         </div>
         <div className="text-left hidden md:block">
-            <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider group-hover:text-orange-500 transition-colors">Current League</div>
-            <div className="font-bold text-sm leading-none max-w-[120px] truncate text-zinc-900">{activeLeague?.name || "Select League"}</div>
+            <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider group-hover:text-orange-500 transition-colors">Current League</div>
+            <div className="font-bold text-sm leading-none max-w-[120px] truncate text-zinc-900 dark:text-white">{activeLeague?.name || "Select League"}</div>
         </div>
-        <ChevronDown size={16} className="text-zinc-400 group-hover:text-zinc-600" />
+        <ChevronDown size={16} className="text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-600 dark:group-hover:text-zinc-300" />
       </button>
 
       {isOpen && (
         <>
             <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 bg-white rounded-xl shadow-xl border border-zinc-100 p-2 z-50 animate-in fade-in zoom-in-95 duration-200">
+            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 bg-white dark:bg-zinc-900 rounded-xl shadow-xl border border-zinc-100 dark:border-zinc-800 p-2 z-50 animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex items-center justify-between px-2 py-2 mb-1">
-                    <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">My Leagues</span>
-                    <span className="text-[10px] bg-zinc-100 text-zinc-500 px-1.5 py-0.5 rounded font-mono">{leagues.length}</span>
+                    <span className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">My Leagues</span>
+                    <span className="text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 px-1.5 py-0.5 rounded font-mono">{leagues.length}</span>
                 </div>
                 
                 <div className="space-y-1 mb-2 max-h-60 overflow-y-auto scrollbar-thin">
@@ -229,7 +229,9 @@ export function LeagueSelector() {
                                 }}
                                 className={cn(
                                     "flex-1 text-left px-3 py-2.5 rounded-lg flex items-center justify-between text-sm font-medium transition-colors group",
-                                    activeLeague?.id === league.id ? "bg-orange-50 text-orange-800" : "hover:bg-zinc-50 text-zinc-700"
+                                    activeLeague?.id === league.id 
+                                        ? "bg-orange-50 dark:bg-orange-950/40 text-orange-800 dark:text-orange-400" 
+                                        : "hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
                                 )}
                             >
                                 <span className="truncate flex-1 flex items-center gap-2">
@@ -240,7 +242,7 @@ export function LeagueSelector() {
                             </button>
                             <button 
                                 onClick={(e) => handleDeleteLeague(e, league.id, league.name)}
-                                className="opacity-0 group-hover/item:opacity-100 p-2 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                className="opacity-0 group-hover/item:opacity-100 p-2 text-zinc-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
                                 title="Delete League"
                             >
                                 <Trash2 size={14} />
@@ -248,10 +250,10 @@ export function LeagueSelector() {
                         </div>
                     ))}
                 </div>
-                <div className="border-t border-zinc-100 pt-2">
+                <div className="border-t border-zinc-100 dark:border-zinc-800 pt-2">
                     <button 
                         onClick={handleOpenCreate}
-                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-bold text-white bg-zinc-900 hover:bg-zinc-800 rounded-lg transition-colors shadow-sm"
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-bold text-white bg-zinc-900 dark:bg-orange-500 hover:bg-zinc-800 dark:hover:bg-orange-600 rounded-lg transition-colors shadow-sm"
                     >
                         <Plus size={16} />
                         Create New League

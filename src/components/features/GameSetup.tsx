@@ -135,24 +135,24 @@ export function GameSetup() {
        return (
       <div className="w-full max-w-md mx-auto p-4 pb-24">
         <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold text-zinc-900 flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
             <UserPlus className={themeIcon} />
             Select Players
             </h1>
             <button
             onClick={() => setIsAdding(!isAdding)}
-            className={cn("p-2 bg-white border border-zinc-200 rounded-full shadow-sm text-zinc-500 transition-colors", isBasketball ? "hover:text-orange-500 hover:border-orange-500" : "hover:text-green-600 hover:border-green-600")}
+            className={cn("p-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full shadow-sm text-zinc-500 transition-colors", isBasketball ? "hover:text-orange-500 hover:border-orange-500" : "hover:text-green-600 hover:border-green-600")}
             >
             {isAdding ? <X size={20} /> : <Plus size={20} />}
             </button>
         </div>
 
         {isAdding && (
-            <div className={cn("mb-6 p-4 bg-white rounded-lg border shadow-sm animate-in fade-in slide-in-from-top-2", themeBorderLight)}>
+            <div className={cn("mb-6 p-4 bg-white dark:bg-zinc-900 rounded-lg border shadow-sm animate-in fade-in slide-in-from-top-2", themeBorderLight)}>
             <div className="flex justify-between items-center mb-3">
-                <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider">New Player</h3>
+                <h3 className="text-sm font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">New Player</h3>
                 {newPlayerName.trim() && players.some(p => p.name.trim().toLowerCase() === newPlayerName.trim().toLowerCase()) && (
-                    <span className="text-[10px] font-bold text-red-500 uppercase bg-red-50 px-2 py-0.5 rounded">Name already exists</span>
+                    <span className="text-[10px] font-bold text-red-500 uppercase bg-red-50 dark:bg-red-950/30 px-2 py-0.5 rounded">Name already exists</span>
                 )}
             </div>
             <div className="flex gap-2">
@@ -163,7 +163,7 @@ export function GameSetup() {
                 value={newPlayerName}
                 onChange={(e) => setNewPlayerName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddPlayer()}
-                className={cn("flex-1 px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 placeholder:text-zinc-400 focus:outline-none transition-all font-medium", themeRing, isBasketball ? "focus:border-orange-500" : "focus:border-green-600")}
+                className={cn("flex-1 px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none transition-all font-medium", themeRing, isBasketball ? "focus:border-orange-500" : "focus:border-green-600")}
                 />
                 <button
                 onClick={handleAddPlayer}
@@ -176,18 +176,18 @@ export function GameSetup() {
             </div>
         )}
         
-        <p className="text-zinc-500 mb-4 flex justify-between items-center">
+        <p className="text-zinc-500 dark:text-zinc-400 mb-4 flex justify-between items-center">
           <span>Select {minPlayers}-{maxPlayers} players ({selectedIds.length})</span>
           {!isValidCount && selectedIds.length > 0 && (
-              <span className={cn("text-xs font-bold px-2 py-1 rounded-full", isBasketball ? "text-orange-500 bg-orange-50" : "text-green-600 bg-green-50")}>
+              <span className={cn("text-xs font-bold px-2 py-1 rounded-full", isBasketball ? "text-orange-500 bg-orange-50 dark:bg-orange-950/40" : "text-green-600 bg-green-50 dark:bg-green-950/40")}>
                   {selectedIds.length % 2 !== 0 ? "Need even number" : `Min ${minPlayers} required`}
               </span>
           )}
         </p>
 
         {players.length === 0 ? (
-            <div className="text-center p-8 bg-zinc-50 rounded-xl border border-dashed border-zinc-300">
-                <p className="text-zinc-500 mb-4">No players found. Add at least {minPlayers} players to start a game.</p>
+            <div className="text-center p-8 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800">
+                <p className="text-zinc-500 dark:text-zinc-400 mb-4">No players found. Add at least {minPlayers} players to start a game.</p>
                 <Button onClick={() => setIsAdding(true)} variant="outline">
                     Add Players First
                 </Button>
@@ -205,11 +205,11 @@ export function GameSetup() {
                     "flex items-center p-3 rounded-lg border transition-all shadow-sm",
                     isSelected
                       ? cn("text-white", themeBg, themeBorder, themeShadow)
-                      : "bg-white border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50",
+                      : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800",
                     !isSelected && selectedIds.length >= maxPlayers && "opacity-50 cursor-not-allowed"
                   )}
                 >
-                  <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center font-bold mr-3 text-sm">
+                  <div className="w-8 h-8 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center font-bold mr-3 text-sm">
                     {player.avatar || player.name.slice(0, 2)}
                   </div>
                   <span className="font-medium truncate">{player.name}</span>
@@ -220,7 +220,7 @@ export function GameSetup() {
         )}
 
         <Button
-          className="w-full h-12 text-lg bg-zinc-900 text-white hover:bg-zinc-800"
+          className="w-full h-12 text-lg bg-zinc-900 dark:bg-orange-500 text-white hover:bg-zinc-800 dark:hover:bg-orange-600"
           disabled={!isValidCount}
           onClick={handleCreateTeams}
         >
@@ -232,23 +232,23 @@ export function GameSetup() {
 
   return (
     <div className="w-full max-w-md mx-auto p-4 pb-24">
-       <h1 className="text-2xl font-bold mb-6 text-zinc-900 flex items-center gap-2">
+       <h1 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white flex items-center gap-2">
           <PlayCircle className={themeIcon} />
           Preview Matchup
         </h1>
 
-        <p className="text-sm text-zinc-500 mb-4">Tap two players to swap them between teams.</p>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">Tap two players to swap them between teams.</p>
 
         <div className="space-y-6 mb-8">
-          <div className="bg-white rounded-xl p-4 border border-zinc-200 shadow-sm">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800 shadow-sm">
             <div className="flex justify-between items-center mb-3">
                 <input
                     type="text"
                     value={teamAName}
                     onChange={(e) => setTeamAName(e.target.value)}
-                    className={cn("font-bold uppercase tracking-wider text-sm bg-transparent border-b border-transparent hover:border-zinc-200 outline-none w-32 transition-colors", themeColor, themeBorderFocus)}
+                    className={cn("font-bold uppercase tracking-wider text-sm bg-transparent border-b border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 outline-none w-32 transition-colors", themeColor, themeBorderFocus)}
                 />
-                <span className="text-xs text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-full">Tap to swap</span>
+                <span className="text-xs text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-950 px-2 py-0.5 rounded-full">Tap to swap</span>
             </div>
             <div className="space-y-2">
               {teamA.map(id => {
@@ -259,9 +259,9 @@ export function GameSetup() {
                         key={id} 
                         onClick={() => handlePlayerSwapRef(id)}
                         className={cn(
-                            "flex items-center justify-between text-zinc-900 font-medium pl-3 pr-2 py-2 border-l-4 bg-zinc-50 rounded-r-md cursor-pointer transition-all active:scale-95",
+                            "flex items-center justify-between text-zinc-900 dark:text-zinc-100 font-medium pl-3 pr-2 py-2 border-l-4 bg-zinc-50 dark:bg-zinc-950 rounded-r-md cursor-pointer transition-all active:scale-95",
                             themeBorderL,
-                            isSelected ? cn("ring-2 bg-zinc-100", themeRingActive) : "hover:bg-zinc-100"
+                            isSelected ? cn("ring-2 bg-zinc-100 dark:bg-zinc-900", themeRingActive) : "hover:bg-zinc-100 dark:hover:bg-zinc-900"
                         )}
                     >
                         <span>{p?.name}</span>
@@ -273,18 +273,18 @@ export function GameSetup() {
           </div>
 
           <div className="flex justify-center">
-            <div className="bg-zinc-100 rounded-full p-2 text-zinc-500 font-bold text-xs border border-zinc-200">VS</div>
+            <div className="bg-zinc-100 dark:bg-zinc-900 rounded-full p-2 text-zinc-500 dark:text-zinc-400 font-bold text-xs border border-zinc-200 dark:border-zinc-800">VS</div>
           </div>
 
-          <div className="bg-white rounded-xl p-4 border border-zinc-200 shadow-sm">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800 shadow-sm">
             <div className="flex justify-between items-center mb-3">
                 <input
                     type="text"
                     value={teamBName}
                     onChange={(e) => setTeamBName(e.target.value)}
-                    className="text-blue-500 font-bold uppercase tracking-wider text-sm bg-transparent border-b border-transparent focus:border-blue-500 hover:border-zinc-200 outline-none w-32 transition-colors"
+                    className="text-blue-500 font-bold uppercase tracking-wider text-sm bg-transparent border-b border-transparent focus:border-blue-500 hover:border-zinc-200 dark:hover:border-zinc-700 outline-none w-32 transition-colors"
                 />
-                <span className="text-xs text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-full">Tap to swap</span>
+                <span className="text-xs text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-950 px-2 py-0.5 rounded-full">Tap to swap</span>
             </div>
             <div className="space-y-2">
               {teamB.map(id => {
@@ -295,8 +295,8 @@ export function GameSetup() {
                         key={id} 
                         onClick={() => handlePlayerSwapRef(id)}
                         className={cn(
-                            "flex items-center justify-between text-zinc-900 font-medium pl-3 pr-2 py-2 border-l-4 border-blue-500 bg-zinc-50 rounded-r-md cursor-pointer transition-all active:scale-95",
-                            isSelected ? "ring-2 ring-blue-500 bg-blue-50" : "hover:bg-zinc-100"
+                            "flex items-center justify-between text-zinc-900 dark:text-zinc-100 font-medium pl-3 pr-2 py-2 border-l-4 border-blue-500 bg-zinc-50 dark:bg-zinc-950 rounded-r-md cursor-pointer transition-all active:scale-95",
+                            isSelected ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-950/20" : "hover:bg-zinc-100 dark:hover:bg-zinc-900"
                         )}
                     >
                         <span>{p?.name}</span>
@@ -309,7 +309,7 @@ export function GameSetup() {
         </div>
 
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1 border-zinc-200 text-zinc-700 hover:bg-zinc-50" onClick={handleCreateTeams}>
+          <Button variant="outline" className="flex-1 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-900" onClick={handleCreateTeams}>
             <Shuffle className="mr-2 h-4 w-4" />
             Reshuffle
           </Button>

@@ -52,10 +52,10 @@ export function Leaderboard() {
 
   if (!activeLeague) {
       return (
-          <div className="w-full max-w-md mx-auto p-8 text-center mt-12 bg-zinc-50 rounded-2xl border-2 border-dashed border-zinc-200">
-              <Trophy className="w-16 h-16 text-zinc-300 mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-zinc-900 mb-2">No League Selected</h2>
-              <p className="text-zinc-500 mb-6">Create or select a league from the top menu to start tracking players and games.</p>
+          <div className="w-full max-w-md mx-auto p-8 text-center mt-12 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-800">
+              <Trophy className="w-16 h-16 text-zinc-300 dark:text-zinc-700 mx-auto mb-4" />
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">No League Selected</h2>
+              <p className="text-zinc-500 dark:text-zinc-400 mb-6">Create or select a league from the top menu to start tracking players and games.</p>
               <div className="text-sm text-orange-500 font-bold animate-bounce">
                   ↑ Check the top menu
               </div>
@@ -68,20 +68,20 @@ export function Leaderboard() {
   const pointLabelShort = isBasketball ? 'PTS' : 'GLS';
   const themeBg = isBasketball ? "bg-orange-500" : "bg-green-600";
   const themeText = isBasketball ? "text-orange-500" : "text-green-600";
-  const themeTextDark = isBasketball ? "text-orange-600" : "text-green-700";
+  const themeTextDark = isBasketball ? "text-orange-600 dark:text-orange-400" : "text-green-700 dark:text-green-400";
   const themeBorder = isBasketball ? "border-orange-500" : "border-green-600";
-  const themeBgLight = isBasketball ? "bg-orange-100" : "bg-green-100";
-  const themeBorderLight = isBasketball ? "border-orange-200" : "border-green-200";
+  const themeBgLight = isBasketball ? "bg-orange-100 dark:bg-orange-950/40" : "bg-green-100 dark:bg-green-950/40";
+  const themeBorderLight = isBasketball ? "border-orange-200 dark:border-orange-900/30" : "border-green-200 dark:border-green-900/30";
 
   return (
     <div className="w-full max-w-md mx-auto p-4 pb-24">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-zinc-900 flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
             <span className={cn("text-xs font-black uppercase tracking-wider px-2 py-1 rounded-md", themeText, themeBgLight)}>{activeLeague.name}</span>
             <Link 
                 href={`/league/${activeLeague.id}/leaderboard`}
                 target="_blank"
-                className={cn("ml-2 flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 bg-zinc-50 px-2 py-1 rounded-full transition-colors border border-zinc-200", isBasketball ? "hover:text-orange-500 hover:bg-orange-50" : "hover:text-green-600 hover:bg-green-50")}
+                className={cn("ml-2 flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 rounded-full transition-colors border border-zinc-200 dark:border-zinc-800", isBasketball ? "hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-950/20" : "hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20")}
                 title="Open Public Leaderboard"
             >
                 Public <ExternalLink size={10} />
@@ -89,18 +89,18 @@ export function Leaderboard() {
         </h1>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className={cn("p-2 bg-white border border-zinc-200 rounded-full shadow-sm text-zinc-500 transition-colors", isBasketball ? "hover:text-orange-500 hover:border-orange-500" : "hover:text-green-600 hover:border-green-600")}
+          className={cn("p-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full shadow-sm text-zinc-500 dark:text-zinc-400 transition-colors", isBasketball ? "hover:text-orange-500 hover:border-orange-500 dark:hover:border-orange-400" : "hover:text-green-600 hover:border-green-600 dark:hover:border-green-400")}
         >
           {isAdding ? <X size={20} /> : <UserPlus size={20} />}
         </button>
       </div>
 
       {isAdding && (
-        <div className={cn("mb-6 p-4 bg-white rounded-lg border shadow-sm animate-in fade-in slide-in-from-top-2", themeBorderLight)}>
+        <div className={cn("mb-6 p-4 bg-white dark:bg-zinc-900 rounded-lg border shadow-sm animate-in fade-in slide-in-from-top-2", themeBorderLight)}>
           <div className="flex justify-between items-center mb-3">
-            <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider">New Player</h3>
+            <h3 className="text-sm font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">New Player</h3>
             {newPlayerName.trim() && players.some(p => p.name.trim().toLowerCase() === newPlayerName.trim().toLowerCase()) && (
-                <span className="text-[10px] font-bold text-red-500 uppercase bg-red-50 px-2 py-0.5 rounded">Name already exists</span>
+                <span className="text-[10px] font-bold text-red-500 uppercase bg-red-50 dark:bg-red-950/30 px-2 py-0.5 rounded">Name already exists</span>
             )}
           </div>
           <div className="flex gap-2">
@@ -111,7 +111,7 @@ export function Leaderboard() {
               value={newPlayerName}
               onChange={(e) => setNewPlayerName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddPlayer()}
-              className={cn("flex-1 px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 placeholder:text-zinc-400 focus:outline-none transition-all font-medium", isBasketball ? "focus:ring-orange-500/20 focus:border-orange-500" : "focus:ring-green-500/20 focus:border-green-600")}
+              className={cn("flex-1 px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none transition-all font-medium", isBasketball ? "focus:ring-orange-500/20 focus:border-orange-500" : "focus:ring-green-500/20 focus:border-green-600")}
             />
             <button
               onClick={handleAddPlayer}
@@ -130,10 +130,10 @@ export function Leaderboard() {
             key={key}
             onClick={() => setSortBy(key)}
             className={cn(
-              "flex items-center px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap border-2",
+              "flex items-center px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap border-2 transition-colors",
               sortBy === key
                 ? cn("text-white", themeBg, themeBorder)
-                : "bg-white border-zinc-200 text-zinc-500 hover:bg-zinc-50"
+                : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800"
             )}
           >
             {key === "points" && <TrendingUp size={16} className="mr-2" />}
@@ -150,25 +150,25 @@ export function Leaderboard() {
           return (
             <div
               key={player.id}
-              className="bg-white rounded-lg p-4 border border-zinc-200 flex items-center gap-4 shadow-sm"
+              className="bg-white dark:bg-zinc-900 rounded-lg p-4 border border-zinc-200 dark:border-zinc-800 flex items-center gap-4 shadow-sm"
             >
               <div className={cn(
                 "flex items-center justify-center w-8 h-8 rounded font-black text-sm",
                 index === 0 ? "bg-yellow-400 text-yellow-950" :
-                index === 1 ? "bg-zinc-200 text-zinc-700" :
-                index === 2 ? "bg-amber-100 text-amber-800" :
-                "bg-zinc-100 text-zinc-500"
+                index === 1 ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200" :
+                index === 2 ? "bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200" :
+                "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
               )}>
                 {index + 1}
               </div>
               
-              <div className="w-10 h-10 rounded-full bg-zinc-100 border-2 border-zinc-200 flex items-center justify-center font-bold text-zinc-500">
+              <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 flex items-center justify-center font-bold text-zinc-500 dark:text-zinc-400">
                 {player.avatar || player.name.substring(0, 2).toUpperCase()}
               </div>
 
               <div className="flex-1">
-                <h3 className="font-bold text-zinc-900 text-lg leading-none">{player.name}</h3>
-                <div className="flex items-center gap-3 text-xs font-mono text-zinc-500 mt-1">
+                <h3 className="font-bold text-zinc-900 dark:text-white text-lg leading-none">{player.name}</h3>
+                <div className="flex items-center gap-3 text-xs font-mono text-zinc-500 dark:text-zinc-400 mt-1">
                   <span className={cn(sortBy === "points" && cn("font-bold", themeTextDark))}>
                     {player.totalPoints} {pointLabelShort}
                   </span>
@@ -187,7 +187,7 @@ export function Leaderboard() {
         })}
 
         {sortedPlayers.length === 0 && (
-          <div className="text-center py-12 text-zinc-500">
+          <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
             No players found.
           </div>
         )}
