@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useStore } from "@/lib/store";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { Plus, Trophy, Check, ChevronDown } from "lucide-react";
+import { Plus, Trophy, Check, ChevronDown, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import { Sport } from "@/lib/types";
@@ -12,7 +12,7 @@ import { createPortal } from "react-dom";
 
 export function LeagueSelector() {
   const { user } = useAuth();
-  const { leagues, activeLeague, setActiveLeague, createLeague } = useStore();
+  const { leagues, activeLeague, setActiveLeague, createLeague, deleteLeague } = useStore();
   const [isOpen, setIsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [newLeagueName, setNewLeagueName] = useState("");
@@ -31,6 +31,13 @@ export function LeagueSelector() {
     setNewLeagueName("");
     setIsCreating(false);
     setIsOpen(false);
+  };
+
+  const handleDeleteLeague = async (e: React.MouseEvent, leagueId: string, leagueName: string) => {
+    e.stopPropagation();
+    if (confirm(`Are you sure you want to delete "${leagueName}"? This will delete ALL games and player stats. This cannot be undone.`)) {
+        await deleteLeague(leagueId);
+    }
   };
 
   const CreateLeagueModal = isMounted ? createPortal(
@@ -140,20 +147,31 @@ export function LeagueSelector() {
                 
                 <div className="space-y-1 mb-2 max-h-60 overflow-y-auto scrollbar-thin">
                     {leagues.map(league => (
-                        <button
-                            key={league.id}
-                            onClick={() => {
-                                setActiveLeague(league);
-                                setIsOpen(false);
-                            }}
-                            className={cn(
-                                "w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between text-sm font-medium transition-colors group",
-                                activeLeague?.id === league.id ? "bg-orange-50 text-orange-800" : "hover:bg-zinc-50 text-zinc-700"
-                            )}
-                        >
-                            <span className="truncate flex-1">{league.name}</span>
-                            {activeLeague?.id === league.id && <Check size={16} className="text-orange-500 shrink-0 ml-2" />}
-                        </button>
+                        <div key={league.id} className="group/item flex items-center gap-1">
+                            <button
+                                onClick={() => {
+                                    setActiveLeague(league);
+                                    setIsOpen(false);
+                                }}
+                                className={cn(
+                                    "flex-1 text-left px-3 py-2.5 rounded-lg flex items-center justify-between text-sm font-medium transition-colors group",
+                                    activeLeague?.id === league.id ? "bg-orange-50 text-orange-800" : "hover:bg-zinc-50 text-zinc-700"
+                                )}
+                            >
+                                <span className="truncate flex-1 flex items-center gap-2">
+                                    <span>{league.sport === 'soccer' ? '⚽' : '🏀'}</span>
+                                    {league.name}
+                                </span>
+                                {activeLeague?.id === league.id && <Check size={16} className="text-orange-500 shrink-0 ml-2" />}
+                            </button>
+                            <button 
+                                onClick={(e) => handleDeleteLeague(e, league.id, league.name)}
+                                className="opacity-0 group-hover/item:opacity-100 p-2 text-zinc-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                title="Delete League"
+                            >
+                                <Trash2 size={14} />
+                            </button>
+                        </div>
                     ))}
                 </div>
                 <div className="border-t border-zinc-100 pt-2">

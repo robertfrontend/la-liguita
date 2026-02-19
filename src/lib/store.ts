@@ -7,7 +7,8 @@ import {
   updateGameInDb, 
   updatePlayerStatsInDb,
   createLeague,
-  deleteGameFromDb
+  deleteGameFromDb,
+  deleteLeagueFromDb
 } from './db';
 
 interface StoreState {
@@ -26,6 +27,7 @@ interface StoreState {
 
   // Actions
   createLeague: (name: string, ownerId: string, sport: Sport) => Promise<void>;
+  deleteLeague: (leagueId: string) => Promise<void>;
   startGame: (teamAIds: string[], teamBIds: string[], teamAName?: string, teamBName?: string) => Promise<void>;
   updateStat: (playerId: string, type: 'pts' | 'ast', amount: number) => Promise<void>;
   finishGame: () => Promise<void>;
@@ -96,6 +98,20 @@ export const useStore = create<StoreState>()(
             activeGame: null,
             history: []
         });
+      },
+
+      deleteLeague: async (leagueId) => {
+        await deleteLeagueFromDb(leagueId);
+        
+        const { activeLeague } = get();
+        if (activeLeague?.id === leagueId) {
+            set({ 
+                activeLeague: null,
+                players: [],
+                activeGame: null,
+                history: []
+            });
+        }
       },
 
       startGame: async (teamAIds, teamBIds, teamAName = "Team A", teamBName = "Team B") => {

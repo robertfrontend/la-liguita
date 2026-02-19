@@ -33,6 +33,24 @@ export const createLeague = async (name: string, ownerId: string, sport: Sport) 
   return { id: docRef.id, ...newLeague };
 };
 
+export const deleteLeagueFromDb = async (leagueId: string) => {
+  const leagueRef = doc(db, LEAGUES_COLLECTION, leagueId);
+  
+  // 1. Delete players subcollection
+  const playersSnap = await getDocs(collection(db, LEAGUES_COLLECTION, leagueId, PLAYERS_SUBCOLLECTION));
+  const deletePlayers = playersSnap.docs.map(d => deleteDoc(d.ref));
+  
+  // 2. Delete games subcollection
+  const gamesSnap = await getDocs(collection(db, LEAGUES_COLLECTION, leagueId, GAMES_SUBCOLLECTION));
+  const deleteGames = gamesSnap.docs.map(d => deleteDoc(d.ref));
+  
+  // Wait for all subcollection items to be deleted
+  await Promise.all([...deletePlayers, ...deleteGames]);
+  
+  // 3. Delete the league document itself
+  await deleteDoc(leagueRef);
+};
+
 export const subscribeToLeagues = (userId: string, callback: (leagues: League[]) => void) => {
   // Query leagues where user is owner. 
   // Future: Also where user is a member? For now just owner.
