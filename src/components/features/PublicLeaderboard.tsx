@@ -59,21 +59,21 @@ export function PublicLeaderboard({ leagueId }: { leagueId: string }) {
   const pointLabel = isBasketball ? 'Points' : 'Goals';
   const pointLabelShort = isBasketball ? 'PTS' : 'GLS';
   const themeBg = isBasketball ? "bg-orange-500" : "bg-green-600";
-  const themeTextDark = isBasketball ? "text-orange-600" : "text-green-700";
+  const themeTextDark = isBasketball ? "text-orange-600 dark:text-orange-400" : "text-green-700 dark:text-green-400";
   const themeBorder = isBasketball ? "border-orange-500" : "border-green-600";
   const themeShadow = isBasketball ? "shadow-orange-500/20" : "shadow-green-500/20";
-  const themeBgLight = isBasketball ? "bg-orange-50" : "bg-green-50";
+  const themeBgLight = isBasketball ? "bg-orange-50 dark:bg-orange-950/40" : "bg-green-50 dark:bg-green-950/40";
 
   return (
-    <div className="min-h-screen bg-zinc-50 pb-24">
+    <div className="min-h-screen bg-white dark:bg-zinc-950 pb-24 transition-colors duration-300">
       {/* Public Header */}
-      <header className="bg-white border-b border-zinc-200 p-4 sticky top-0 z-10 shadow-sm flex items-center gap-3">
-          <div className={cn("p-2 rounded-lg", isBasketball ? "bg-yellow-100 text-yellow-600" : "bg-green-100 text-green-600")}>
+      <header className="bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 p-4 sticky top-0 z-10 shadow-sm flex items-center gap-3">
+          <div className={cn("p-2 rounded-lg", isBasketball ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-500" : "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-500")}>
              <Trophy size={20} />
           </div>
           <div>
-            <h1 className="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-0.5">League Standings</h1>
-            <h2 className="text-lg font-black text-zinc-900 leading-none">{league.name}</h2>
+            <h1 className="text-sm font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-0.5">League Standings</h1>
+            <h2 className="text-lg font-black text-zinc-900 dark:text-white leading-none">{league.name}</h2>
           </div>
        </header>
 
@@ -85,7 +85,7 @@ export function PublicLeaderboard({ leagueId }: { leagueId: string }) {
                     "flex-1 flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap border transition-all shadow-sm",
                     sortBy === "points"
                         ? cn("text-white", themeBg, themeBorder, themeShadow)
-                        : "bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50"
+                        : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800"
                     )}
                 >
                     <TrendingUp size={16} className="mr-2" />
@@ -97,7 +97,7 @@ export function PublicLeaderboard({ leagueId }: { leagueId: string }) {
                     "flex-1 flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap border transition-all shadow-sm",
                     sortBy === "assists"
                         ? "bg-blue-500 border-blue-500 text-white shadow-blue-500/20"
-                        : "bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50"
+                        : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800"
                     )}
                 >
                     <Award size={16} className="mr-2" />
@@ -109,7 +109,7 @@ export function PublicLeaderboard({ leagueId }: { leagueId: string }) {
                     "flex-1 flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap border transition-all shadow-sm",
                     sortBy === "winRate"
                         ? "bg-yellow-500 border-yellow-500 text-white shadow-yellow-500/20"
-                        : "bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50"
+                        : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800"
                     )}
                 >
                     <Trophy size={16} className="mr-2" />
@@ -123,37 +123,37 @@ export function PublicLeaderboard({ leagueId }: { leagueId: string }) {
                     return (
                         <div
                         key={player.id}
-                        className="bg-white rounded-xl p-4 border border-zinc-100 flex items-center gap-4 shadow-sm relative overflow-hidden group"
+                        className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-100 dark:border-zinc-800 flex items-center gap-4 shadow-sm relative overflow-hidden group"
                         >
                             {/* Rank Indicator */}
                             <div className={cn(
                                 "flex items-center justify-center w-8 h-8 rounded-lg font-black text-sm transition-colors",
-                                index === 0 ? "bg-yellow-100 text-yellow-700" :
-                                index === 1 ? "bg-zinc-100 text-zinc-600" :
-                                index === 2 ? (isBasketball ? "bg-orange-100 text-orange-700" : "bg-green-100 text-green-700") :
-                                "bg-zinc-50 text-zinc-400"
+                                index === 0 ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-500" :
+                                index === 1 ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400" :
+                                index === 2 ? (isBasketball ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-500" : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-500") :
+                                "bg-zinc-50 dark:bg-zinc-950 text-zinc-400 dark:text-zinc-600"
                             )}>
                                 {index + 1}
                             </div>
                         
                             {/* Avatar */}
-                            <div className="w-10 h-10 rounded-full bg-zinc-50 border border-zinc-200 flex items-center justify-center font-bold text-zinc-400 text-sm">
+                            <div className="w-10 h-10 rounded-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center font-bold text-zinc-400 dark:text-zinc-500 text-sm">
                                 {player.avatar || player.name.substring(0, 2).toUpperCase()}
                             </div>
 
                             {/* Info */}
                             <div className="flex-1 min-w-0">
-                                <h3 className="font-bold text-zinc-900 text-base truncate">{player.name}</h3>
-                                <div className="flex items-center gap-3 text-xs font-mono text-zinc-400 mt-1">
+                                <h3 className="font-bold text-zinc-900 dark:text-white text-base truncate">{player.name}</h3>
+                                <div className="flex items-center gap-3 text-xs font-mono text-zinc-400 dark:text-zinc-500 mt-1">
                                     <span className={cn(sortBy === "points" && cn("font-bold px-1 rounded", themeTextDark, themeBgLight))}>
                                         {player.totalPoints} {pointLabelShort}
                                     </span>
                                     <span>•</span>
-                                    <span className={cn(sortBy === "assists" && "text-blue-600 font-bold bg-blue-50 px-1 rounded")}>
+                                    <span className={cn(sortBy === "assists" && "text-blue-600 dark:text-blue-400 font-bold bg-blue-50 dark:bg-blue-950/40 px-1 rounded")}>
                                         {player.totalAssists} AST
                                     </span>
                                     <span>•</span>
-                                    <span className={cn(sortBy === "winRate" && "text-yellow-600 font-bold bg-yellow-50 px-1 rounded")}>
+                                    <span className={cn(sortBy === "winRate" && "text-yellow-600 dark:text-yellow-400 font-bold bg-yellow-50 dark:bg-yellow-950/40 px-1 rounded")}>
                                         {winRate}% WR
                                     </span>
                                 </div>
@@ -163,15 +163,15 @@ export function PublicLeaderboard({ leagueId }: { leagueId: string }) {
                             <div className={cn(
                                 "absolute left-0 top-0 bottom-0 w-1 opacity-0 transition-opacity group-hover:opacity-100",
                                 index === 0 ? "bg-yellow-400 opacity-100" : 
-                                index === 1 ? "bg-zinc-300" :
-                                index === 2 ? (isBasketball ? "bg-orange-300" : "bg-green-300") : "bg-transparent"
+                                index === 1 ? "bg-zinc-300 dark:bg-zinc-700" :
+                                index === 2 ? (isBasketball ? "bg-orange-300 dark:bg-orange-700" : "bg-green-300 dark:bg-green-700") : "bg-transparent"
                             )} />
                         </div>
                     );
                 })}
 
                 {sortedPlayers.length === 0 && (
-                    <div className="text-center py-12 text-zinc-400">
+                    <div className="text-center py-12 text-zinc-400 dark:text-zinc-600">
                         No players found in this league.
                     </div>
                 )}
