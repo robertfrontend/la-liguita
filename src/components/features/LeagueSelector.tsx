@@ -6,6 +6,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { Plus, Trophy, Check, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
+import { Sport } from "@/lib/types";
 
 import { createPortal } from "react-dom";
 
@@ -15,23 +16,24 @@ export function LeagueSelector() {
   const [isOpen, setIsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [newLeagueName, setNewLeagueName] = useState("");
-  const [mounted, setMounted] = useState(false);
+  const [selectedSport, setSelectedSport] = useState<Sport>('basketball');
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    setIsMounted(true);
   }, []);
 
   if (!user) return null;
 
   const handleCreate = async () => {
     if (!newLeagueName.trim()) return;
-    await createLeague(newLeagueName.trim(), user.uid);
+    await createLeague(newLeagueName.trim(), user.uid, selectedSport);
     setNewLeagueName("");
     setIsCreating(false);
     setIsOpen(false);
   };
 
-  const CreateLeagueModal = mounted ? createPortal(
+  const CreateLeagueModal = isMounted ? createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
         <div 
             className="bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl ring-1 ring-zinc-200 transform transition-all scale-100"
@@ -49,6 +51,35 @@ export function LeagueSelector() {
                     onChange={(e) => setNewLeagueName(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleCreate()}
                 />
+            </div>
+            <div className="mb-6">
+                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1.5 block">Select Sport</label>
+                <div className="grid grid-cols-2 gap-3">
+                    <button
+                        onClick={() => setSelectedSport('basketball')}
+                        className={cn(
+                            "flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all",
+                            selectedSport === 'basketball' 
+                                ? "border-orange-500 bg-orange-50 text-orange-700" 
+                                : "border-zinc-100 hover:border-zinc-200 text-zinc-500"
+                        )}
+                    >
+                        <span className="text-2xl mb-1">🏀</span>
+                        <span className="text-xs font-bold">Basketball</span>
+                    </button>
+                    <button
+                        onClick={() => setSelectedSport('soccer')}
+                        className={cn(
+                            "flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all",
+                            selectedSport === 'soccer' 
+                                ? "border-green-500 bg-green-50 text-green-700" 
+                                : "border-zinc-100 hover:border-zinc-200 text-zinc-500"
+                        )}
+                    >
+                        <span className="text-2xl mb-1">⚽</span>
+                        <span className="text-xs font-bold">Soccer</span>
+                    </button>
+                </div>
             </div>
             <div className="flex justify-end gap-3">
                 <button 

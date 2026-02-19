@@ -55,11 +55,20 @@ export function PublicLeaderboard({ leagueId }: { leagueId: string }) {
   if (loading) return <div className="p-8 text-center text-zinc-500">Loading leaderboard...</div>;
   if (!league) return <div className="p-8 text-center text-zinc-500">League not found</div>;
 
+  const isBasketball = league.sport !== 'soccer';
+  const pointLabel = isBasketball ? 'Points' : 'Goals';
+  const pointLabelShort = isBasketball ? 'PTS' : 'GLS';
+  const themeBg = isBasketball ? "bg-orange-500" : "bg-green-600";
+  const themeTextDark = isBasketball ? "text-orange-600" : "text-green-700";
+  const themeBorder = isBasketball ? "border-orange-500" : "border-green-600";
+  const themeShadow = isBasketball ? "shadow-orange-500/20" : "shadow-green-500/20";
+  const themeBgLight = isBasketball ? "bg-orange-50" : "bg-green-50";
+
   return (
     <div className="min-h-screen bg-zinc-50 pb-24">
       {/* Public Header */}
       <header className="bg-white border-b border-zinc-200 p-4 sticky top-0 z-10 shadow-sm flex items-center gap-3">
-          <div className="bg-yellow-100 p-2 rounded-lg text-yellow-600">
+          <div className={cn("p-2 rounded-lg", isBasketball ? "bg-yellow-100 text-yellow-600" : "bg-green-100 text-green-600")}>
              <Trophy size={20} />
           </div>
           <div>
@@ -75,12 +84,12 @@ export function PublicLeaderboard({ leagueId }: { leagueId: string }) {
                     className={cn(
                     "flex-1 flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap border transition-all shadow-sm",
                     sortBy === "points"
-                        ? "bg-orange-500 border-orange-500 text-white shadow-orange-500/20"
+                        ? cn("text-white", themeBg, themeBorder, themeShadow)
                         : "bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50"
                     )}
                 >
                     <TrendingUp size={16} className="mr-2" />
-                    Points
+                    {pointLabel}
                 </button>
                 <button
                     onClick={() => setSortBy("assists")}
@@ -121,7 +130,7 @@ export function PublicLeaderboard({ leagueId }: { leagueId: string }) {
                                 "flex items-center justify-center w-8 h-8 rounded-lg font-black text-sm transition-colors",
                                 index === 0 ? "bg-yellow-100 text-yellow-700" :
                                 index === 1 ? "bg-zinc-100 text-zinc-600" :
-                                index === 2 ? "bg-orange-100 text-orange-700" :
+                                index === 2 ? (isBasketball ? "bg-orange-100 text-orange-700" : "bg-green-100 text-green-700") :
                                 "bg-zinc-50 text-zinc-400"
                             )}>
                                 {index + 1}
@@ -136,8 +145,8 @@ export function PublicLeaderboard({ leagueId }: { leagueId: string }) {
                             <div className="flex-1 min-w-0">
                                 <h3 className="font-bold text-zinc-900 text-base truncate">{player.name}</h3>
                                 <div className="flex items-center gap-3 text-xs font-mono text-zinc-400 mt-1">
-                                    <span className={cn(sortBy === "points" && "text-orange-600 font-bold bg-orange-50 px-1 rounded")}>
-                                        {player.totalPoints} PTS
+                                    <span className={cn(sortBy === "points" && cn("font-bold px-1 rounded", themeTextDark, themeBgLight))}>
+                                        {player.totalPoints} {pointLabelShort}
                                     </span>
                                     <span>•</span>
                                     <span className={cn(sortBy === "assists" && "text-blue-600 font-bold bg-blue-50 px-1 rounded")}>
@@ -155,7 +164,7 @@ export function PublicLeaderboard({ leagueId }: { leagueId: string }) {
                                 "absolute left-0 top-0 bottom-0 w-1 opacity-0 transition-opacity group-hover:opacity-100",
                                 index === 0 ? "bg-yellow-400 opacity-100" : 
                                 index === 1 ? "bg-zinc-300" :
-                                index === 2 ? "bg-orange-300" : "bg-transparent"
+                                index === 2 ? (isBasketball ? "bg-orange-300" : "bg-green-300") : "bg-transparent"
                             )} />
                         </div>
                     );

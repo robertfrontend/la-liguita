@@ -41,11 +41,16 @@ export function PublicHistory({ leagueId }: { leagueId: string }) {
 
   if (!league) return <div className="p-8 text-center text-zinc-500">League not found</div>;
 
+  const isBasketball = league.sport !== 'soccer';
+  const themeBgLight = isBasketball ? "bg-orange-100" : "bg-green-100";
+  const themeIcon = isBasketball ? "text-orange-600" : "text-green-600";
+  const themeBorderHover = isBasketball ? "group-hover:border-orange-500/50" : "group-hover:border-green-600/50";
+
   return (
     <div className="min-h-screen bg-zinc-50 pb-24">
        {/* Public Header */}
        <header className="bg-white border-b border-zinc-200 p-4 sticky top-0 z-10 shadow-sm flex items-center gap-3">
-          <div className="bg-orange-100 p-2 rounded-lg text-orange-600">
+          <div className={cn("p-2 rounded-lg", themeBgLight, themeIcon)}>
              <Trophy size={20} />
           </div>
           <div>
@@ -63,19 +68,23 @@ export function PublicHistory({ leagueId }: { leagueId: string }) {
           ) : (
              history.map((game) => {
                 const isTeamAWinner = game.scoreA > game.scoreB;
+                const gameIsBasketball = game.sport !== 'soccer'; // Default to basketball
+                const teamAColor = gameIsBasketball ? "text-orange-500" : "text-green-600";
+                const teamAWinColor = gameIsBasketball ? "text-orange-600" : "text-green-600";
+
                 return (
                   <Link href={`/history/${game.id}`} key={game.id} className="block group">
-                  <div className="bg-white rounded-xl p-4 border border-zinc-200 shadow-sm group-hover:border-orange-500/50 transition-colors">
+                  <div className={cn("bg-white rounded-xl p-4 border border-zinc-200 shadow-sm transition-colors", themeBorderHover)}>
                     <div className="flex justify-between items-center mb-4 text-xs text-zinc-400 uppercase tracking-widest font-bold">
                        <span>{new Date(game.date).toLocaleDateString()}</span>
-                       <span className={isTeamAWinner ? "text-orange-600" : "text-blue-600"}>
+                       <span className={isTeamAWinner ? teamAWinColor : "text-blue-600"}>
                          {isTeamAWinner ? `${game.teamAName || "Team A"} Won` : `${game.teamBName || "Team B"} Won`}
                        </span>
                     </div>
     
                     <div className="flex justify-between items-center mb-6">
                       <div className="text-center w-1/3">
-                        <div className="text-3xl font-black text-orange-500 tracking-tighter">{game.scoreA}</div>
+                        <div className={cn("text-3xl font-black tracking-tighter", teamAColor)}>{game.scoreA}</div>
                         <div className="text-[10px] text-zinc-400 mt-1 uppercase font-bold tracking-widest truncate">{game.teamAName || "TEAM A"}</div>
                       </div>
                       <div className="text-zinc-200 font-bold italic text-xl">VS</div>
@@ -89,7 +98,7 @@ export function PublicHistory({ leagueId }: { leagueId: string }) {
                     <div className="space-y-2 border-t border-zinc-100 pt-4">
                        <div className="grid grid-cols-2 gap-4 text-xs">
                           <div>
-                              <h4 className="text-orange-600 font-bold mb-2 uppercase tracking-wider truncate">{game.teamAName || "Team A"}</h4>
+                              <h4 className={cn("font-bold mb-2 uppercase tracking-wider truncate", teamAWinColor)}>{game.teamAName || "Team A"}</h4>
                               {game.teamA.map(pid => {
                                   const stats = game.playerStats[pid] || { points: 0, assists: 0 };
                                   return (

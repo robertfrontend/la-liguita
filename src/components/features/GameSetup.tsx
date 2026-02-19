@@ -9,7 +9,7 @@ import { UserPlus, PlayCircle, Shuffle, Plus, X, Check, ArrowRightLeft } from "l
 
 export function GameSetup() {
   const router = useRouter();
-  const { players, startGame, addPlayer } = useStore();
+  const { players, startGame, addPlayer, activeLeague } = useStore();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [step, setStep] = useState<"select" | "teams">("select");
   const [teamA, setTeamA] = useState<string[]>([]);
@@ -20,6 +20,20 @@ export function GameSetup() {
   const [isAdding, setIsAdding] = useState(false);
   const [newPlayerName, setNewPlayerName] = useState("");
   const [selectedSwapId, setSelectedSwapId] = useState<string | null>(null);
+
+  const isBasketball = activeLeague?.sport !== 'soccer';
+  const themeColor = isBasketball ? "text-orange-500" : "text-green-600";
+  const themeBg = isBasketball ? "bg-orange-500" : "bg-green-600";
+  const themeBgHover = isBasketball ? "hover:bg-orange-600" : "hover:bg-green-700";
+  const themeBorder = isBasketball ? "border-orange-500" : "border-green-600";
+  const themeBorderLight = isBasketball ? "border-orange-200" : "border-green-200";
+  const themeRing = isBasketball ? "focus:ring-orange-500/20" : "focus:ring-green-500/20";
+  const themeShadow = isBasketball ? "shadow-orange-500/20" : "shadow-green-500/20";
+  const themeIcon = isBasketball ? "text-orange-500" : "text-green-600";
+  const themeBorderL = isBasketball ? "border-l-orange-500" : "border-l-green-600";
+  const themeRingActive = isBasketball ? "ring-orange-500" : "ring-green-600";
+  const themeTextActive = isBasketball ? "text-orange-500" : "text-green-600";
+  const themeBorderFocus = isBasketball ? "focus:border-orange-500" : "focus:border-green-600";
 
   useEffect(() => {
     // Reset any active game state when starting a new setup
@@ -115,19 +129,19 @@ export function GameSetup() {
       <div className="w-full max-w-md mx-auto p-4 pb-24">
         <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-zinc-900 flex items-center gap-2">
-            <UserPlus className="text-orange-500" />
+            <UserPlus className={themeIcon} />
             Select Players
             </h1>
             <button
             onClick={() => setIsAdding(!isAdding)}
-            className="p-2 bg-white border border-zinc-200 rounded-full shadow-sm text-zinc-500 hover:text-orange-500 hover:border-orange-500 transition-colors"
+            className={cn("p-2 bg-white border border-zinc-200 rounded-full shadow-sm text-zinc-500 transition-colors", isBasketball ? "hover:text-orange-500 hover:border-orange-500" : "hover:text-green-600 hover:border-green-600")}
             >
             {isAdding ? <X size={20} /> : <Plus size={20} />}
             </button>
         </div>
 
         {isAdding && (
-            <div className="mb-6 p-4 bg-white rounded-lg border border-orange-200 shadow-sm animate-in fade-in slide-in-from-top-2">
+            <div className={cn("mb-6 p-4 bg-white rounded-lg border shadow-sm animate-in fade-in slide-in-from-top-2", themeBorderLight)}>
             <h3 className="text-sm font-bold text-zinc-500 mb-3 uppercase tracking-wider">New Player</h3>
             <div className="flex gap-2">
                 <input
@@ -137,12 +151,12 @@ export function GameSetup() {
                 value={newPlayerName}
                 onChange={(e) => setNewPlayerName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddPlayer()}
-                className="flex-1 px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-medium"
+                className={cn("flex-1 px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 placeholder:text-zinc-400 focus:outline-none transition-all font-medium", themeRing, isBasketball ? "focus:border-orange-500" : "focus:border-green-600")}
                 />
                 <button
                 onClick={handleAddPlayer}
                 disabled={!newPlayerName.trim()}
-                className="bg-orange-500 text-white p-2 rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className={cn("text-white p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors", themeBg, themeBgHover)}
                 >
                 <Check size={24} />
                 </button>
@@ -153,7 +167,7 @@ export function GameSetup() {
         <p className="text-zinc-500 mb-4 flex justify-between items-center">
           <span>Select 4-10 players ({selectedIds.length})</span>
           {!isValidCount && selectedIds.length > 0 && (
-              <span className="text-xs text-orange-500 font-bold bg-orange-50 px-2 py-1 rounded-full">
+              <span className={cn("text-xs font-bold px-2 py-1 rounded-full", isBasketball ? "text-orange-500 bg-orange-50" : "text-green-600 bg-green-50")}>
                   {selectedIds.length % 2 !== 0 ? "Need even number" : "Min 4 required"}
               </span>
           )}
@@ -178,7 +192,7 @@ export function GameSetup() {
                   className={cn(
                     "flex items-center p-3 rounded-lg border transition-all shadow-sm",
                     isSelected
-                      ? "bg-orange-500 border-orange-500 text-white shadow-orange-500/20"
+                      ? cn("text-white", themeBg, themeBorder, themeShadow)
                       : "bg-white border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50",
                     !isSelected && selectedIds.length >= 10 && "opacity-50 cursor-not-allowed"
                   )}
@@ -207,7 +221,7 @@ export function GameSetup() {
   return (
     <div className="w-full max-w-md mx-auto p-4 pb-24">
        <h1 className="text-2xl font-bold mb-6 text-zinc-900 flex items-center gap-2">
-          <PlayCircle className="text-orange-500" />
+          <PlayCircle className={themeIcon} />
           Preview Matchup
         </h1>
 
@@ -220,7 +234,7 @@ export function GameSetup() {
                     type="text"
                     value={teamAName}
                     onChange={(e) => setTeamAName(e.target.value)}
-                    className="text-orange-500 font-bold uppercase tracking-wider text-sm bg-transparent border-b border-transparent focus:border-orange-500 hover:border-zinc-200 outline-none w-32 transition-colors"
+                    className={cn("font-bold uppercase tracking-wider text-sm bg-transparent border-b border-transparent hover:border-zinc-200 outline-none w-32 transition-colors", themeColor, themeBorderFocus)}
                 />
                 <span className="text-xs text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-full">Tap to swap</span>
             </div>
@@ -233,12 +247,13 @@ export function GameSetup() {
                         key={id} 
                         onClick={() => handlePlayerSwapRef(id)}
                         className={cn(
-                            "flex items-center justify-between text-zinc-900 font-medium pl-3 pr-2 py-2 border-l-4 border-orange-500 bg-zinc-50 rounded-r-md cursor-pointer transition-all active:scale-95",
-                            isSelected ? "ring-2 ring-orange-500 bg-orange-50" : "hover:bg-zinc-100"
+                            "flex items-center justify-between text-zinc-900 font-medium pl-3 pr-2 py-2 border-l-4 bg-zinc-50 rounded-r-md cursor-pointer transition-all active:scale-95",
+                            themeBorderL,
+                            isSelected ? cn("ring-2 bg-zinc-100", themeRingActive) : "hover:bg-zinc-100"
                         )}
                     >
                         <span>{p?.name}</span>
-                        {isSelected && <ArrowRightLeft size={16} className="text-orange-500 animate-pulse" />}
+                        {isSelected && <ArrowRightLeft size={16} className={cn("animate-pulse", themeTextActive)} />}
                     </div>
                  )
               })}
@@ -286,7 +301,7 @@ export function GameSetup() {
             <Shuffle className="mr-2 h-4 w-4" />
             Reshuffle
           </Button>
-          <Button className="flex-[2] bg-orange-500 text-white hover:bg-orange-600" size="lg" onClick={handleStartGame}>
+          <Button className={cn("flex-[2] text-white", themeBg, themeBgHover)} size="lg" onClick={handleStartGame}>
             Start Game
           </Button>
         </div>

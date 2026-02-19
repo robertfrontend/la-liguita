@@ -1,3 +1,5 @@
+export type Sport = 'basketball' | 'soccer';
+
 export type Player = {
   id: string;
   name: string;
@@ -28,11 +30,13 @@ export type Game = {
   winner?: Team | null;
   isFinished: boolean;
   leagueId?: string;
+  sport: Sport;
 };
 
 export type League = {
   id: string;
   name: string;
+  sport: Sport;
   ownerId: string;
   createdAt: string;
 };

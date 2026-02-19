@@ -13,7 +13,7 @@ import {
   onSnapshot,
   collectionGroup
 } from "firebase/firestore";
-import type { Player, Game, League } from "./types";
+import type { Player, Game, League, Sport } from "./types";
 
 // Collections
 const LEAGUES_COLLECTION = "leagues";
@@ -22,10 +22,11 @@ const GAMES_SUBCOLLECTION = "games";
 
 // --- Leagues ---
 
-export const createLeague = async (name: string, ownerId: string) => {
+export const createLeague = async (name: string, ownerId: string, sport: Sport) => {
   const newLeague = {
     name,
     ownerId,
+    sport,
     createdAt: new Date().toISOString(),
   };
   const docRef = await addDoc(collection(db, LEAGUES_COLLECTION), newLeague);
@@ -130,6 +131,10 @@ export const subscribeToActiveGame = (leagueId: string, callback: (game: Game | 
 };
 
 export const createGameInDb = async (leagueId: string, teamA: string[], teamB: string[], teamAName: string = "Team A", teamBName: string = "Team B") => {
+  // Get league to know the sport
+  const league = await getLeague(leagueId);
+  const sport = league?.sport || 'basketball';
+
   const newGame = {
     date: new Date().toISOString(),
     teamA,
@@ -141,11 +146,12 @@ export const createGameInDb = async (leagueId: string, teamA: string[], teamB: s
     scoreB: 0,
     isFinished: false,
     leagueId,
+    sport,
   };
   
   console.log("Creating game in DB:", newGame);
   
-  const stats: Record<string, any> = {};
+  const stats: Record<string, GameStats> = {};
   [...teamA, ...teamB].forEach(pid => {
     stats[pid] = { points: 0, assists: 0 };
   });
