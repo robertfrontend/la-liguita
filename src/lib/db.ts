@@ -13,12 +13,49 @@ import {
   onSnapshot,
   collectionGroup
 } from "firebase/firestore";
-import type { Player, Game, League, Sport, GameStats } from "./types";
+import type { Player, Game, League, Sport, GameStats, UserProfile } from "./types";
 
 // Collections
 const LEAGUES_COLLECTION = "leagues";
 const PLAYERS_SUBCOLLECTION = "players";
 const GAMES_SUBCOLLECTION = "games";
+
+// --- User Profile ---
+
+export const subscribeToUserProfile = (uid: string, callback: (profile: UserProfile | null) => void) => {
+  const docRef = doc(db, "users", uid);
+  return onSnapshot(docRef, (snap) => {
+    if (snap.exists()) {
+      callback({ uid: snap.id, ...snap.data() } as UserProfile);
+    } else {
+      callback(null);
+    }
+  }, (error) => {
+    console.error("DEBUG: Error in subscribeToUserProfile:", error.code, error.message);
+  });
+};
+
+export const createUserProfile = async (uid: string, email?: string, displayName?: string) => {
+  const { setDoc } = await import("firebase/firestore");
+  const docRef = doc(db, "users", uid);
+  
+  const profileData = {
+    uid,
+    isPro: false,
+    email: email || "",
+    displayName: displayName || "",
+    updatedAt: new Date().toISOString(),
+  };
+
+  try {
+    await setDoc(docRef, profileData, { merge: true });
+    const snap = await getDoc(docRef);
+    return { uid: snap.id, ...snap.data() } as UserProfile;
+  } catch (error: any) {
+    console.error("DEBUG: Error in createUserProfile (write):", error.code, error.message);
+    return { uid, isPro: false, email, displayName } as UserProfile;
+  }
+};
 
 // --- Leagues ---
 
@@ -52,14 +89,14 @@ export const deleteLeagueFromDb = async (leagueId: string) => {
 };
 
 export const subscribeToLeagues = (userId: string, callback: (leagues: League[]) => void) => {
-  // Query leagues where user is owner. 
-  // Future: Also where user is a member? For now just owner.
+  if (!userId) return () => {};
   const q = query(collection(db, LEAGUES_COLLECTION), where("ownerId", "==", userId));
   return onSnapshot(q, (snapshot) => {
     const leagues = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as League));
     callback(leagues);
   }, (error) => {
-    console.error("Error subscribing to leagues:", error);
+    console.error("Firestore error in subscribeToLeagues:", error.code, error.message);
+    callback([]); // Return empty to allow UI to render
   });
 };
 
@@ -90,6 +127,8 @@ export const subscribeToPlayers = (leagueId: string, callback: (players: Player[
   return onSnapshot(q, (snapshot) => {
     const players = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
     callback(players);
+  }, (error) => {
+    console.error("DEBUG: Error in subscribeToPlayers:", error.code, error.message);
   });
 };
 
@@ -125,7 +164,7 @@ export const subscribeToHistory = (leagueId: string, callback: (games: Game[]) =
     games.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     callback(games);
   }, (error) => {
-    console.error("Error subscribing to history:", error);
+    console.error("DEBUG: Error in subscribeToHistory:", error.code, error.message);
   });
 };
 
@@ -144,7 +183,7 @@ export const subscribeToActiveGame = (leagueId: string, callback: (game: Game | 
       callback(games[0]);
     }
   }, (error) => {
-    console.error("Error subscribing to active game:", error);
+    console.error("DEBUG: Error in subscribeToActiveGame:", error.code, error.message);
   });
 };
 

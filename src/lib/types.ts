@@ -40,3 +40,10 @@ export type League = {
   ownerId: string;
   createdAt: string;
 };
+
+export type UserProfile = {
+  uid: string;
+  isPro: boolean;
+  email?: string;
+  displayName?: string;
+};
