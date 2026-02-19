@@ -25,6 +25,10 @@ export function Leaderboard() {
           alert("Please create a league first.");
           return;
       }
+      // The store already checks this, but we can prevent the call here too
+      const nameExists = players.some(p => p.name.trim().toLowerCase() === newPlayerName.trim().toLowerCase());
+      if (nameExists) return;
+
       await addPlayer(newPlayerName.trim());
       setNewPlayerName("");
       setIsAdding(false);
@@ -93,7 +97,12 @@ export function Leaderboard() {
 
       {isAdding && (
         <div className={cn("mb-6 p-4 bg-white rounded-lg border shadow-sm animate-in fade-in slide-in-from-top-2", themeBorderLight)}>
-          <h3 className="text-sm font-bold text-zinc-500 mb-3 uppercase tracking-wider">New Player</h3>
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider">New Player</h3>
+            {newPlayerName.trim() && players.some(p => p.name.trim().toLowerCase() === newPlayerName.trim().toLowerCase()) && (
+                <span className="text-[10px] font-bold text-red-500 uppercase bg-red-50 px-2 py-0.5 rounded">Name already exists</span>
+            )}
+          </div>
           <div className="flex gap-2">
             <input
               autoFocus
@@ -106,7 +115,7 @@ export function Leaderboard() {
             />
             <button
               onClick={handleAddPlayer}
-              disabled={!newPlayerName.trim()}
+              disabled={!newPlayerName.trim() || players.some(p => p.name.trim().toLowerCase() === newPlayerName.trim().toLowerCase())}
               className={cn("text-white p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors", themeBg)}
             >
               <Check size={24} />

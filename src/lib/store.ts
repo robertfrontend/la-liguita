@@ -229,12 +229,20 @@ export const useStore = create<StoreState>()(
       resetActiveGame: () => set({ activeGame: null }),
 
       addPlayer: async (name) => {
-        const { activeLeague } = get();
+        const { activeLeague, players } = get();
         if (!activeLeague) {
             alert("No active league");
             return;
         }
-        await addPlayerToDb(activeLeague.id, name);
+
+        // Validation: Duplicate name check
+        const nameExists = players.some(p => p.name.trim().toLowerCase() === name.trim().toLowerCase());
+        if (nameExists) {
+            alert(`A player named "${name.trim()}" already exists in this league.`);
+            return;
+        }
+
+        await addPlayerToDb(activeLeague.id, name.trim());
       },
 
       deleteGame: async (gameId) => {
