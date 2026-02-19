@@ -22,6 +22,9 @@ export function GameSetup() {
   const [selectedSwapId, setSelectedSwapId] = useState<string | null>(null);
 
   const isBasketball = activeLeague?.sport !== 'soccer';
+  const maxPlayers = isBasketball ? 10 : 22;
+  const minPlayers = 4;
+
   const themeColor = isBasketball ? "text-orange-500" : "text-green-600";
   const themeBg = isBasketball ? "bg-orange-500" : "bg-green-600";
   const themeBgHover = isBasketball ? "hover:bg-orange-600" : "hover:bg-green-700";
@@ -55,7 +58,7 @@ export function GameSetup() {
     if (selectedIds.includes(id)) {
       setSelectedIds(selectedIds.filter((pid) => pid !== id));
     } else {
-      if (selectedIds.length < 10) {
+      if (selectedIds.length < maxPlayers) {
         setSelectedIds([...selectedIds, id]);
       }
     }
@@ -63,7 +66,7 @@ export function GameSetup() {
 
   const handleCreateTeams = () => {
     const count = selectedIds.length;
-    if (count < 4 || count > 10 || count % 2 !== 0) return;
+    if (count < minPlayers || count > maxPlayers || count % 2 !== 0) return;
     
     // Randomly shuffle and split
     const shuffled = [...selectedIds].sort(() => Math.random() - 0.5);
@@ -123,7 +126,7 @@ export function GameSetup() {
   };
 
   if (step === "select") {
-       const isValidCount = selectedIds.length >= 4 && selectedIds.length <= 10 && selectedIds.length % 2 === 0;
+       const isValidCount = selectedIds.length >= minPlayers && selectedIds.length <= maxPlayers && selectedIds.length % 2 === 0;
 
        return (
       <div className="w-full max-w-md mx-auto p-4 pb-24">
@@ -165,17 +168,17 @@ export function GameSetup() {
         )}
         
         <p className="text-zinc-500 mb-4 flex justify-between items-center">
-          <span>Select 4-10 players ({selectedIds.length})</span>
+          <span>Select {minPlayers}-{maxPlayers} players ({selectedIds.length})</span>
           {!isValidCount && selectedIds.length > 0 && (
               <span className={cn("text-xs font-bold px-2 py-1 rounded-full", isBasketball ? "text-orange-500 bg-orange-50" : "text-green-600 bg-green-50")}>
-                  {selectedIds.length % 2 !== 0 ? "Need even number" : "Min 4 required"}
+                  {selectedIds.length % 2 !== 0 ? "Need even number" : `Min ${minPlayers} required`}
               </span>
           )}
         </p>
 
         {players.length === 0 ? (
             <div className="text-center p-8 bg-zinc-50 rounded-xl border border-dashed border-zinc-300">
-                <p className="text-zinc-500 mb-4">No players found. Add at least 4 players to start a game.</p>
+                <p className="text-zinc-500 mb-4">No players found. Add at least {minPlayers} players to start a game.</p>
                 <Button onClick={() => setIsAdding(true)} variant="outline">
                     Add Players First
                 </Button>
@@ -188,13 +191,13 @@ export function GameSetup() {
                 <button
                   key={player.id}
                   onClick={() => togglePlayer(player.id)}
-                  disabled={!isSelected && selectedIds.length >= 10}
+                  disabled={!isSelected && selectedIds.length >= maxPlayers}
                   className={cn(
                     "flex items-center p-3 rounded-lg border transition-all shadow-sm",
                     isSelected
                       ? cn("text-white", themeBg, themeBorder, themeShadow)
                       : "bg-white border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50",
-                    !isSelected && selectedIds.length >= 10 && "opacity-50 cursor-not-allowed"
+                    !isSelected && selectedIds.length >= maxPlayers && "opacity-50 cursor-not-allowed"
                   )}
                 >
                   <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center font-bold mr-3 text-sm">
