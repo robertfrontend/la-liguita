@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Game, Player, Team, League, Sport } from './types';
+import type { Game, Player, Team, League, Sport, UserProfile } from './types';
 import { 
   addPlayerToDb, 
   createGameInDb, 
@@ -8,7 +8,8 @@ import {
   updatePlayerStatsInDb,
   createLeague,
   deleteGameFromDb,
-  deleteLeagueFromDb
+  deleteLeagueFromDb,
+  createUserProfile
 } from './db';
 
 interface StoreState {
@@ -17,6 +18,7 @@ interface StoreState {
   history: Game[];
   leagues: League[];
   activeLeague: League | null;
+  userProfile: UserProfile | null;
   
   // State Setters (for subscriptions)
   setPlayers: (players: Player[]) => void;
@@ -24,6 +26,7 @@ interface StoreState {
   setActiveGame: (game: Game | null) => void;
   setLeagues: (leagues: League[]) => void;
   setActiveLeague: (league: League | null) => void;
+  setUserProfile: (profile: UserProfile | null) => void;
 
   // Actions
   createLeague: (name: string, ownerId: string, sport: Sport) => Promise<void>;
@@ -35,6 +38,7 @@ interface StoreState {
   addPlayer: (name: string) => Promise<void>;
   deleteGame: (gameId: string) => Promise<void>;
   updateTeamName: (team: Team, name: string) => Promise<void>;
+  ensureUserProfile: (uid: string, email?: string, displayName?: string) => Promise<void>;
 }
 
 export const useStore = create<StoreState>()(
@@ -45,10 +49,12 @@ export const useStore = create<StoreState>()(
       history: [],
       leagues: [],
       activeLeague: null,
+      userProfile: null,
 
       setPlayers: (players) => set({ players }),
       setHistory: (history) => set({ history }),
       setLeagues: (leagues) => set({ leagues }),
+      setUserProfile: (userProfile) => set({ userProfile }),
       setActiveLeague: (league) => {
         set({ 
             activeLeague: league,
@@ -286,13 +292,19 @@ export const useStore = create<StoreState>()(
         } catch (error) {
             console.error("Failed to update team name in DB:", error);
         }
+      },
+
+      ensureUserProfile: async (uid, email, displayName) => {
+        const profile = await createUserProfile(uid, email, displayName);
+        set({ userProfile: profile });
       }
     }),
     {
       name: 'la-liguita-storage',
       partialize: (state) => ({ 
         activeGame: state.activeGame,
-        activeLeague: state.activeLeague
+        activeLeague: state.activeLeague,
+        userProfile: state.userProfile
       }),
     }
   )
