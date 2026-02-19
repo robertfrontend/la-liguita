@@ -13,7 +13,7 @@ import {
   onSnapshot,
   collectionGroup
 } from "firebase/firestore";
-import type { Player, Game, League, Sport } from "./types";
+import type { Player, Game, League, Sport, GameStats } from "./types";
 
 // Collections
 const LEAGUES_COLLECTION = "leagues";
