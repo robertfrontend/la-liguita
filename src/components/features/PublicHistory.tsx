@@ -5,6 +5,7 @@ import { Game, League, Player } from "@/lib/types";
 import { subscribeToLeague, subscribeToHistory, subscribeToPlayers } from "@/lib/db";
 import { CalendarDays, Trophy } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export function PublicHistory({ leagueId }: { leagueId: string }) {
   const [league, setLeague] = useState<League | null>(null);
