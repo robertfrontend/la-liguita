@@ -59,15 +59,25 @@ export function Leaderboard() {
       );
   }
 
+  const isBasketball = activeLeague?.sport !== 'soccer';
+  const pointLabel = isBasketball ? 'Points' : 'Goals';
+  const pointLabelShort = isBasketball ? 'PTS' : 'GLS';
+  const themeBg = isBasketball ? "bg-orange-500" : "bg-green-600";
+  const themeText = isBasketball ? "text-orange-500" : "text-green-600";
+  const themeTextDark = isBasketball ? "text-orange-600" : "text-green-700";
+  const themeBorder = isBasketball ? "border-orange-500" : "border-green-600";
+  const themeBgLight = isBasketball ? "bg-orange-100" : "bg-green-100";
+  const themeBorderLight = isBasketball ? "border-orange-200" : "border-green-200";
+
   return (
     <div className="w-full max-w-md mx-auto p-4 pb-24">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-zinc-900 flex items-center gap-2">
-            <span className="text-orange-500 text-xs font-black uppercase tracking-wider bg-orange-100 px-2 py-1 rounded-md">{activeLeague.name}</span>
+            <span className={cn("text-xs font-black uppercase tracking-wider px-2 py-1 rounded-md", themeText, themeBgLight)}>{activeLeague.name}</span>
             <Link 
                 href={`/league/${activeLeague.id}/leaderboard`}
                 target="_blank"
-                className="ml-2 flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 hover:text-orange-500 bg-zinc-50 px-2 py-1 rounded-full hover:bg-orange-50 transition-colors border border-zinc-200"
+                className={cn("ml-2 flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 bg-zinc-50 px-2 py-1 rounded-full transition-colors border border-zinc-200", isBasketball ? "hover:text-orange-500 hover:bg-orange-50" : "hover:text-green-600 hover:bg-green-50")}
                 title="Open Public Leaderboard"
             >
                 Public <ExternalLink size={10} />
@@ -75,14 +85,14 @@ export function Leaderboard() {
         </h1>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="p-2 bg-white border border-zinc-200 rounded-full shadow-sm text-zinc-500 hover:text-orange-500 hover:border-orange-500 transition-colors"
+          className={cn("p-2 bg-white border border-zinc-200 rounded-full shadow-sm text-zinc-500 transition-colors", isBasketball ? "hover:text-orange-500 hover:border-orange-500" : "hover:text-green-600 hover:border-green-600")}
         >
           {isAdding ? <X size={20} /> : <UserPlus size={20} />}
         </button>
       </div>
 
       {isAdding && (
-        <div className="mb-6 p-4 bg-white rounded-lg border border-orange-200 shadow-sm animate-in fade-in slide-in-from-top-2">
+        <div className={cn("mb-6 p-4 bg-white rounded-lg border shadow-sm animate-in fade-in slide-in-from-top-2", themeBorderLight)}>
           <h3 className="text-sm font-bold text-zinc-500 mb-3 uppercase tracking-wider">New Player</h3>
           <div className="flex gap-2">
             <input
@@ -92,12 +102,12 @@ export function Leaderboard() {
               value={newPlayerName}
               onChange={(e) => setNewPlayerName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddPlayer()}
-              className="flex-1 px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-medium"
+              className={cn("flex-1 px-4 py-2 bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-900 placeholder:text-zinc-400 focus:outline-none transition-all font-medium", isBasketball ? "focus:ring-orange-500/20 focus:border-orange-500" : "focus:ring-green-500/20 focus:border-green-600")}
             />
             <button
               onClick={handleAddPlayer}
               disabled={!newPlayerName.trim()}
-              className="bg-orange-500 text-white p-2 rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className={cn("text-white p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors", themeBg)}
             >
               <Check size={24} />
             </button>
@@ -113,14 +123,14 @@ export function Leaderboard() {
             className={cn(
               "flex items-center px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap border-2",
               sortBy === key
-                ? "bg-orange-500 border-orange-500 text-white"
+                ? cn("text-white", themeBg, themeBorder)
                 : "bg-white border-zinc-200 text-zinc-500 hover:bg-zinc-50"
             )}
           >
             {key === "points" && <TrendingUp size={16} className="mr-2" />}
             {key === "assists" && <Award size={16} className="mr-2" />}
             {key === "winRate" && <Trophy size={16} className="mr-2" />}
-            {key === "points" ? "Points" : key === "assists" ? "Assists" : "Win Rate"}
+            {key === "points" ? pointLabel : key === "assists" ? "Assists" : "Win Rate"}
           </button>
         ))}
       </div>
@@ -150,15 +160,15 @@ export function Leaderboard() {
               <div className="flex-1">
                 <h3 className="font-bold text-zinc-900 text-lg leading-none">{player.name}</h3>
                 <div className="flex items-center gap-3 text-xs font-mono text-zinc-500 mt-1">
-                  <span className={cn(sortBy === "points" && "text-orange-600 font-bold")}>
-                    {player.totalPoints} PTS
+                  <span className={cn(sortBy === "points" && cn("font-bold", themeTextDark))}>
+                    {player.totalPoints} {pointLabelShort}
                   </span>
                   <span>•</span>
-                  <span className={cn(sortBy === "assists" && "text-orange-600 font-bold")}>
+                  <span className={cn(sortBy === "assists" && cn("font-bold", themeTextDark))}>
                     {player.totalAssists} AST
                   </span>
                   <span>•</span>
-                  <span className={cn(sortBy === "winRate" && "text-orange-600 font-bold")}>
+                  <span className={cn(sortBy === "winRate" && cn("font-bold", themeTextDark))}>
                     {winRate}% WR
                   </span>
                 </div>

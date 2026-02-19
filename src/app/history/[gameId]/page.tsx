@@ -61,6 +61,13 @@ export default function GameDetailPage() {
 
   const isTeamAWinner = game.scoreA > game.scoreB;
   const isTeamBWinner = game.scoreB > game.scoreA;
+  const isBasketball = game.sport !== 'soccer';
+  const teamAColor = isBasketball ? "text-orange-500" : "text-green-600";
+  const teamAWinColor = isBasketball ? "text-orange-600" : "text-green-600";
+  const teamAWinBg = isBasketball ? "bg-orange-50" : "bg-green-50";
+  const teamAIconBg = isBasketball ? "bg-orange-100" : "bg-green-100";
+  const teamAIconText = isBasketball ? "text-orange-600" : "text-green-600";
+  const pointLabel = isBasketball ? "PTS" : "GLS";
 
   return (
     <div className="min-h-screen bg-zinc-50 pb-20">
@@ -86,13 +93,13 @@ export default function GameDetailPage() {
 
             <div className="flex justify-between items-center mb-8">
                 <div className="flex-1 flex flex-col items-center">
-                    <span className={cn("text-5xl font-black tracking-tighter mb-2", isTeamAWinner ? "text-orange-500" : "text-zinc-300")}>
+                    <span className={cn("text-5xl font-black tracking-tighter mb-2", isTeamAWinner ? teamAColor : "text-zinc-300")}>
                         {game.scoreA}
                     </span>
-                    <span className={cn("text-xs font-black uppercase tracking-widest text-center", isTeamAWinner ? "text-orange-600" : "text-zinc-400")}>
+                    <span className={cn("text-xs font-black uppercase tracking-widest text-center", isTeamAWinner ? teamAWinColor : "text-zinc-400")}>
                         {game.teamAName || "Team A"}
                     </span>
-                    {isTeamAWinner && <Trophy className="text-orange-500 w-4 h-4 mt-2" />}
+                    {isTeamAWinner && <Trophy className={cn("w-4 h-4 mt-2", teamAColor)} />}
                 </div>
 
                 <div className="px-4">
@@ -112,7 +119,7 @@ export default function GameDetailPage() {
 
             <div className="text-center">
                 <span className={cn("text-sm font-bold uppercase tracking-wider py-1 px-3 rounded-lg", 
-                    isTeamAWinner ? "bg-orange-50 text-orange-600" : 
+                    isTeamAWinner ? cn(teamAWinBg, teamAWinColor) : 
                     isTeamBWinner ? "bg-blue-50 text-blue-600" : "bg-zinc-100 text-zinc-500"
                 )}>
                     {isTeamAWinner ? `${game.teamAName || "Team A"} Won` : isTeamBWinner ? `${game.teamBName || "Team B"} Won` : "Draw"}
@@ -127,9 +134,9 @@ export default function GameDetailPage() {
              {/* Team A Stats */}
              <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
                 <div className="bg-zinc-50 px-4 py-3 border-b border-zinc-200 flex justify-between items-center">
-                    <span className="font-bold text-orange-600 text-sm uppercase tracking-wider">{game.teamAName || "Team A"}</span>
+                    <span className={cn("font-bold text-sm uppercase tracking-wider", teamAWinColor)}>{game.teamAName || "Team A"}</span>
                     <div className="flex gap-4 text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-                        <span className="w-8 text-center">PTS</span>
+                        <span className="w-8 text-center">{pointLabel}</span>
                         <span className="w-8 text-center">AST</span>
                     </div>
                 </div>
@@ -139,7 +146,7 @@ export default function GameDetailPage() {
                         return (
                             <div key={pid} className={cn("px-4 py-3 flex justify-between items-center", idx !== game.teamA.length - 1 && "border-b border-zinc-100")}>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-[10px] font-bold">
+                                    <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold", teamAIconBg, teamAIconText)}>
                                         {getPlayerName(pid).slice(0, 2).toUpperCase()}
                                     </div>
                                     <span className="text-sm font-medium text-zinc-700">{getPlayerName(pid)}</span>
@@ -159,7 +166,7 @@ export default function GameDetailPage() {
                 <div className="bg-zinc-50 px-4 py-3 border-b border-zinc-200 flex justify-between items-center">
                     <span className="font-bold text-blue-600 text-sm uppercase tracking-wider">{game.teamBName || "Team B"}</span>
                     <div className="flex gap-4 text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-                        <span className="w-8 text-center">PTS</span>
+                        <span className="w-8 text-center">{pointLabel}</span>
                         <span className="w-8 text-center">AST</span>
                     </div>
                 </div>
