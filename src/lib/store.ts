@@ -97,7 +97,6 @@ export const useStore = create<StoreState>()(
             history: []
         });
       },
-      },
 
       startGame: async (teamAIds, teamBIds, teamAName = "Team A", teamBName = "Team B") => {
         const { activeLeague } = get();
