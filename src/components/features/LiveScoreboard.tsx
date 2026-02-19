@@ -121,22 +121,22 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
 
     return (
       <div className={cn(
-        "bg-white rounded-xl p-3 border mb-3 shadow-sm",
-        team === 'A' ? cn("border-l-4 border-zinc-200", teamAColorBorder) : "border-l-4 border-l-blue-500 border-zinc-200",
+        "bg-white dark:bg-zinc-900 rounded-xl p-3 border mb-3 shadow-sm transition-colors",
+        team === 'A' ? cn("border-l-4 border-zinc-200 dark:border-zinc-800", teamAColorBorder) : "border-l-4 border-l-blue-500 border-zinc-200 dark:border-zinc-800",
       )}>
         <div className="flex justify-between items-center mb-3">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-xs text-zinc-500 border border-zinc-200">
+            <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-xs text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
               {displayAvatar}
             </div>
             <div>
-              <div className="font-bold text-sm text-zinc-900">{displayName}</div>
-              <div className="text-[10px] text-zinc-500 uppercase tracking-wider">
+              <div className="font-bold text-sm text-zinc-900 dark:text-white">{displayName}</div>
+              <div className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                 {stats.points} {pointLabel} • {stats.assists} {assistLabel}
               </div>
             </div>
           </div>
-          <div className="text-xl font-bold font-mono tracking-tighter text-zinc-900">
+          <div className="text-xl font-bold font-mono tracking-tighter text-zinc-900 dark:text-white">
             {stats.points}
           </div>
         </div>
@@ -146,7 +146,7 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
             <button
                 onClick={() => updateStat(playerId, 'pts', 1)}
                 className={cn(
-                    "bg-white hover:text-white py-2 rounded-md font-bold text-[10px] md:text-xs transition-colors border border-zinc-200 shadow-sm",
+                    "bg-white dark:bg-zinc-900 hover:text-white py-2 rounded-md font-bold text-[10px] md:text-xs transition-colors border border-zinc-200 dark:border-zinc-700 shadow-sm",
                     isBasketball ? "hover:bg-orange-500 hover:border-orange-500" : "hover:bg-green-600 hover:border-green-600"
                 )}
             >
@@ -154,19 +154,19 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
             </button>
             <button
                 onClick={() => updateStat(playerId, 'pts', -1)}
-                className="bg-white hover:bg-red-500 hover:text-white hover:border-red-500 text-zinc-700 py-2 rounded-md font-bold text-[10px] md:text-xs transition-colors border border-zinc-200 shadow-sm"
+                className="bg-white dark:bg-zinc-900 hover:bg-red-500 hover:text-white hover:border-red-500 text-zinc-700 dark:text-zinc-300 py-2 rounded-md font-bold text-[10px] md:text-xs transition-colors border border-zinc-200 dark:border-zinc-700 shadow-sm"
             >
                 -1 {pointLabel}
             </button>
             <button
                 onClick={() => updateStat(playerId, 'ast', 1)}
-                className="bg-white hover:bg-blue-500 hover:text-white hover:border-blue-500 text-zinc-700 py-2 rounded-md font-bold text-[10px] md:text-xs transition-colors border border-zinc-200 shadow-sm"
+                className="bg-white dark:bg-zinc-900 hover:bg-blue-500 hover:text-white hover:border-blue-500 text-zinc-700 dark:text-zinc-300 py-2 rounded-md font-bold text-[10px] md:text-xs transition-colors border border-zinc-200 dark:border-zinc-700 shadow-sm"
             >
                 +1 {assistLabel}
             </button>
             <button
                 onClick={() => updateStat(playerId, 'ast', -1)}
-                className="bg-white hover:bg-red-500 hover:text-white hover:border-red-500 text-zinc-700 py-2 rounded-md font-bold text-[10px] md:text-xs transition-colors border border-zinc-200 shadow-sm"
+                className="bg-white dark:bg-zinc-900 hover:bg-red-500 hover:text-white hover:border-red-500 text-zinc-700 dark:text-zinc-300 py-2 rounded-md font-bold text-[10px] md:text-xs transition-colors border border-zinc-200 dark:border-zinc-700 shadow-sm"
             >
                 -1 {assistLabel}
             </button>
@@ -207,29 +207,29 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
       }
 
       return (
-          <div className="flex items-center gap-2 mb-1 group cursor-pointer hover:bg-zinc-50 px-2 py-1 rounded-lg transition-colors" onClick={() => canEdit && setIsEditing(true)}>
-             <span className={cn("text-sm md:text-md font-black uppercase tracking-wider", isWinner ? (team === 'A' ? teamAColorWinner : "text-blue-600") : "text-zinc-500")}>
+          <div className="flex items-center gap-2 mb-1 group cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800 px-2 py-1 rounded-lg transition-colors" onClick={() => canEdit && setIsEditing(true)}>
+             <span className={cn("text-sm md:text-md font-black uppercase tracking-wider", isWinner ? (team === 'A' ? teamAColorWinner : "text-blue-600") : "text-zinc-500 dark:text-zinc-400")}>
                  {currentName || (team === 'A' ? "Team A" : "Team B")}
              </span>
-             {canEdit && <Pencil size={14} className="text-zinc-300 group-hover:text-zinc-900 transition-colors" />}
+             {canEdit && <Pencil size={14} className="text-zinc-300 dark:text-zinc-600 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors" />}
           </div>
       );
   };
 
   return (
-    <div className="min-h-screen bg-white pb-32">
+    <div className="min-h-screen bg-white dark:bg-zinc-950 pb-32 transition-colors duration-300">
       {/* Sticky Score Header */}
-      <div className="sticky top-0 z-40 bg-white border-b border-zinc-200 p-4 shadow-sm">
+      <div className="sticky top-0 z-40 bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 p-4 shadow-sm">
         <div className="flex justify-between items-start mb-4">
             <div className="flex items-center gap-2">
                  {game.isFinished ? (
-                     <span className="bg-zinc-900 text-white px-2 py-1 rounded text-xs font-bold uppercase tracking-wider">Final</span>
+                     <span className="bg-zinc-900 dark:bg-zinc-800 text-white px-2 py-1 rounded text-xs font-bold uppercase tracking-wider">Final</span>
                  ) : (
                      <span className="bg-green-500 text-white px-2 py-1 rounded text-xs font-bold uppercase tracking-wider flex items-center gap-1">
                          <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> Live
                      </span>
                  )}
-                 <span className="text-xs text-zinc-400 font-medium">{new Date(game.date).toLocaleDateString()}</span>
+                 <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium">{new Date(game.date).toLocaleDateString()}</span>
             </div>
         </div>
 
@@ -240,7 +240,7 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
             {isWinnerA && <span className={cn("text-[10px] text-white px-2 py-0.5 rounded-full mt-1 font-bold uppercase", teamAColorBg)}>Winner</span>}
           </div>
           
-          <div className="text-zinc-300 font-black text-xl italic opacity-50">VS</div>
+          <div className="text-zinc-300 dark:text-zinc-800 font-black text-xl italic opacity-50">VS</div>
           
           <div className="flex flex-col items-center w-1/3">
             <EditableTeamName team="B" currentName={game.teamBName} isWinner={isWinnerB} />
