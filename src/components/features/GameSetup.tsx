@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { UserPlus, PlayCircle, Shuffle, Plus, X, Check, ArrowRightLeft, Trash2 } from "lucide-react";
+import { UserPlus, PlayCircle, Shuffle, Plus, X, Check, ArrowRightLeft, Trash2, Search, CheckSquare, Square } from "lucide-react";
 
 export function GameSetup() {
   const router = useRouter();
@@ -20,6 +20,7 @@ export function GameSetup() {
   const [isAdding, setIsAdding] = useState(false);
   const [newPlayerName, setNewPlayerName] = useState("");
   const [selectedSwapId, setSelectedSwapId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const isBasketball = activeLeague?.sport !== 'soccer';
   const maxPlayers = isBasketball ? 10 : 22;
@@ -76,6 +77,25 @@ export function GameSetup() {
       }
     }
   };
+
+  const handleSelectAll = (filteredPlayerIds: string[]) => {
+    // Determine how many we can still add
+    const remainingSlots = maxPlayers - selectedIds.length;
+    if (remainingSlots <= 0) return;
+
+    const newIdsToAdd = filteredPlayerIds.filter(id => !selectedIds.includes(id));
+    const idsToAdd = newIdsToAdd.slice(0, remainingSlots);
+    
+    setSelectedIds([...selectedIds, ...idsToAdd]);
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds([]);
+  };
+
+  const filteredPlayers = players.filter(p => 
+      p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleCreateTeams = () => {
     const count = selectedIds.length;
@@ -202,12 +222,62 @@ export function GameSetup() {
                 </Button>
             </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 mb-8">
-            {players.map((player) => {
-              const isSelected = selectedIds.includes(player.id);
-              return (
-                <button
-                  key={player.id}
+          <>
+            {/* Search Bar & Bulk Actions */}
+            <div className="flex flex-col gap-3 mb-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
+                <input
+                  type="text"
+                  placeholder="Search players..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={cn("w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none transition-all font-medium", themeRing, themeBorderFocus)}
+                />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+              
+              <div className="flex items-center justify-between text-sm">
+                 <span className="text-zinc-500 dark:text-zinc-400 font-medium">
+                    Showing {filteredPlayers.length} of {players.length}
+                 </span>
+                 <div className="flex gap-2">
+                    <button 
+                        onClick={() => handleSelectAll(filteredPlayers.map(p => p.id))}
+                        disabled={selectedIds.length >= maxPlayers || filteredPlayers.length === 0}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                    >
+                        <CheckSquare size={14} /> Select Visble
+                    </button>
+                    <button 
+                        onClick={handleClearSelection}
+                        disabled={selectedIds.length === 0}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                    >
+                        <Square size={14} /> Clear All
+                    </button>
+                 </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mb-8 max-h-[50vh] overflow-y-auto pr-1 pb-2 scrollbar-thin">
+              {filteredPlayers.length === 0 ? (
+                 <div className="col-span-2 text-center p-8 text-zinc-500 dark:text-zinc-400">
+                    No players found matching "{searchQuery}"
+                 </div>
+              ) : (
+                  filteredPlayers.map((player) => {
+                    const isSelected = selectedIds.includes(player.id);
+                    return (
+                      <button
+                        key={player.id}
                   onClick={() => togglePlayer(player.id)}
                   disabled={!isSelected && selectedIds.length >= maxPlayers}
                   className={cn(
@@ -231,8 +301,10 @@ export function GameSetup() {
                   </div>
                 </button>
               );
-            })}
+            })
+            )}
           </div>
+          </>
         )}
 
         <Button
