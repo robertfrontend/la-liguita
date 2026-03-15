@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { UserPlus, PlayCircle, Shuffle, Plus, X, Check, ArrowRightLeft } from "lucide-react";
+import { UserPlus, PlayCircle, Shuffle, Plus, X, Check, ArrowRightLeft, Trash2 } from "lucide-react";
 
 export function GameSetup() {
   const router = useRouter();
-  const { players, startGame, addPlayer, activeLeague } = useStore();
+  const { players, startGame, addPlayer, deletePlayer, activeLeague } = useStore();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [step, setStep] = useState<"select" | "teams">("select");
   const [teamA, setTeamA] = useState<string[]>([]);
@@ -53,6 +53,15 @@ export function GameSetup() {
       await addPlayer(newPlayerName.trim());
       setNewPlayerName("");
       setIsAdding(false);
+    }
+  };
+
+  const handleDeletePlayer = async (e: React.MouseEvent, playerId: string, playerName: string) => {
+    e.stopPropagation(); // prevent triggering the togglePlayer
+    if (window.confirm(`Are you sure you want to delete ${playerName}? This cannot be undone.`)) {
+      await deletePlayer(playerId);
+      // Optional: unselect the player if they were selected
+      setSelectedIds(selectedIds.filter(id => id !== playerId));
     }
   };
 
@@ -202,17 +211,24 @@ export function GameSetup() {
                   onClick={() => togglePlayer(player.id)}
                   disabled={!isSelected && selectedIds.length >= maxPlayers}
                   className={cn(
-                    "flex items-center p-3 rounded-lg border transition-all shadow-sm",
+                    "flex items-center p-2 rounded-lg border transition-all shadow-sm group",
                     isSelected
                       ? cn("text-white", themeBg, themeBorder, themeShadow)
                       : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800",
                     !isSelected && selectedIds.length >= maxPlayers && "opacity-50 cursor-not-allowed"
                   )}
                 >
-                  <div className="w-8 h-8 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center font-bold mr-3 text-sm">
+                  <div className="w-8 h-8 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center font-bold mr-3 text-sm shrink-0">
                     {player.avatar || player.name.slice(0, 2)}
                   </div>
-                  <span className="font-medium truncate">{player.name}</span>
+                  <span className="font-medium flex-1 text-left truncate">{player.name}</span>
+                  <div
+                    onClick={(e) => handleDeletePlayer(e, player.id, player.name)}
+                    className="p-2 ml-1 text-zinc-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                    title="Delete Player"
+                  >
+                    <Trash2 size={16} />
+                  </div>
                 </button>
               );
             })}

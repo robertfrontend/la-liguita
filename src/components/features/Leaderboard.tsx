@@ -4,12 +4,12 @@ import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { Trophy, Award, TrendingUp, UserPlus, X, Check, ExternalLink } from "lucide-react";
+import { Trophy, Award, TrendingUp, UserPlus, X, Check, ExternalLink, Trash2 } from "lucide-react";
 
 type SortKey = "points" | "assists" | "winRate";
 
 export function Leaderboard() {
-  const { players, addPlayer, activeLeague } = useStore();
+  const { players, addPlayer, deletePlayer, activeLeague } = useStore();
   const [sortBy, setSortBy] = useState<SortKey>("points");
   const [isMounted, setIsMounted] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
@@ -32,6 +32,12 @@ export function Leaderboard() {
       await addPlayer(newPlayerName.trim());
       setNewPlayerName("");
       setIsAdding(false);
+    }
+  };
+
+  const handleDeletePlayer = async (playerId: string, playerName: string) => {
+    if (window.confirm(`Are you sure you want to delete ${playerName}? This cannot be undone.`)) {
+      await deletePlayer(playerId);
     }
   };
   
@@ -182,6 +188,14 @@ export function Leaderboard() {
                   </span>
                 </div>
               </div>
+
+              <button
+                  onClick={() => handleDeletePlayer(player.id, player.name)}
+                  className="p-2 text-zinc-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                  title="Delete Player"
+              >
+                  <Trash2 size={16} />
+              </button>
             </div>
           );
         })}

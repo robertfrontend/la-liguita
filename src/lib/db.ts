@@ -145,6 +145,11 @@ export const addPlayerToDb = async (leagueId: string, name: string) => {
   return { id: docRef.id, ...newPlayer };
 };
 
+export const deletePlayerFromDb = async (leagueId: string, playerId: string) => {
+  const playerRef = doc(db, LEAGUES_COLLECTION, leagueId, PLAYERS_SUBCOLLECTION, playerId);
+  await deleteDoc(playerRef);
+};
+
 export const updatePlayerStatsInDb = async (leagueId: string, player: Player) => {
   const playerRef = doc(db, LEAGUES_COLLECTION, leagueId, PLAYERS_SUBCOLLECTION, player.id);
   await updateDoc(playerRef, {
