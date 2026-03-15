@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Game, Player, Team, League, Sport, UserProfile } from './types';
 import { 
-  addPlayerToDb, 
+  addPlayerToDb,
+  deletePlayerFromDb,
   createGameInDb, 
   updateGameInDb, 
   updatePlayerStatsInDb,
@@ -36,6 +37,7 @@ interface StoreState {
   finishGame: () => Promise<void>;
   resetActiveGame: () => void;
   addPlayer: (name: string) => Promise<void>;
+  deletePlayer: (playerId: string) => Promise<void>;
   deleteGame: (gameId: string) => Promise<void>;
   updateTeamName: (team: Team, name: string) => Promise<void>;
   ensureUserProfile: (uid: string, email?: string, displayName?: string) => Promise<void>;
@@ -249,6 +251,13 @@ export const useStore = create<StoreState>()(
         }
 
         await addPlayerToDb(activeLeague.id, name.trim());
+      },
+
+      deletePlayer: async (playerId) => {
+        const { activeLeague } = get();
+        if (!activeLeague) return;
+        
+        await deletePlayerFromDb(activeLeague.id, playerId);
       },
 
       deleteGame: async (gameId) => {

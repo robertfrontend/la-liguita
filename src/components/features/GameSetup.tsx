@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { UserPlus, PlayCircle, Shuffle, Plus, X, Check, ArrowRightLeft } from "lucide-react";
+import { UserPlus, PlayCircle, Shuffle, Plus, X, Check, ArrowRightLeft, Trash2, Search, CheckSquare, Square } from "lucide-react";
 
 export function GameSetup() {
   const router = useRouter();
-  const { players, startGame, addPlayer, activeLeague } = useStore();
+  const { players, startGame, addPlayer, deletePlayer, activeLeague } = useStore();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [step, setStep] = useState<"select" | "teams">("select");
   const [teamA, setTeamA] = useState<string[]>([]);
@@ -20,6 +20,7 @@ export function GameSetup() {
   const [isAdding, setIsAdding] = useState(false);
   const [newPlayerName, setNewPlayerName] = useState("");
   const [selectedSwapId, setSelectedSwapId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const isBasketball = activeLeague?.sport !== 'soccer';
   const maxPlayers = isBasketball ? 10 : 22;
@@ -56,6 +57,15 @@ export function GameSetup() {
     }
   };
 
+  const handleDeletePlayer = async (e: React.MouseEvent, playerId: string, playerName: string) => {
+    e.stopPropagation(); // prevent triggering the togglePlayer
+    if (window.confirm(`Are you sure you want to delete ${playerName}? This cannot be undone.`)) {
+      await deletePlayer(playerId);
+      // Optional: unselect the player if they were selected
+      setSelectedIds(selectedIds.filter(id => id !== playerId));
+    }
+  };
+
   if (!isMounted) return null;
 
   const togglePlayer = (id: string) => {
@@ -67,6 +77,25 @@ export function GameSetup() {
       }
     }
   };
+
+  const handleSelectAll = (filteredPlayerIds: string[]) => {
+    // Determine how many we can still add
+    const remainingSlots = maxPlayers - selectedIds.length;
+    if (remainingSlots <= 0) return;
+
+    const newIdsToAdd = filteredPlayerIds.filter(id => !selectedIds.includes(id));
+    const idsToAdd = newIdsToAdd.slice(0, remainingSlots);
+    
+    setSelectedIds([...selectedIds, ...idsToAdd]);
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds([]);
+  };
+
+  const filteredPlayers = players.filter(p => 
+      p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleCreateTeams = () => {
     const count = selectedIds.length;
@@ -133,7 +162,7 @@ export function GameSetup() {
        const isValidCount = selectedIds.length >= minPlayers && selectedIds.length <= maxPlayers && selectedIds.length % 2 === 0;
 
        return (
-      <div className="w-full max-w-md mx-auto p-4 pb-24">
+      <div className="w-full max-w-md mx-auto p-4 pb-32">
         <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
             <UserPlus className={themeIcon} />
@@ -193,45 +222,108 @@ export function GameSetup() {
                 </Button>
             </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 mb-8">
-            {players.map((player) => {
-              const isSelected = selectedIds.includes(player.id);
-              return (
-                <button
-                  key={player.id}
+          <>
+            {/* Search Bar & Bulk Actions */}
+            <div className="flex flex-col gap-3 mb-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
+                <input
+                  type="text"
+                  placeholder="Search players..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={cn("w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none transition-all font-medium", themeRing, themeBorderFocus)}
+                />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+              
+              <div className="flex items-center justify-between text-sm">
+                 <span className="text-zinc-500 dark:text-zinc-400 font-medium">
+                    Showing {filteredPlayers.length} of {players.length}
+                 </span>
+                 <div className="flex gap-2">
+                    <button 
+                        onClick={() => handleSelectAll(filteredPlayers.map(p => p.id))}
+                        disabled={selectedIds.length >= maxPlayers || filteredPlayers.length === 0}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                    >
+                        <CheckSquare size={14} /> Select Visble
+                    </button>
+                    <button 
+                        onClick={handleClearSelection}
+                        disabled={selectedIds.length === 0}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                    >
+                        <Square size={14} /> Clear All
+                    </button>
+                 </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mb-8 max-h-[50vh] overflow-y-auto pr-1 pb-2 scrollbar-thin">
+              {filteredPlayers.length === 0 ? (
+                 <div className="col-span-2 text-center p-8 text-zinc-500 dark:text-zinc-400">
+                    No players found matching "{searchQuery}"
+                 </div>
+              ) : (
+                  filteredPlayers.map((player) => {
+                    const isSelected = selectedIds.includes(player.id);
+                    return (
+                      <button
+                        key={player.id}
                   onClick={() => togglePlayer(player.id)}
                   disabled={!isSelected && selectedIds.length >= maxPlayers}
                   className={cn(
-                    "flex items-center p-3 rounded-lg border transition-all shadow-sm",
+                    "flex items-center p-2 rounded-lg border transition-all shadow-sm group",
                     isSelected
                       ? cn("text-white", themeBg, themeBorder, themeShadow)
                       : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800",
                     !isSelected && selectedIds.length >= maxPlayers && "opacity-50 cursor-not-allowed"
                   )}
                 >
-                  <div className="w-8 h-8 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center font-bold mr-3 text-sm">
+                  <div className="w-8 h-8 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center font-bold mr-3 text-sm shrink-0">
                     {player.avatar || player.name.slice(0, 2)}
                   </div>
-                  <span className="font-medium truncate">{player.name}</span>
+                  <span className="font-medium flex-1 text-left truncate">{player.name}</span>
+                  <div
+                    onClick={(e) => handleDeletePlayer(e, player.id, player.name)}
+                    className="p-2 ml-1 text-zinc-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                    title="Delete Player"
+                  >
+                    <Trash2 size={16} />
+                  </div>
                 </button>
               );
-            })}
+            })
+            )}
           </div>
+          </>
         )}
 
-        <Button
-          className="w-full h-12 text-lg bg-zinc-900 dark:bg-orange-500 text-white hover:bg-zinc-800 dark:hover:bg-orange-600"
-          disabled={!isValidCount}
-          onClick={handleCreateTeams}
-        >
-          Create Teams ({selectedIds.length / 2} vs {selectedIds.length / 2})
-        </Button>
+        <div className="fixed bottom-16 left-0 right-0 p-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-t border-zinc-200 dark:border-zinc-800 z-50 pointer-events-none">
+          <div className="max-w-md mx-auto pb-safe pointer-events-auto">
+            <Button
+              className="w-full h-12 text-lg bg-zinc-900 dark:bg-orange-500 text-white hover:bg-zinc-800 dark:hover:bg-orange-600"
+              disabled={!isValidCount}
+              onClick={handleCreateTeams}
+            >
+              Create Teams ({selectedIds.length / 2} vs {selectedIds.length / 2})
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-md mx-auto p-4 pb-24">
+    <div className="w-full max-w-md mx-auto p-4 pb-32">
        <h1 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white flex items-center gap-2">
           <PlayCircle className={themeIcon} />
           Preview Matchup
@@ -308,14 +400,16 @@ export function GameSetup() {
           </div>
         </div>
 
-        <div className="flex gap-3">
-          <Button variant="outline" className="flex-1 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-900" onClick={handleCreateTeams}>
-            <Shuffle className="mr-2 h-4 w-4" />
-            Reshuffle
-          </Button>
-          <Button className={cn("flex-[2] text-white", themeBg, themeBgHover)} size="lg" onClick={handleStartGame}>
-            Start Game
-          </Button>
+        <div className="fixed bottom-16 left-0 right-0 p-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-t border-zinc-200 dark:border-zinc-800 z-50 pointer-events-none">
+          <div className="max-w-md mx-auto flex gap-3 pb-safe pointer-events-auto">
+            <Button variant="outline" className="flex-1 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-900" onClick={handleCreateTeams}>
+              <Shuffle className="mr-2 h-4 w-4" />
+              Reshuffle
+            </Button>
+            <Button className={cn("flex-[2] text-white", themeBg, themeBgHover)} size="lg" onClick={handleStartGame}>
+              Start Game
+            </Button>
+          </div>
         </div>
     </div>
   );

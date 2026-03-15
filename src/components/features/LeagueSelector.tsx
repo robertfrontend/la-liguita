@@ -15,7 +15,6 @@ export function LeagueSelector() {
   const { leagues, activeLeague, setActiveLeague, createLeague, deleteLeague, userProfile } = useStore();
   const [isOpen, setIsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-  const [showPaywall, setShowPaywall] = useState(false);
   const [newLeagueName, setNewLeagueName] = useState("");
   const [selectedSport, setSelectedSport] = useState<Sport>('basketball');
   const [isMounted, setIsMounted] = useState(false);
@@ -26,8 +25,6 @@ export function LeagueSelector() {
 
   if (!user) return null;
 
-  const canCreate = leagues.length < 1 || userProfile?.isPro;
-
   const handleCreate = async () => {
     if (!newLeagueName.trim()) return;
     await createLeague(newLeagueName.trim(), user.uid, selectedSport);
@@ -37,74 +34,9 @@ export function LeagueSelector() {
   };
 
   const handleOpenCreate = () => {
-      if (canCreate) {
-          setIsCreating(true);
-          setIsOpen(false);
-      } else {
-          setShowPaywall(true);
-          setIsOpen(false);
-      }
+      setIsCreating(true);
+      setIsOpen(false);
   };
-
-  const PaywallModal = isMounted ? createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-zinc-900/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
-        <div 
-            className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl ring-1 ring-zinc-200 transform transition-all scale-100 overflow-hidden relative"
-            onClick={e => e.stopPropagation()}
-        >
-            {/* Background Decorative Element */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-orange-500/10 rounded-full blur-3xl" />
-            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-orange-600/10 rounded-full blur-3xl" />
-
-            <div className="relative text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center text-white mx-auto mb-6 shadow-lg shadow-orange-500/20 rotate-3">
-                    <Trophy size={40} strokeWidth={2.5} />
-                </div>
-                
-                <h3 className="text-3xl font-black mb-2 text-zinc-900 tracking-tight">Level Up to Pro</h3>
-                <p className="text-zinc-500 mb-8 leading-relaxed">
-                    You've reached the limit of 1 free league. Unlock <span className="text-orange-600 font-bold">unlimited leagues</span> and pro features to keep the game going.
-                </p>
-
-                <div className="bg-zinc-50 rounded-2xl p-6 mb-8 border border-zinc-100">
-                    <div className="flex items-center justify-between mb-4">
-                        <span className="text-sm font-bold text-zinc-400 uppercase tracking-widest">Plan Pro</span>
-                        <div className="flex items-baseline gap-1">
-                            <span className="text-3xl font-black text-zinc-900">$9.99</span>
-                            <span className="text-xs font-bold text-zinc-400">USD / life</span>
-                        </div>
-                    </div>
-                    <ul className="text-left space-y-3">
-                        {['Unlimited Leagues', 'Custom Team Names', 'Advanced Analytics', 'Early Access to Updates'].map((feature, i) => (
-                            <li key={i} className="flex items-center gap-2 text-sm font-semibold text-zinc-700">
-                                <Check size={16} className="text-orange-500" />
-                                {feature}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-
-                <div className="flex flex-col gap-3">
-                    <a 
-                        href="https://buy.stripe.com/7sY3cw6pG05gfgybET4F20q"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full py-4 rounded-xl text-lg font-black bg-orange-500 text-white hover:bg-orange-600 shadow-xl shadow-orange-500/20 transition-all active:scale-95 flex items-center justify-center gap-2"
-                    >
-                        Unlock Pro Now
-                    </a>
-                    <button 
-                        onClick={() => setShowPaywall(false)}
-                        className="px-4 py-2 rounded-lg text-sm font-bold text-zinc-400 hover:text-zinc-600 transition-colors"
-                    >
-                        Maybe later
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>,
-    document.body
-  ) : null;
 
   const handleDeleteLeague = async (e: React.MouseEvent, leagueId: string, leagueName: string) => {
     e.stopPropagation();
@@ -189,7 +121,6 @@ export function LeagueSelector() {
                 Create League
             </Button>
             {isCreating && CreateLeagueModal}
-            {showPaywall && PaywallModal}
         </>
     );
   }
@@ -264,7 +195,6 @@ export function LeagueSelector() {
       )}
       
       {isCreating && CreateLeagueModal}
-      {showPaywall && PaywallModal}
     </div>
   );
 }
