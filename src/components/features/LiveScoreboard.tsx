@@ -130,7 +130,12 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
               {displayAvatar}
             </div>
             <div>
-              <div className="font-bold text-sm text-zinc-900 dark:text-white">{displayName}</div>
+              <div className="font-bold text-sm text-zinc-900 dark:text-white flex items-center gap-1.5">
+                  {displayName}
+                  {game.isFinished && isMVP(playerId) && (
+                      <span className="text-yellow-500 animate-in zoom-in spin-in-12 duration-500" title="MVP">👑</span>
+                  )}
+              </div>
               <div className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                 {stats.points} {pointLabel} • {stats.assists} {assistLabel}
               </div>
@@ -178,7 +183,27 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
 
   const isWinnerA = game.isFinished && game.scoreA > game.scoreB;
   const isWinnerB = game.isFinished && game.scoreB > game.scoreA;
-  
+
+  // MVP Calculation
+  const isMVP = (playerId: string) => {
+      let mvpId: string | null = null;
+      let maxScore = -1;
+
+      // Ensure that we only calculate MVP for finished games
+      if (!game.isFinished) return false;
+
+      // We determine MVP by giving more weight to goals/points, followed by assists.
+      Object.entries(game.playerStats).forEach(([id, stats]) => {
+          const score = (stats.points * 1.5) + stats.assists; 
+          if (score > maxScore && score > 0) { // must have at least some stat
+              maxScore = score;
+              mvpId = id;
+          }
+      });
+      
+      return mvpId === playerId;
+  };
+
   const EditableTeamName = ({ team, currentName, isWinner }: { team: 'A' | 'B', currentName?: string, isWinner: boolean }) => {
       const [isEditing, setIsEditing] = useState(false);
       const [name, setName] = useState(currentName || (team === 'A' ? "Team A" : "Team B"));

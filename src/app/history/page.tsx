@@ -90,6 +90,19 @@ export default function HistoryPage() {
                   const borderHover = isBasketball ? "group-hover:border-orange-500/50" : "group-hover:border-green-600/50";
                   const pointLabel = isBasketball ? "pts" : "gls";
 
+                  // MVP Calculation
+                  let mvpId: string | null = null;
+                  let maxScore = -1;
+                  if (game.isFinished) {
+                      Object.entries(game.playerStats || {}).forEach(([id, stats]) => {
+                          const score = (stats.points * 1.5) + stats.assists; 
+                          if (score > maxScore && score > 0) {
+                              maxScore = score;
+                              mvpId = id;
+                          }
+                      });
+                  }
+
                   return (
                     <Link href={`/history/${game.id}`} key={game.id} className="block group">
                       <div className={cn("bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800 shadow-sm transition-colors", borderHover)}>
@@ -135,7 +148,10 @@ export default function HistoryPage() {
                                       const stats = game.playerStats[pid] || { points: 0, assists: 0 };
                                       return (
                                           <div key={pid} className="flex justify-between mb-1 text-zinc-600 dark:text-zinc-300">
-                                              <span className="font-medium truncate pr-2">{getPlayerName(pid)}</span>
+                                              <span className="font-medium truncate pr-2 flex items-center gap-1">
+                                                  {getPlayerName(pid)}
+                                                  {pid === mvpId && <span className="text-yellow-500 text-[10px]" title="MVP">👑</span>}
+                                              </span>
                                               <span className="font-mono text-zinc-400 dark:text-zinc-500">{stats.points}{pointLabel}</span>
                                           </div>
                                       )
@@ -147,7 +163,10 @@ export default function HistoryPage() {
                                       const stats = game.playerStats[pid] || { points: 0, assists: 0 };
                                       return (
                                           <div key={pid} className="flex justify-between mb-1 text-zinc-600 dark:text-zinc-300">
-                                              <span className="font-medium truncate pr-2">{getPlayerName(pid)}</span>
+                                              <span className="font-medium truncate pr-2 flex items-center gap-1">
+                                                  {getPlayerName(pid)}
+                                                  {pid === mvpId && <span className="text-yellow-500 text-[10px]" title="MVP">👑</span>}
+                                              </span>
                                               <span className="font-mono text-zinc-400 dark:text-zinc-500">{stats.points}{pointLabel}</span>
                                           </div>
                                       )

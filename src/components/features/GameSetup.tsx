@@ -74,6 +74,7 @@ export function GameSetup() {
     } else {
       if (selectedIds.length < maxPlayers) {
         setSelectedIds([...selectedIds, id]);
+        setSearchQuery("");
       }
     }
   };
@@ -87,6 +88,7 @@ export function GameSetup() {
     const idsToAdd = newIdsToAdd.slice(0, remainingSlots);
     
     setSelectedIds([...selectedIds, ...idsToAdd]);
+    setSearchQuery("");
   };
 
   const handleClearSelection = () => {
