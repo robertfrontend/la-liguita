@@ -162,7 +162,7 @@ export function GameSetup() {
        const isValidCount = selectedIds.length >= minPlayers && selectedIds.length <= maxPlayers && selectedIds.length % 2 === 0;
 
        return (
-      <div className="w-full max-w-md mx-auto p-4 pb-24">
+      <div className="w-full max-w-md mx-auto p-4 pb-32">
         <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
             <UserPlus className={themeIcon} />
@@ -307,19 +307,23 @@ export function GameSetup() {
           </>
         )}
 
-        <Button
-          className="w-full h-12 text-lg bg-zinc-900 dark:bg-orange-500 text-white hover:bg-zinc-800 dark:hover:bg-orange-600"
-          disabled={!isValidCount}
-          onClick={handleCreateTeams}
-        >
-          Create Teams ({selectedIds.length / 2} vs {selectedIds.length / 2})
-        </Button>
+        <div className="fixed bottom-16 left-0 right-0 p-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-t border-zinc-200 dark:border-zinc-800 z-50 pointer-events-none">
+          <div className="max-w-md mx-auto pb-safe pointer-events-auto">
+            <Button
+              className="w-full h-12 text-lg bg-zinc-900 dark:bg-orange-500 text-white hover:bg-zinc-800 dark:hover:bg-orange-600"
+              disabled={!isValidCount}
+              onClick={handleCreateTeams}
+            >
+              Create Teams ({selectedIds.length / 2} vs {selectedIds.length / 2})
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-md mx-auto p-4 pb-24">
+    <div className="w-full max-w-md mx-auto p-4 pb-32">
        <h1 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-white flex items-center gap-2">
           <PlayCircle className={themeIcon} />
           Preview Matchup
@@ -396,14 +400,16 @@ export function GameSetup() {
           </div>
         </div>
 
-        <div className="flex gap-3">
-          <Button variant="outline" className="flex-1 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-900" onClick={handleCreateTeams}>
-            <Shuffle className="mr-2 h-4 w-4" />
-            Reshuffle
-          </Button>
-          <Button className={cn("flex-[2] text-white", themeBg, themeBgHover)} size="lg" onClick={handleStartGame}>
-            Start Game
-          </Button>
+        <div className="fixed bottom-16 left-0 right-0 p-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-t border-zinc-200 dark:border-zinc-800 z-50 pointer-events-none">
+          <div className="max-w-md mx-auto flex gap-3 pb-safe pointer-events-auto">
+            <Button variant="outline" className="flex-1 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-900" onClick={handleCreateTeams}>
+              <Shuffle className="mr-2 h-4 w-4" />
+              Reshuffle
+            </Button>
+            <Button className={cn("flex-[2] text-white", themeBg, themeBgHover)} size="lg" onClick={handleStartGame}>
+              Start Game
+            </Button>
+          </div>
         </div>
     </div>
   );
