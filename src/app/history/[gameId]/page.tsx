@@ -69,6 +69,19 @@ export default function GameDetailPage() {
   const teamAIconText = isBasketball ? "text-orange-600 dark:text-orange-400" : "text-green-600 dark:text-green-400";
   const pointLabel = isBasketball ? "PTS" : "GLS";
 
+  // MVP Calculation
+  let mvpId: string | null = null;
+  let maxScore = -1;
+  if (game.isFinished) {
+      Object.entries(game.playerStats || {}).forEach(([id, stats]) => {
+          const score = (stats.points * 1.5) + stats.assists; 
+          if (score > maxScore && score > 0) {
+              maxScore = score;
+              mvpId = id;
+          }
+      });
+  }
+
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 pb-20 transition-colors duration-300">
       <header className="bg-white dark:bg-zinc-950 p-4 sticky top-0 z-10 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
@@ -149,7 +162,10 @@ export default function GameDetailPage() {
                                     <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold", teamAIconBg, teamAIconText)}>
                                         {getPlayerName(pid).slice(0, 2).toUpperCase()}
                                     </div>
-                                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{getPlayerName(pid)}</span>
+                                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                                        {getPlayerName(pid)}
+                                        {pid === mvpId && <span className="text-yellow-500 animate-in zoom-in text-[10px]" title="MVP">👑</span>}
+                                    </span>
                                 </div>
                                 <div className="flex gap-4 font-mono text-sm font-bold">
                                     <span className="w-8 text-center text-zinc-900 dark:text-zinc-100">{stats.points}</span>
@@ -179,7 +195,10 @@ export default function GameDetailPage() {
                                     <div className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-[10px] font-bold">
                                         {getPlayerName(pid).slice(0, 2).toUpperCase()}
                                     </div>
-                                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{getPlayerName(pid)}</span>
+                                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                                        {getPlayerName(pid)}
+                                        {pid === mvpId && <span className="text-yellow-500 animate-in zoom-in text-[10px]" title="MVP">👑</span>}
+                                    </span>
                                 </div>
                                 <div className="flex gap-4 font-mono text-sm font-bold">
                                     <span className="w-8 text-center text-zinc-900 dark:text-zinc-100">{stats.points}</span>
