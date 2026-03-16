@@ -82,14 +82,37 @@ export default function GameDetailPage() {
       });
   }
 
+  const handleShare = async () => {
+      const url = window.location.href;
+      if (navigator.share) {
+          try {
+              const mvpName = mvpId ? getPlayerName(mvpId) : null;
+              const mvpText = mvpName ? `\n👑 MVP: ${mvpName}` : '';
+              const text = `Resultados: ${game.teamAName || 'Team A'} (${game.scoreA}) - ${game.teamBName || 'Team B'} (${game.scoreB}) 🏆${mvpText}`;
+              
+              await navigator.share({
+                  title: 'La Liguita',
+                  text: text,
+                  url,
+              });
+          } catch (error) {
+              console.error('Error sharing', error);
+          }
+      } else {
+          navigator.clipboard.writeText(url);
+          alert('¡Enlace copiado al portapapeles!');
+      }
+  };
+
+
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950 pb-20 transition-colors duration-300">
+    <div className="min-h-screen bg-white dark:bg-zinc-950 pb-32 transition-colors duration-300">
       <header className="bg-white dark:bg-zinc-950 p-4 sticky top-0 z-10 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
           <Link href="/history" className="p-2 -ml-2 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-full transition-colors">
               <ArrowLeft size={20} />
           </Link>
           <span className="font-bold text-zinc-900 dark:text-white text-sm uppercase tracking-wider">Match Details</span>
-          <button className="p-2 -mr-2 text-zinc-600 hover:bg-zinc-100 rounded-full opacity-0 pointer-events-none">
+          <button onClick={handleShare} className="p-2 -mr-2 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-full transition-colors" title="Compartir">
               <Share size={20} />
           </button>
       </header>
@@ -211,6 +234,21 @@ export default function GameDetailPage() {
              </div>
         </div>
 
+      </div>
+
+      <div className="fixed bottom-16 left-0 right-0 p-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-t border-zinc-200 dark:border-zinc-800 z-50 pointer-events-none">
+        <div className="max-w-md mx-auto pb-safe pointer-events-auto">
+          <button
+            onClick={handleShare}
+            className={cn(
+                "w-full flex items-center justify-center gap-2 h-14 text-lg font-bold text-white rounded-xl transition-all shadow-md active:scale-[0.98]",
+                isBasketball ? "bg-orange-500 hover:bg-orange-600" : "bg-green-600 hover:bg-green-700"
+            )}
+          >
+            <Share size={20} />
+            Compartir con amigos
+          </button>
+        </div>
       </div>
     </div>
   );
