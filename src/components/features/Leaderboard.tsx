@@ -5,15 +5,18 @@ import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Trophy, Award, TrendingUp, UserPlus, X, Check, ExternalLink, Trash2 } from "lucide-react";
+import { PlayerStatsDetail } from "./PlayerStatsDetail";
+import { Player } from "@/lib/types";
 
 type SortKey = "points" | "assists" | "winRate";
 
 export function Leaderboard() {
-  const { players, addPlayer, deletePlayer, activeLeague } = useStore();
+  const { players, addPlayer, deletePlayer, activeLeague, history } = useStore();
   const [sortBy, setSortBy] = useState<SortKey>("points");
   const [isMounted, setIsMounted] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [newPlayerName, setNewPlayerName] = useState("");
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -156,13 +159,14 @@ export function Leaderboard() {
           return (
             <div
               key={player.id}
-              className="bg-white dark:bg-zinc-900 rounded-lg p-4 border border-zinc-200 dark:border-zinc-800 flex items-center gap-4 shadow-sm"
+              onClick={() => setSelectedPlayer(player)}
+              className="bg-white dark:bg-zinc-900 rounded-lg p-4 border border-zinc-200 dark:border-zinc-800 flex items-center gap-4 shadow-sm cursor-pointer hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors group"
             >
               <div className={cn(
-                "flex items-center justify-center w-8 h-8 rounded font-black text-sm",
+                "flex items-center justify-center w-8 h-8 rounded font-black text-sm transition-colors",
                 index === 0 ? "bg-yellow-400 text-yellow-950" :
                 index === 1 ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200" :
-                index === 2 ? "bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200" :
+                index === 2 ? (isBasketball ? "bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-200" : "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200") :
                 "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
               )}>
                 {index + 1}
@@ -173,7 +177,7 @@ export function Leaderboard() {
               </div>
 
               <div className="flex-1">
-                <h3 className="font-bold text-zinc-900 dark:text-white text-lg leading-none">{player.name}</h3>
+                <h3 className="font-bold text-zinc-900 dark:text-white text-lg leading-none group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors">{player.name}</h3>
                 <div className="flex items-center gap-3 text-xs font-mono text-zinc-500 dark:text-zinc-400 mt-1">
                   <span className={cn(sortBy === "points" && cn("font-bold", themeTextDark))}>
                     {player.totalPoints} {pointLabelShort}
@@ -190,7 +194,10 @@ export function Leaderboard() {
               </div>
 
               <button
-                  onClick={() => handleDeletePlayer(player.id, player.name)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeletePlayer(player.id, player.name);
+                  }}
                   className="p-2 text-zinc-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
                   title="Delete Player"
               >
@@ -206,6 +213,15 @@ export function Leaderboard() {
           </div>
         )}
       </div>
+
+      {selectedPlayer && (
+        <PlayerStatsDetail 
+          player={selectedPlayer}
+          games={history}
+          onClose={() => setSelectedPlayer(null)}
+          sport={activeLeague.sport}
+        />
+      )}
     </div>
   );
 }
