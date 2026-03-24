@@ -1,18 +1,21 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { League, Player } from "@/lib/types";
-import { subscribeToLeague, subscribeToPlayers } from "@/lib/db";
-import { Trophy, TrendingUp, Award, Check } from "lucide-react";
+import { League, Player, Game } from "@/lib/types";
+import { subscribeToLeague, subscribeToPlayers, subscribeToHistory } from "@/lib/db";
+import { Trophy, TrendingUp, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PlayerStatsDetail } from "./PlayerStatsDetail";
 
 type SortKey = "points" | "assists" | "winRate";
 
 export function PublicLeaderboard({ leagueId }: { leagueId: string }) {
   const [league, setLeague] = useState<League | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
+  const [history, setHistory] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortKey>("points");
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -26,9 +29,14 @@ export function PublicLeaderboard({ leagueId }: { leagueId: string }) {
         setLoading(false);
     });
 
+    const unsubHistory = subscribeToHistory(leagueId, (fetched) => {
+        setHistory(fetched);
+    });
+
     return () => {
         unsubLeague();
         unsubPlayers();
+        unsubHistory();
     };
   }, [leagueId]);
 
@@ -123,7 +131,8 @@ export function PublicLeaderboard({ leagueId }: { leagueId: string }) {
                     return (
                         <div
                         key={player.id}
-                        className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-100 dark:border-zinc-800 flex items-center gap-4 shadow-sm relative overflow-hidden group"
+                        onClick={() => setSelectedPlayer(player)}
+                        className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-100 dark:border-zinc-800 flex items-center gap-4 shadow-sm relative overflow-hidden group cursor-pointer hover:border-zinc-200 dark:hover:border-zinc-700 transition-all"
                         >
                             {/* Rank Indicator */}
                             <div className={cn(
@@ -143,7 +152,7 @@ export function PublicLeaderboard({ leagueId }: { leagueId: string }) {
 
                             {/* Info */}
                             <div className="flex-1 min-w-0">
-                                <h3 className="font-bold text-zinc-900 dark:text-white text-base truncate">{player.name}</h3>
+                                <h3 className="font-bold text-zinc-900 dark:text-white text-base truncate group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors">{player.name}</h3>
                                 <div className="flex items-center gap-3 text-xs font-mono text-zinc-400 dark:text-zinc-500 mt-1">
                                     <span className={cn(sortBy === "points" && cn("font-bold px-1 rounded", themeTextDark, themeBgLight))}>
                                         {player.totalPoints} {pointLabelShort}
@@ -177,6 +186,15 @@ export function PublicLeaderboard({ leagueId }: { leagueId: string }) {
                 )}
             </div>
        </div>
+
+      {selectedPlayer && league && (
+        <PlayerStatsDetail 
+          player={selectedPlayer}
+          games={history}
+          onClose={() => setSelectedPlayer(null)}
+          sport={league.sport}
+        />
+      )}
     </div>
   );
 }
