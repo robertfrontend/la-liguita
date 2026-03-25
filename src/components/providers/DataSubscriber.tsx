@@ -37,9 +37,11 @@ export function DataSubscriber() {
 
     // Ensure profile exists
     if (user.uid) {
+        console.log("DEBUG: Ensuring profile for user:", user.uid);
         ensureUserProfile(user.uid, user.email || undefined, user.displayName || undefined);
 
         const unsubProfile = subscribeToUserProfile(user.uid, (profile) => {
+            console.log("DEBUG: Profile update received:", profile ? "found" : "not found");
             setUserProfile(profile);
         });
 

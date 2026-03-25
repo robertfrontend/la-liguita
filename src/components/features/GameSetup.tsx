@@ -272,7 +272,7 @@ export function GameSetup() {
             <div className="grid grid-cols-2 gap-3 mb-8 max-h-[50vh] overflow-y-auto pr-1 pb-2 scrollbar-thin">
               {filteredPlayers.length === 0 ? (
                  <div className="col-span-2 text-center p-8 text-zinc-500 dark:text-zinc-400">
-                    No players found matching "{searchQuery}"
+                    No players found matching {`"${searchQuery}"`}
                  </div>
               ) : (
                   filteredPlayers.map((player) => {

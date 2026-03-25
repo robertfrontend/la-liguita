@@ -5,6 +5,7 @@ import {
   getDoc, 
   getDocs, 
   updateDoc, 
+  setDoc,
   addDoc, 
   deleteDoc,
   query, 
@@ -36,7 +37,6 @@ export const subscribeToUserProfile = (uid: string, callback: (profile: UserProf
 };
 
 export const createUserProfile = async (uid: string, email?: string, displayName?: string) => {
-  const { setDoc } = await import("firebase/firestore");
   const docRef = doc(db, "users", uid);
   
   const profileData = {

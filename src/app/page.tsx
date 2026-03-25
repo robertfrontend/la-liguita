@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Trophy, PlayCircle, ArrowRight, Github, Zap } from "lucide-react";
+import { Trophy, PlayCircle, Github, Zap } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
