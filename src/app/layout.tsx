@@ -6,6 +6,7 @@ import { BottomNav } from "@/components/layout/BottomNav";
 
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import { DataSubscriber } from "@/components/providers/DataSubscriber";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -28,16 +29,18 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} bg-[var(--background)] text-[var(--foreground)]`}>
-        <ThemeProvider>
-          <AuthProvider>
-            <DataSubscriber />
-            <TopNav />
-            <main className="min-h-screen pt-16 pb-20">
-              {children}
-            </main>
-            <BottomNav />
-          </AuthProvider>
-        </ThemeProvider>
+        <LanguageProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              <DataSubscriber />
+              <TopNav />
+              <main className="min-h-screen pt-16 pb-20">
+                {children}
+              </main>
+              <BottomNav />
+            </AuthProvider>
+          </ThemeProvider>
+        </LanguageProvider>
       </body>
     </html>
   );
