@@ -8,6 +8,7 @@ import {
   updateGameInDb, 
   updatePlayerStatsInDb,
   createLeague,
+  updateLeagueInDb,
   deleteGameFromDb,
   deleteLeagueFromDb,
   createUserProfile
@@ -31,6 +32,7 @@ interface StoreState {
 
   // Actions
   createLeague: (name: string, ownerId: string, sport: Sport) => Promise<void>;
+  updateLeague: (leagueId: string, updates: Partial<League>) => Promise<void>;
   deleteLeague: (leagueId: string) => Promise<void>;
   startGame: (teamAIds: string[], teamBIds: string[], teamAName?: string, teamBName?: string) => Promise<void>;
   updateStat: (playerId: string, type: 'pts' | 'ast', amount: number) => Promise<void>;
@@ -106,6 +108,20 @@ export const useStore = create<StoreState>()(
             activeGame: null,
             history: []
         });
+      },
+
+      updateLeague: async (leagueId, updates) => {
+        await updateLeagueInDb(leagueId, updates);
+        
+        const { leagues, activeLeague } = get();
+        const updatedLeagues = (leagues || []).map(l => l.id === leagueId ? { ...l, ...updates } : l);
+        
+        let newActive = activeLeague;
+        if (activeLeague?.id === leagueId) {
+            newActive = { ...activeLeague, ...updates };
+        }
+        
+        set({ leagues: updatedLeagues, activeLeague: newActive });
       },
 
       deleteLeague: async (leagueId) => {

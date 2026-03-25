@@ -70,6 +70,11 @@ export const createLeague = async (name: string, ownerId: string, sport: Sport) 
   return { id: docRef.id, ...newLeague };
 };
 
+export const updateLeagueInDb = async (leagueId: string, updates: Partial<League>) => {
+  const docRef = doc(db, LEAGUES_COLLECTION, leagueId);
+  await updateDoc(docRef, updates);
+};
+
 export const deleteLeagueFromDb = async (leagueId: string) => {
   const leagueRef = doc(db, LEAGUES_COLLECTION, leagueId);
   
