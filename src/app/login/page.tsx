@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/components/providers/AuthProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { Button } from "@/components/ui/Button";
 import { LogIn, UserPlus, Mail, Lock, User } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -8,6 +9,7 @@ import { useEffect, useState } from "react";
 
 export default function LoginPage() {
   const { user, signInWithGoogle, signInWithEmail, signUpWithEmail, loading } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
   
   const [isLogin, setIsLogin] = useState(true);
@@ -37,13 +39,13 @@ export default function LoginPage() {
     } catch (err) {
       const error = err as { code?: string; message?: string };
       if (error.code === 'auth/invalid-credential') {
-        setError("Invalid email or password.");
+        setError(t("login.invalidCredentials"));
       } else if (error.code === 'auth/email-already-in-use') {
-        setError("Email already in use.");
+        setError(t("login.emailInUse"));
       } else if (error.code === 'auth/weak-password') {
-        setError("Password is too weak.");
+        setError(t("login.weakPassword"));
       } else {
-        setError("Something went wrong. Please try again.");
+        setError(t("common.error"));
       }
       console.error(error);
     } finally {
@@ -63,10 +65,10 @@ export default function LoginPage() {
         </div>
         
         <h1 className="text-2xl font-bold text-foreground mb-2 text-center">
-          {isLogin ? "Welcome Back" : "Create Account"}
+          {isLogin ? t("login.welcomeBack") : t("login.createAccount")}
         </h1>
         <p className="text-muted-foreground mb-8 text-center">
-          {isLogin ? "Sign in to continue to La Liguita." : "Join the street basketball community."}
+          {isLogin ? t("login.signInToContinue") : t("login.joinCommunity")}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4 mb-6">
@@ -75,7 +77,7 @@ export default function LoginPage() {
               <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={20} />
               <input 
                 type="text" 
-                placeholder="Full Name"
+                placeholder={t("common.name")}
                 className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-foreground"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -88,7 +90,7 @@ export default function LoginPage() {
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={20} />
             <input 
               type="email" 
-              placeholder="Email Address"
+              placeholder={t("common.email")}
               className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-foreground"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -100,7 +102,7 @@ export default function LoginPage() {
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={20} />
             <input 
               type="password" 
-              placeholder="Password"
+              placeholder={t("common.password")}
               className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-foreground"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -116,7 +118,7 @@ export default function LoginPage() {
             disabled={isSubmitting}
             className="w-full h-12 text-base font-bold bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/20 transition-all active:scale-[0.98]"
           >
-            {isSubmitting ? "Loading..." : (isLogin ? "Sign In" : "Sign Up")}
+            {isSubmitting ? t("common.loading") : (isLogin ? t("common.signIn") : t("common.signUp"))}
           </Button>
         </form>
 
@@ -126,9 +128,9 @@ export default function LoginPage() {
             className="text-sm text-muted-foreground hover:text-orange-500 transition-colors"
           >
             {isLogin ? (
-              <>Don't have an account? <span className="font-bold">Sign Up</span></>
+              <>{t("login.dontHaveAccount")} <span className="font-bold">{t("common.signUp")}</span></>
             ) : (
-              <>Already have an account? <span className="font-bold">Sign In</span></>
+              <>{t("login.alreadyHaveAccount")} <span className="font-bold">{t("common.signIn")}</span></>
             )}
           </button>
         </div>
@@ -138,7 +140,7 @@ export default function LoginPage() {
             <div className="w-full border-t border-border"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-card text-muted-foreground">Or continue with</span>
+            <span className="px-2 bg-card text-muted-foreground">{t("common.orContinueWith")}</span>
           </div>
         </div>
 
@@ -166,7 +168,7 @@ export default function LoginPage() {
               fill="#EA4335"
             />
           </svg>
-          Google
+          {t("common.google")}
         </Button>
       </div>
     </div>

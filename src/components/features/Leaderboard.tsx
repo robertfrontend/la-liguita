@@ -7,11 +7,13 @@ import { cn } from "@/lib/utils";
 import { Trophy, Award, TrendingUp, UserPlus, X, Check, ExternalLink, Trash2 } from "lucide-react";
 import { PlayerStatsDetail } from "./PlayerStatsDetail";
 import { Player } from "@/lib/types";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 type SortKey = "points" | "assists" | "winRate";
 
 export function Leaderboard() {
   const { players, addPlayer, deletePlayer, activeLeague, history } = useStore();
+  const { t } = useLanguage();
   const [sortBy, setSortBy] = useState<SortKey>("points");
   const [isMounted, setIsMounted] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
@@ -25,10 +27,9 @@ export function Leaderboard() {
   const handleAddPlayer = async () => {
     if (newPlayerName.trim()) {
       if (!activeLeague) {
-          alert("Please create a league first.");
+          alert(t("leaderboard.noLeagueSelected"));
           return;
       }
-      // The store already checks this, but we can prevent the call here too
       const nameExists = players.some(p => p.name.trim().toLowerCase() === newPlayerName.trim().toLowerCase());
       if (nameExists) return;
 
@@ -39,7 +40,7 @@ export function Leaderboard() {
   };
 
   const handleDeletePlayer = async (playerId: string, playerName: string) => {
-    if (window.confirm(`Are you sure you want to delete ${playerName}? This cannot be undone.`)) {
+    if (window.confirm(t("common.confirmDelete").replace("{name}", playerName))) {
       await deletePlayer(playerId);
     }
   };
@@ -63,37 +64,35 @@ export function Leaderboard() {
       return (
           <div className="w-full max-w-md mx-auto p-8 text-center mt-12 bg-zinc-50 dark:bg-zinc-900 rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-800">
               <Trophy className="w-16 h-16 text-zinc-300 dark:text-zinc-700 mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">No League Selected</h2>
-              <p className="text-zinc-500 dark:text-zinc-400 mb-6">Create or select a league from the top menu to start tracking players and games.</p>
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">{t("leaderboard.noLeagueSelected")}</h2>
+              <p className="text-zinc-500 dark:text-zinc-400 mb-6">{t("leaderboard.selectLeagueDesc")}</p>
               <div className="text-sm text-orange-500 font-bold animate-bounce">
-                  ↑ Check the top menu
+                  {t("leaderboard.checkTopMenu")}
               </div>
           </div>
       );
   }
 
   const isBasketball = activeLeague?.sport !== 'soccer';
-  const pointLabel = isBasketball ? 'Points' : 'Goals';
-  const pointLabelShort = isBasketball ? 'PTS' : 'GLS';
+  const pointLabel = isBasketball ? t("leaderboard.points") : t("leaderboard.goals");
+  const pointLabelShort = isBasketball ? t("leaderboard.pointsShort") : t("leaderboard.goalsShort");
   const themeBg = isBasketball ? "bg-orange-500" : "bg-green-600";
   const themeText = isBasketball ? "text-orange-500" : "text-green-600";
   const themeTextDark = isBasketball ? "text-orange-600 dark:text-orange-400" : "text-green-700 dark:text-green-400";
-  const themeBorder = isBasketball ? "border-orange-500" : "border-green-600";
   const themeBgLight = isBasketball ? "bg-orange-100 dark:bg-orange-950/40" : "bg-green-100 dark:bg-green-950/40";
   const themeBorderLight = isBasketball ? "border-orange-200 dark:border-orange-900/30" : "border-green-200 dark:border-green-900/30";
 
   return (
     <div className="w-full max-w-md mx-auto p-4 pb-24">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white flex items-center gap-2 text-wrap">
             <span className={cn("text-xs font-black uppercase tracking-wider px-2 py-1 rounded-md", themeText, themeBgLight)}>{activeLeague.name}</span>
             <Link 
                 href={`/league/${activeLeague.id}/leaderboard`}
                 target="_blank"
                 className={cn("ml-2 flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 rounded-full transition-colors border border-zinc-200 dark:border-zinc-800", isBasketball ? "hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-950/20" : "hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20")}
-                title="Open Public Leaderboard"
             >
-                Public <ExternalLink size={10} />
+                {t("common.public")} <ExternalLink size={10} />
             </Link>
         </h1>
         <button
@@ -107,16 +106,16 @@ export function Leaderboard() {
       {isAdding && (
         <div className={cn("mb-6 p-4 bg-white dark:bg-zinc-900 rounded-lg border shadow-sm animate-in fade-in slide-in-from-top-2", themeBorderLight)}>
           <div className="flex justify-between items-center mb-3">
-            <h3 className="text-sm font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">New Player</h3>
+            <h3 className="text-sm font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">{t("leaderboard.newPlayer")}</h3>
             {newPlayerName.trim() && players.some(p => p.name.trim().toLowerCase() === newPlayerName.trim().toLowerCase()) && (
-                <span className="text-[10px] font-bold text-red-500 uppercase bg-red-50 dark:bg-red-950/30 px-2 py-0.5 rounded">Name already exists</span>
+                <span className="text-[10px] font-bold text-red-500 uppercase bg-red-50 dark:bg-red-950/30 px-2 py-0.5 rounded">{t("leaderboard.nameExists")}</span>
             )}
           </div>
           <div className="flex gap-2">
             <input
               autoFocus
               type="text"
-              placeholder="Enter player name..."
+              placeholder={t("leaderboard.enterPlayerName")}
               value={newPlayerName}
               onChange={(e) => setNewPlayerName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddPlayer()}
@@ -141,14 +140,14 @@ export function Leaderboard() {
             className={cn(
               "flex items-center px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap border-2 transition-colors",
               sortBy === key
-                ? cn("text-white", themeBg, themeBorder)
+                ? cn("text-white", themeBg)
                 : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800"
             )}
           >
             {key === "points" && <TrendingUp size={16} className="mr-2" />}
             {key === "assists" && <Award size={16} className="mr-2" />}
             {key === "winRate" && <Trophy size={16} className="mr-2" />}
-            {key === "points" ? pointLabel : key === "assists" ? "Assists" : "Win Rate"}
+            {key === "points" ? pointLabel : key === "assists" ? t("leaderboard.assists") : t("leaderboard.winRate")}
           </button>
         ))}
       </div>
@@ -184,7 +183,7 @@ export function Leaderboard() {
                   </span>
                   <span>•</span>
                   <span className={cn(sortBy === "assists" && cn("font-bold", themeTextDark))}>
-                    {player.totalAssists} AST
+                    {player.totalAssists} {t("leaderboard.assistsShort")}
                   </span>
                   <span>•</span>
                   <span className={cn(sortBy === "winRate" && cn("font-bold", themeTextDark))}>
@@ -199,7 +198,6 @@ export function Leaderboard() {
                     handleDeletePlayer(player.id, player.name);
                   }}
                   className="p-2 text-zinc-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
-                  title="Delete Player"
               >
                   <Trash2 size={16} />
               </button>
@@ -209,7 +207,7 @@ export function Leaderboard() {
 
         {sortedPlayers.length === 0 && (
           <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
-            No players found.
+            {t("leaderboard.noPlayers")}
           </div>
         )}
       </div>

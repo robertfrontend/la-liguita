@@ -5,12 +5,14 @@ import { usePathname } from "next/navigation";
 import { PlayCircle, History, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 import { useState, useEffect } from "react";
 
 export function BottomNav() {
   const pathname = usePathname();
   const activeGameStore = useStore((state) => state.activeGame);
+  const { t } = useLanguage();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -32,7 +34,7 @@ export function BottomNav() {
           )}
         >
           <Trophy size={24} />
-          <span className="text-xs font-medium">Stats</span>
+          <span className="text-xs font-medium">{t("nav.stats")}</span>
         </Link>
         
         <Link
@@ -43,7 +45,7 @@ export function BottomNav() {
           )}
         >
           <PlayCircle size={24} />
-          <span className="text-xs font-medium">{activeGame ? "Live" : "New Game"}</span>
+          <span className="text-xs font-medium">{activeGame ? t("nav.live") : t("nav.newGame")}</span>
         </Link>
 
         <Link
@@ -54,7 +56,7 @@ export function BottomNav() {
           )}
         >
           <History size={24} />
-          <span className="text-xs font-medium">History</span>
+          <span className="text-xs font-medium">{t("nav.history")}</span>
         </Link>
       </div>
     </nav>
