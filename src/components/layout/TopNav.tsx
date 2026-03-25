@@ -45,8 +45,8 @@ export function TopNav() {
             )}
           </button>
         ) : (
-          <Link href="/login" className="px-4 py-2 text-sm font-medium text-orange-500 hover:text-orange-600 transition-colors">
-            Login
+          <Link href="/login" className="px-4 py-2 text-sm font-bold bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-all">
+            Get Started
           </Link>
         )}
       </div>
