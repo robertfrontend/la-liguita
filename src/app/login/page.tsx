@@ -7,11 +7,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function LoginPage() {
-  const { user, signInWithGoogle, signInWithEmail, loading } = useAuth();
+  const { user, signInWithGoogle, signInWithEmail, signUpWithEmail, loading } = useAuth();
   const router = useRouter();
   
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -27,11 +29,19 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      await signInWithEmail(email, password);
+      if (isLogin) {
+        await signInWithEmail(email, password);
+      } else {
+        await signUpWithEmail(email, password, name);
+      }
     } catch (err) {
       const error = err as { code?: string; message?: string };
       if (error.code === 'auth/invalid-credential') {
         setError("Invalid email or password.");
+      } else if (error.code === 'auth/email-already-in-use') {
+        setError("Email already in use.");
+      } else if (error.code === 'auth/weak-password') {
+        setError("Password is too weak.");
       } else {
         setError("Something went wrong. Please try again.");
       }
@@ -44,28 +54,42 @@ export default function LoginPage() {
   if (loading) return null; 
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-zinc-50">
-      <div className="w-full max-w-sm bg-white rounded-2xl border border-zinc-200 shadow-xl p-8">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background">
+      <div className="w-full max-w-sm bg-card rounded-2xl border border-border shadow-xl p-8">
         <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center text-orange-500">
-             <LogIn size={32} />
+          <div className="w-16 h-16 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-500">
+             {isLogin ? <LogIn size={32} /> : <UserPlus size={32} />}
           </div>
         </div>
         
-        <h1 className="text-2xl font-bold text-zinc-900 mb-2 text-center">
-          Welcome Back
+        <h1 className="text-2xl font-bold text-foreground mb-2 text-center">
+          {isLogin ? "Welcome Back" : "Create Account"}
         </h1>
-        <p className="text-zinc-500 mb-8 text-center">
-          Sign in to continue to La Liguita.
+        <p className="text-muted-foreground mb-8 text-center">
+          {isLogin ? "Sign in to continue to La Liguita." : "Join the street basketball community."}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+          {!isLogin && (
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={20} />
+              <input 
+                type="text" 
+                placeholder="Full Name"
+                className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-foreground"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required={!isLogin}
+              />
+            </div>
+          )}
+
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={20} />
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={20} />
             <input 
               type="email" 
               placeholder="Email Address"
-              className="w-full pl-10 pr-4 py-3 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+              className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-foreground"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -73,11 +97,11 @@ export default function LoginPage() {
           </div>
 
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={20} />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={20} />
             <input 
               type="password" 
               placeholder="Password"
-              className="w-full pl-10 pr-4 py-3 bg-zinc-50 border border-zinc-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+              className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-foreground"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -92,16 +116,29 @@ export default function LoginPage() {
             disabled={isSubmitting}
             className="w-full h-12 text-base font-bold bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/20 transition-all active:scale-[0.98]"
           >
-            {isSubmitting ? "Loading..." : "Sign In"}
+            {isSubmitting ? "Loading..." : (isLogin ? "Sign In" : "Sign Up")}
           </Button>
         </form>
 
+        <div className="text-center mb-6">
+          <button 
+            onClick={() => setIsLogin(!isLogin)}
+            className="text-sm text-muted-foreground hover:text-orange-500 transition-colors"
+          >
+            {isLogin ? (
+              <>Don't have an account? <span className="font-bold">Sign Up</span></>
+            ) : (
+              <>Already have an account? <span className="font-bold">Sign In</span></>
+            )}
+          </button>
+        </div>
+
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-zinc-200"></div>
+            <div className="w-full border-t border-border"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-zinc-500">Or continue with</span>
+            <span className="px-2 bg-card text-muted-foreground">Or continue with</span>
           </div>
         </div>
 
@@ -109,7 +146,7 @@ export default function LoginPage() {
           onClick={signInWithGoogle}
           type="button"
           variant="outline"
-          className="w-full h-12 text-base font-medium bg-white text-zinc-700 border border-zinc-200 hover:bg-zinc-50 hover:text-zinc-900 flex items-center justify-center gap-3 shadow-sm transition-all"
+          className="w-full h-12 text-base font-medium bg-card text-foreground border border-border hover:bg-muted/10 flex items-center justify-center gap-3 shadow-sm transition-all"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
