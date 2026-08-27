@@ -457,7 +457,7 @@ export default function TournamentGamesPage() {
                       ? "bg-green-500/15 text-green-400 border border-green-500/30 animate-pulse"
                       : "bg-orange-500/10 text-orange-400 border border-orange-500/20"
                   }`}>
-                    {isFinished ? "Finalizado" : isLive ? "En Vivo" : "Programado"}
+                    {isFinished ? "Finalizado" : isLive ? "En Vivo" : "Próximamente"}
                   </span>
                 </div>
 

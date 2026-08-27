@@ -397,8 +397,8 @@ export function PublicTournamentPortal({ tournamentId }: { tournamentId: string 
                           </span>
                         )}
                         {isScheduled && (
-                          <span className="px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-400 font-bold text-[10px]">
-                            {formattedDate} • {formattedTime}
+                          <span className="px-2.5 py-0.5 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/25 font-bold uppercase tracking-wider text-[10px]">
+                            Próximamente • {formattedDate} {formattedTime}
                           </span>
                         )}
                       </div>
