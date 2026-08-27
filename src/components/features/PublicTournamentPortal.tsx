@@ -110,6 +110,32 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
     });
   }, [games, selectedRoundFilter, statusFilter]);
 
+  // Función para obtener los marcadores efectivos (con cálculo automático de puntos de jugadores si los totales vinieran en 0)
+  const getGameEffectiveScores = (game: TournamentGame) => {
+    let sA = Number(game.scoreA) || 0;
+    let sB = Number(game.scoreB) || 0;
+
+    if (sA === 0 || sB === 0) {
+      if (game.playerStats) {
+        let sumA = 0;
+        let sumB = 0;
+        Object.keys(game.playerStats).forEach((pId) => {
+          const player = players.find((p) => p.id === pId);
+          const pts = Number((game.playerStats?.[pId] as any)?.points) || 0;
+          if (player?.teamId === game.teamAId) {
+            sumA += pts;
+          } else if (player?.teamId === game.teamBId) {
+            sumB += pts;
+          }
+        });
+        if (sA === 0 && sumA > 0) sA = sumA;
+        if (sB === 0 && sumB > 0) sB = sumB;
+      }
+    }
+
+    return { scoreA: sA, scoreB: sB };
+  };
+
   const sortedTeams = useMemo(() => {
     const tableMap: Record<string, {
       id: string;
@@ -268,32 +294,6 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
       points: maxPoints,
       teamName: team?.name || (player?.teamId === game.teamAId ? game.teamAName : game.teamBName)
     };
-  };
-
-  // Función para obtener los marcadores efectivos (con cálculo automático de puntos de jugadores si los totales vinieran en 0)
-  const getGameEffectiveScores = (game: TournamentGame) => {
-    let sA = Number(game.scoreA) || 0;
-    let sB = Number(game.scoreB) || 0;
-
-    if (sA === 0 || sB === 0) {
-      if (game.playerStats) {
-        let sumA = 0;
-        let sumB = 0;
-        Object.keys(game.playerStats).forEach((pId) => {
-          const player = players.find((p) => p.id === pId);
-          const pts = Number((game.playerStats?.[pId] as any)?.points) || 0;
-          if (player?.teamId === game.teamAId) {
-            sumA += pts;
-          } else if (player?.teamId === game.teamBId) {
-            sumB += pts;
-          }
-        });
-        if (sA === 0 && sumA > 0) sA = sumA;
-        if (sB === 0 && sumB > 0) sB = sumB;
-      }
-    }
-
-    return { scoreA: sA, scoreB: sB };
   };
 
   return (
