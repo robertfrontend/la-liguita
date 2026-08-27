@@ -485,6 +485,17 @@ export const deleteTournamentGameInDb = async (tournamentId: string, gameId: str
   await deleteDoc(docRef);
 };
 
+// Función auxiliar para eliminar campos con valor `undefined` (incompatibles con Firestore)
+export function cleanFirestoreObject<T extends Record<string, any>>(obj: T): Partial<T> {
+  const cleaned: Record<string, any> = {};
+  Object.keys(obj).forEach((key) => {
+    if (obj[key] !== undefined) {
+      cleaned[key] = obj[key];
+    }
+  });
+  return cleaned as Partial<T>;
+}
+
 // --- Play-by-Play & Live Scoring (Technical Table) ---
 
 export const recordTournamentScoreEventInDb = async (
@@ -496,10 +507,12 @@ export const recordTournamentScoreEventInDb = async (
   period?: number,
   gameClock?: string
 ) => {
+  const sanitizedEvent = cleanFirestoreObject(eventData);
+
   // 1. Guardar evento en la subcolección playByPlay
   const eventRef = await addDoc(
     collection(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION, gameId, PLAY_BY_PLAY_SUBCOLLECTION),
-    eventData
+    sanitizedEvent
   );
 
   // 2. Actualizar inmediatamente el marcador en el documento del partido
@@ -512,7 +525,7 @@ export const recordTournamentScoreEventInDb = async (
     timeRemaining: gameClock || "10:00",
   });
 
-  return { id: eventRef.id, ...eventData } as PlayByPlayEvent;
+  return { id: eventRef.id, ...sanitizedEvent } as PlayByPlayEvent;
 };
 
 export const finishTournamentGameInDb = async (

@@ -137,30 +137,39 @@ export default function LiveConsolePage() {
     // Buscar si hay jugador seleccionado
     const player = players.find((p) => p.id === selectedPlayerId);
     const playerText = player ? ` (#${player.number || "-"} ${player.name})` : "";
-
     const desc = `${actionLabel}${playerText} • Marcador: ${newScoreA} - ${newScoreB}`;
 
-    await recordTournamentScoreEventInDb(
-      tournamentId,
-      selectedGameId,
-      {
-        gameId: selectedGameId,
-        period,
-        gameClock: formatClock(clockSeconds),
-        teamId,
-        playerId: selectedPlayerId || undefined,
-        type,
-        description: `${teamName}: ${desc}`,
-        scoreA: newScoreA,
-        scoreB: newScoreB,
-        timestamp: new Date().toISOString(),
-        createdBy: "Mesa Técnica Oficial",
-      },
-      newScoreA,
-      newScoreB,
+    const eventPayload: any = {
+      gameId: selectedGameId,
       period,
-      formatClock(clockSeconds)
-    );
+      gameClock: formatClock(clockSeconds),
+      teamId,
+      type,
+      description: `${teamName}: ${desc}`,
+      scoreA: newScoreA,
+      scoreB: newScoreB,
+      timestamp: new Date().toISOString(),
+      createdBy: "Mesa Técnica Oficial",
+    };
+
+    if (selectedPlayerId) {
+      eventPayload.playerId = selectedPlayerId;
+    }
+
+    try {
+      await recordTournamentScoreEventInDb(
+        tournamentId,
+        selectedGameId,
+        eventPayload,
+        newScoreA,
+        newScoreB,
+        period,
+        formatClock(clockSeconds)
+      );
+    } catch (err) {
+      console.error("Error al registrar anotación en mesa técnica:", err);
+      alert("Hubo un problema al guardar la anotación. Revisa la consola.");
+    }
 
     setSelectedPlayerId(null);
   };
