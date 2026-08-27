@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import { User as UserIcon, ShieldCheck } from "lucide-react";
+import { isSuperAdmin } from "@/lib/auth-helpers";
+import { User as UserIcon, ShieldCheck, LogOut, Globe } from "lucide-react";
 
 export function TopNav() {
   const { user, logout } = useAuth();
@@ -15,52 +16,89 @@ export function TopNav() {
     setIsMounted(true);
   }, []);
 
-  return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800 h-16 flex items-center justify-between px-4 shadow-sm transition-colors duration-300">
-      <Link href="/" className="text-xl font-black tracking-tight text-white z-10 relative flex items-center gap-2">
-        <span>La <span className="text-orange-500">Liguita</span></span>
-      </Link>
+  const superAdmin = isSuperAdmin(user);
 
-      <div className="flex items-center gap-3 z-10 relative">
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800/80 h-14 flex items-center justify-between px-5 transition-colors">
+      {/* Brand / Logo */}
+      <div className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center font-black text-zinc-950 text-xs shadow-sm shadow-orange-500/20">
+            L
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-sm font-black tracking-tight text-white uppercase">
+              La Liguita
+            </span>
+            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest hidden sm:inline">
+              Management Suite
+            </span>
+          </div>
+        </Link>
+      </div>
+
+      {/* Acciones del Usuario & Idioma */}
+      <div className="flex items-center gap-2.5">
         {isMounted && (
           <button
             onClick={() => setLanguage(language === "en" ? "es" : "en")}
-            className="w-10 h-10 rounded-full bg-zinc-900 flex items-center justify-center border border-zinc-800 text-zinc-400 font-bold text-xs hover:text-orange-500 hover:border-orange-500 transition-all duration-300 active:scale-95"
+            className="h-8 px-2.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-zinc-200 font-mono text-[11px] font-bold transition flex items-center gap-1"
             title={t("nav.switchLanguage")}
           >
-            {language.toUpperCase()}
+            <Globe size={13} className="text-zinc-500" />
+            <span>{language.toUpperCase()}</span>
           </button>
         )}
 
         {user ? (
           <div className="flex items-center gap-2">
-            {user.email && (user.email.toLowerCase().includes("robert02frontend") || (process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL && user.email.toLowerCase() === process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL.toLowerCase())) && (
+            {superAdmin && (
               <Link 
                 href="/superadmin"
-                className="px-3 py-1 rounded-full bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs font-bold uppercase tracking-wider transition hidden sm:inline-flex items-center gap-1.5"
-                title="Panel de Super Administrador"
+                className="h-8 px-3 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 text-[11px] font-bold uppercase tracking-wider transition hidden sm:inline-flex items-center gap-1.5"
+                title="Consola Super Administrador"
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>
+                <ShieldCheck size={13} className="text-blue-400" />
                 <span>Super Admin</span>
               </Link>
             )}
 
-            <button 
-              onClick={() => {
-                if(confirm(t("common.logout"))) logout();
-              }}
-              className="w-10 h-10 rounded-full bg-zinc-900 flex items-center justify-center border border-zinc-800 text-zinc-400 hover:text-orange-500 hover:border-orange-500 transition-colors overflow-hidden"
-            >
-              {user.photoURL ? (
-                <img src={user.photoURL} alt={user.displayName || "User"} className="w-full h-full object-cover" />
-              ) : (
-                <span className="font-bold">{user.displayName?.charAt(0).toUpperCase() || <UserIcon size={20} />}</span>
-              )}
-            </button>
+            {/* User Pill */}
+            <div className="flex items-center gap-2 pl-2 border-l border-zinc-800">
+              <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300 text-xs font-bold overflow-hidden">
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt={user.displayName || "User"} className="w-full h-full object-cover" />
+                ) : (
+                  <span>{user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || <UserIcon size={14} />}</span>
+                )}
+              </div>
+
+              <div className="hidden md:block text-left">
+                <div className="text-xs font-bold text-zinc-200 leading-tight truncate max-w-[140px]">
+                  {user.displayName || user.email?.split("@")[0]}
+                </div>
+                <div className="text-[10px] text-zinc-500 font-mono truncate max-w-[140px]">
+                  {superAdmin ? "Super Administrador" : "Organizador"}
+                </div>
+              </div>
+
+              <button 
+                onClick={() => {
+                  if(confirm(t("common.logout"))) logout();
+                }}
+                className="p-1.5 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-zinc-900 transition"
+                title="Cerrar Sesión"
+              >
+                <LogOut size={15} />
+              </button>
+            </div>
           </div>
         ) : (
-          <Link href="/login" className="px-4 py-2 text-sm font-bold bg-orange-500/10 text-orange-400 border border-orange-500/20 rounded-full hover:bg-orange-500/20 transition-all">
-            {isMounted ? t("common.getStarted") : "..."}
+          <Link 
+            href="/login" 
+            className="h-8 px-4 text-xs font-bold bg-orange-500 hover:bg-orange-600 text-zinc-950 rounded-lg transition shadow-sm flex items-center"
+          >
+            {isMounted ? t("common.getStarted") : "Acceder"}
           </Link>
         )}
       </div>

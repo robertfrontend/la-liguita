@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { TopNav } from "@/components/layout/TopNav";
-import { BottomNav } from "@/components/layout/BottomNav";
-
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
@@ -27,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className="dark" style={{ colorScheme: "dark" }} suppressHydrationWarning>
-      <body className={`${inter.className} bg-zinc-950 text-zinc-100`}>
+      <body className={`${inter.className} bg-zinc-950 text-zinc-100 antialiased`}>
         <LanguageProvider>
           <ThemeProvider>
             <AuthProvider>
@@ -35,7 +33,6 @@ export default function RootLayout({
               <main className="min-h-screen pt-16">
                 {children}
               </main>
-              <BottomNav />
             </AuthProvider>
           </ThemeProvider>
         </LanguageProvider>

@@ -12,12 +12,11 @@ import {
   Flame, 
   Sparkles, 
   Mail, 
-  Globe, 
   Building, 
   Loader2, 
   Check, 
-  ArrowRight,
-  ShieldCheck
+  ShieldCheck,
+  Activity
 } from "lucide-react";
 
 interface CreateTournamentModalProps {
@@ -31,31 +30,20 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
   const { user } = useAuth();
 
   const [name, setName] = useState("");
+  const [organizationName, setOrganizationName] = useState("");
   const [slug, setSlug] = useState("");
   const [sport, setSport] = useState<Sport>("basketball");
   const [tier, setTier] = useState<TournamentTier>("amateur");
   const [organizerEmail, setOrganizerEmail] = useState("");
-  const [organizationName, setOrganizationName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  // Auto-generar slug al escribir el nombre si el usuario no lo modificó manualmente
-  const handleNameChange = (val: string) => {
-    setName(val);
-    const generatedSlug = val
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)+/g, "");
-    setSlug(generatedSlug);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      setError("El nombre del torneo es obligatorio.");
+      setError("Por favor ingresa un nombre para el torneo.");
       return;
     }
     if (!organizerEmail.trim()) {
@@ -89,8 +77,8 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
         slug: `${finalSlug}-${Math.random().toString(36).substring(2, 6)}`,
         sport,
         tier,
-        ownerId: user.uid, // Creado por el Super Admin
-        adminEmails: cleanEmails, // Asignado a los administradores de la liga
+        ownerId: user.uid,
+        adminEmails: cleanEmails,
         organizationName: organizationName.trim() || "Liga Oficial",
         status: "active",
         createdAt: new Date().toISOString(),
@@ -136,158 +124,147 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
           onClick={onClose}
           className="absolute top-5 right-5 p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800 transition"
         >
-          <X size={20} />
+          <X size={18} />
         </button>
 
         <div className="mb-6">
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-400 uppercase tracking-widest bg-orange-500/10 px-2.5 py-1 rounded-full border border-orange-500/20 mb-2">
-            <ShieldCheck size={14} /> Panel Super Admin
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2.5 py-0.5 rounded-md border border-blue-500/20 mb-2">
+            <ShieldCheck size={13} />
+            <span>Consola Administrativa</span>
           </span>
-          <h2 className="text-2xl font-black text-white tracking-tight">Crear y Asignar Nuevo Torneo</h2>
-          <p className="text-xs text-zinc-400 mt-1">
-            Configura el nivel de servicio y asigna el email del organizador que administrará la liga.
+          <h2 className="text-xl font-bold text-white tracking-tight">Crear y Asignar Nuevo Torneo</h2>
+          <p className="text-xs text-zinc-400 mt-0.5">
+            Configura el nivel de servicio y asigna las credenciales de los organizadores oficiales.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Selector de Nivel (Tier) */}
           <div>
-            <label className="block text-xs font-black text-zinc-400 uppercase tracking-wider mb-2">
-              Nivel de Servicio (Tier) *
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">
+              Nivel de Operación (Tier) *
             </label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setTier("amateur")}
-                className={`p-3.5 rounded-xl border-2 text-left transition flex items-start justify-between ${
+                className={`p-3.5 rounded-xl border text-left transition flex items-start justify-between ${
                   tier === "amateur"
-                    ? "border-zinc-300 bg-zinc-800/80 text-white"
+                    ? "border-zinc-300 bg-zinc-800 text-white"
                     : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700"
                 }`}
               >
                 <div>
-                  <div className="flex items-center gap-2 font-bold text-sm">
-                    <Trophy size={16} className="text-zinc-300" />
+                  <div className="flex items-center gap-2 font-bold text-xs">
+                    <Trophy size={15} className="text-zinc-300" />
                     <span>Liguita Amateur</span>
                   </div>
-                  <p className="text-[11px] text-zinc-400 mt-1">Stats rápidas, marcador simple y sin costo.</p>
+                  <p className="text-[11px] text-zinc-400 mt-1">Marcador básico, tabla de posiciones y MVP rápido.</p>
                 </div>
-                {tier === "amateur" && <Check size={16} className="text-white shrink-0 mt-0.5" />}
+                {tier === "amateur" && <Check size={15} className="text-white shrink-0 mt-0.5" />}
               </button>
 
               <button
                 type="button"
                 onClick={() => setTier("pro")}
-                className={`p-3.5 rounded-xl border-2 text-left transition flex items-start justify-between ${
+                className={`p-3.5 rounded-xl border text-left transition flex items-start justify-between ${
                   tier === "pro"
-                    ? "border-orange-500 bg-orange-500/10 text-white shadow-lg shadow-orange-500/10"
+                    ? "border-orange-500 bg-orange-500/10 text-white shadow-sm"
                     : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700"
                 }`}
               >
                 <div>
-                  <div className="flex items-center gap-2 font-bold text-sm text-orange-400">
-                    <Flame size={16} />
-                    <span>Torneo Profesional</span>
+                  <div className="flex items-center gap-2 font-bold text-xs text-orange-400">
+                    <Sparkles size={15} />
+                    <span>Torneo Profesional FIBA</span>
                   </div>
-                  <p className="text-[11px] text-zinc-400 mt-1">Play-by-play, box score completo y árbitros.</p>
+                  <p className="text-[11px] text-zinc-400 mt-1">Play-by-play en vivo, box score completo y árbitros.</p>
                 </div>
-                {tier === "pro" && <Check size={16} className="text-orange-400 shrink-0 mt-0.5" />}
+                {tier === "pro" && <Check size={15} className="text-orange-400 shrink-0 mt-0.5" />}
               </button>
             </div>
           </div>
 
-          {/* Deporte */}
+          {/* Disciplina */}
           <div>
-            <label className="block text-xs font-black text-zinc-400 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">
               Disciplina Deportiva *
             </label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setSport("basketball")}
-                className={`py-2.5 px-4 rounded-xl border text-sm font-bold flex items-center justify-center gap-2 transition ${
+                className={`py-2 px-4 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 ${
                   sport === "basketball"
                     ? "border-orange-500 bg-orange-500/10 text-white"
-                    : "border-zinc-800 bg-zinc-950 text-zinc-400"
+                    : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700"
                 }`}
               >
-                <span>🏀</span> Baloncesto
+                <span>Baloncesto / Basketball</span>
               </button>
               <button
                 type="button"
                 onClick={() => setSport("soccer")}
-                className={`py-2.5 px-4 rounded-xl border text-sm font-bold flex items-center justify-center gap-2 transition ${
+                className={`py-2 px-4 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 ${
                   sport === "soccer"
-                    ? "border-green-500 bg-green-500/10 text-white"
-                    : "border-zinc-800 bg-zinc-950 text-zinc-400"
+                    ? "border-blue-500 bg-blue-500/10 text-white"
+                    : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700"
                 }`}
               >
-                <span>⚽</span> Fútbol
+                <span>Fútbol / Soccer</span>
               </button>
             </div>
           </div>
 
-          {/* Nombre y Slug */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Nombre y Organización */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1.5">Nombre del Torneo *</label>
-              <input
-                type="text"
-                placeholder="Ej: TBS Peravia 2026"
-                value={name}
-                onChange={(e) => handleNameChange(e.target.value)}
-                required
-                className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-sm focus:outline-none focus:border-orange-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-zinc-300 mb-1.5 flex items-center gap-1.5">
-                <Globe size={14} className="text-zinc-400" />
-                <span>Slug (URL Pública)</span>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+                Nombre Oficial del Torneo *
               </label>
               <input
                 type="text"
-                placeholder="ej: tbs-peravia-2026"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-sm font-mono focus:outline-none focus:border-orange-500"
+                required
+                placeholder="Ej: Torneo Superior TBS Peravia 2026"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-orange-500 font-medium"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+                Organización / Entidad Anfitriona
+              </label>
+              <input
+                type="text"
+                placeholder="Ej: Asociación de Baloncesto de Baní"
+                value={organizationName}
+                onChange={(e) => setOrganizationName(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-orange-500 font-medium"
               />
             </div>
           </div>
 
-          {/* Email(s) del Organizador / Administradores */}
+          {/* Email Organizador */}
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1.5 flex items-center gap-1.5">
-              <Mail size={14} className="text-orange-400" />
-              <span>Administradores de la Liga (Emails) *</span>
+            <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+              Email o Usuario del Organizador Encargado *
             </label>
-            <input
-              type="text"
-              placeholder="organizador1@gmail.com, organizador2@gmail.com"
-              value={organizerEmail}
-              onChange={(e) => setOrganizerEmail(e.target.value)}
-              required
-              className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-sm focus:outline-none focus:border-orange-500"
-            />
-            <p className="text-[11px] text-zinc-500 mt-1">
-              Puedes ingresar uno o varios correos separados por coma. Estos usuarios tendrán acceso completo de administración para gestionar partidos, equipos y marcador.
+            <div className="relative">
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" size={15} />
+              <input
+                type="text"
+                required
+                placeholder="organizador@laliguita.com o usuario"
+                value={organizerEmail}
+                onChange={(e) => setOrganizerEmail(e.target.value)}
+                className="w-full pl-9 pr-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-orange-500"
+              />
+            </div>
+            <p className="text-[11px] text-zinc-500 mt-1 font-mono">
+              Este usuario tendrá control administrativo delegado sobre el torneo.
             </p>
-          </div>
-
-          {/* Club / Organización */}
-          <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1.5 flex items-center gap-1.5">
-              <Building size={14} className="text-zinc-400" />
-              <span>Organización / Club Anfitrión</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Ej: ABASAP / Club Baní"
-              value={organizationName}
-              onChange={(e) => setOrganizationName(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-sm focus:outline-none focus:border-orange-500"
-            />
           </div>
 
           {error && (
@@ -297,30 +274,26 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
           )}
 
           {/* Botones de Acción */}
-          <div className="flex justify-end gap-3 pt-3 border-t border-zinc-800">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-zinc-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl text-xs font-semibold text-zinc-400 hover:text-white transition"
+              className="px-4 py-2 text-xs font-semibold text-zinc-400 hover:text-white"
             >
               Cancelar
             </button>
-
             <button
               type="submit"
               disabled={isSubmitting || !name.trim() || !organizerEmail.trim()}
-              className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-zinc-950 font-black text-sm rounded-xl transition flex items-center gap-2 shadow-lg shadow-orange-500/20"
+              className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-zinc-950 font-bold text-xs rounded-xl transition shadow-sm flex items-center gap-2"
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Creando...</span>
+                  <span>Registrando...</span>
                 </>
               ) : (
-                <>
-                  <span>Crear y Asignar</span>
-                  <ArrowRight size={16} />
-                </>
+                <span>Crear Torneo</span>
               )}
             </button>
           </div>
