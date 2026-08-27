@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { TournamentGame, TournamentPlayer, TournamentTeam } from "@/types/tournament";
 import { 
@@ -21,7 +21,8 @@ import {
   ChevronRight,
   Sparkles,
   ShieldCheck,
-  Check
+  Check,
+  Loader2
 } from "lucide-react";
 import Link from "next/link";
 
@@ -33,6 +34,19 @@ interface PlayerStatRow {
 }
 
 export default function PostMatchBoxScorePage() {
+  return (
+    <Suspense fallback={
+      <div className="p-12 text-center text-zinc-500 flex items-center justify-center gap-2">
+        <Loader2 className="animate-spin text-emerald-500" size={18} />
+        <span>Cargando acta oficial...</span>
+      </div>
+    }>
+      <PostMatchBoxScoreContent />
+    </Suspense>
+  );
+}
+
+function PostMatchBoxScoreContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();

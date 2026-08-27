@@ -39,11 +39,13 @@ export function PublicTournamentDirectory() {
 
   const filteredTournaments = useMemo(() => {
     return tournaments.filter((t) => {
+      const name = t?.name || "";
+      const org = t?.organizationName || "";
       const matchesSearch = 
-        t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (t.organizationName || "").toLowerCase().includes(searchQuery.toLowerCase());
+        name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        org.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesSport = sportFilter === "all" || t.sport === sportFilter;
+      const matchesSport = sportFilter === "all" || (t?.sport || "basketball") === sportFilter;
 
       return matchesSearch && matchesSport;
     });
@@ -73,9 +75,10 @@ export function PublicTournamentDirectory() {
               </Link>
             ) : (
               <Link
-                href="/login"
+                href="/admin"
                 className="flex items-center gap-1.5 px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 rounded-xl text-xs font-bold border border-zinc-800 transition"
               >
+                <Lock size={12} className="text-zinc-500" />
                 <span>Acceso Organizadores</span>
               </Link>
             )}
@@ -143,9 +146,11 @@ export function PublicTournamentDirectory() {
           </div>
         ) : filteredTournaments.length > 0 ? (
           filteredTournaments.map((t) => {
-            const isBasketball = t.sport === "basketball";
+            const isBasketball = (t.sport || "basketball") === "basketball";
             const isPro = t.tier === "pro";
-            const publicUrl = `/t/${t.slug || t.id}`;
+            const tournamentName = t.name || "Torneo Oficial";
+            const tournamentSlug = t.slug || t.id;
+            const publicUrl = `/t/${tournamentSlug}`;
 
             return (
               <div
@@ -160,11 +165,11 @@ export function PublicTournamentDirectory() {
                   {/* Escudo / Logo */}
                   {t.logoUrl ? (
                     <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-zinc-950 border border-zinc-800 p-2 flex items-center justify-center shrink-0 shadow-lg overflow-hidden group-hover:border-zinc-700 transition">
-                      <img src={t.logoUrl} alt={t.name} className="w-full h-full object-contain" />
+                      <img src={t.logoUrl} alt={tournamentName} className="w-full h-full object-contain" />
                     </div>
                   ) : (
                     <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-zinc-800/90 border border-zinc-700/80 flex items-center justify-center font-black text-blue-400 text-2xl shrink-0 shadow-lg group-hover:border-blue-500/50 transition">
-                      {t.name.slice(0, 2).toUpperCase()}
+                      {tournamentName.slice(0, 2).toUpperCase()}
                     </div>
                   )}
 
@@ -194,7 +199,7 @@ export function PublicTournamentDirectory() {
 
                     {/* Nombre del Torneo */}
                     <h2 className="text-xl md:text-2xl font-black text-white tracking-tight truncate group-hover:text-blue-400 transition">
-                      {t.name}
+                      {tournamentName}
                     </h2>
 
                     {/* Fila de Características */}
@@ -210,7 +215,7 @@ export function PublicTournamentDirectory() {
                       </span>
                       <span>•</span>
                       <span className="text-zinc-500">
-                        /t/{t.slug || t.id}
+                        /t/{tournamentSlug}
                       </span>
                     </div>
                   </div>

@@ -467,14 +467,25 @@ export const subscribeToTournaments = (ownerId: string, callback: (tournaments: 
 };
 
 export const subscribeToAllTournaments = (callback: (tournaments: Tournament[]) => void) => {
-  const q = query(collection(db, TOURNAMENTS_COLLECTION), orderBy("createdAt", "desc"));
-  return onSnapshot(q, (snapshot) => {
-    const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Tournament));
-    callback(list);
-  }, (error) => {
-    console.error("Error subscribing to all tournaments (Super Admin):", error);
+  try {
+    const q = query(collection(db, TOURNAMENTS_COLLECTION));
+    return onSnapshot(q, (snapshot) => {
+      const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Tournament));
+      const sorted = list.sort((a, b) => {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return timeB - timeA;
+      });
+      callback(sorted);
+    }, (error) => {
+      console.error("Error subscribing to all tournaments:", error);
+      callback([]);
+    });
+  } catch (err) {
+    console.error("Error creating snapshot query:", err);
     callback([]);
-  });
+    return () => {};
+  }
 };
 
 export const subscribeToAssignedTournaments = (email: string, callback: (tournaments: Tournament[]) => void) => {

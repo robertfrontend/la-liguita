@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { verifyAdminAccessCode, claimTournamentWithAccessCode } from "@/lib/db";
 import { Tournament } from "@/types/tournament";
@@ -29,7 +29,24 @@ interface AdminGatekeeperProps {
   subtitle?: string;
 }
 
-export function AdminGatekeeper({ onSuccess, title, subtitle }: AdminGatekeeperProps) {
+export function AdminGatekeeper(props: AdminGatekeeperProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[60vh] flex items-center justify-center text-zinc-400">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-6 w-6 animate-spin text-emerald-500" />
+            <span className="text-xs">Cargando acceso administrativo...</span>
+          </div>
+        </div>
+      }
+    >
+      <AdminGatekeeperInner {...props} />
+    </Suspense>
+  );
+}
+
+function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperProps) {
   const searchParams = useSearchParams();
   const { user, signInWithEmail, signUpWithEmail, signInWithGoogle, loading: authLoading } = useAuth();
   const { t } = useLanguage();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { PlayByPlayEvent, TournamentGame, TournamentPlayer, TournamentTeam } from "@/types/tournament";
 import { 
@@ -30,11 +30,25 @@ import {
   RotateCcw,
   Check,
   Award,
-  Zap
+  Zap,
+  Loader2
 } from "lucide-react";
 import Link from "next/link";
 
 export default function LiveConsolePage() {
+  return (
+    <Suspense fallback={
+      <div className="p-12 text-center text-zinc-500 flex items-center justify-center gap-2">
+        <Loader2 className="animate-spin text-emerald-500" size={18} />
+        <span>Cargando mesa técnica en vivo...</span>
+      </div>
+    }>
+      <LiveConsoleContent />
+    </Suspense>
+  );
+}
+
+function LiveConsoleContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
