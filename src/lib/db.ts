@@ -505,7 +505,8 @@ export const recordTournamentScoreEventInDb = async (
   newScoreA: number,
   newScoreB: number,
   period?: number,
-  gameClock?: string
+  gameClock?: string,
+  updatedPlayerStats?: Record<string, any>
 ) => {
   const sanitizedEvent = cleanFirestoreObject(eventData);
 
@@ -517,13 +518,19 @@ export const recordTournamentScoreEventInDb = async (
 
   // 2. Actualizar inmediatamente el marcador en el documento del partido
   const gameRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION, gameId);
-  await updateDoc(gameRef, {
+  const updates: Record<string, any> = {
     scoreA: Math.max(0, newScoreA),
     scoreB: Math.max(0, newScoreB),
     status: "live",
     currentPeriod: period || 1,
     timeRemaining: gameClock || "10:00",
-  });
+  };
+
+  if (updatedPlayerStats) {
+    updates.playerStats = updatedPlayerStats;
+  }
+
+  await updateDoc(gameRef, updates);
 
   return { id: eventRef.id, ...sanitizedEvent } as PlayByPlayEvent;
 };

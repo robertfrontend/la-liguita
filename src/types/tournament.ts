@@ -54,6 +54,7 @@ export interface ProGameStats {
   blocks: number;
   turnovers: number;
   personalFouls: number;
+  fouls?: number;
   technicalFouls: number;
   // Tiros (Anotados / Intentados)
   fg2Made: number;
