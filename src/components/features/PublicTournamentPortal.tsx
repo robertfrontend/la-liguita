@@ -175,6 +175,32 @@ export function PublicTournamentPortal({ tournamentId }: { tournamentId: string 
     };
   };
 
+  // Función para obtener los marcadores efectivos (con cálculo automático de puntos de jugadores si los totales vinieran en 0)
+  const getGameEffectiveScores = (game: TournamentGame) => {
+    let sA = Number(game.scoreA) || 0;
+    let sB = Number(game.scoreB) || 0;
+
+    if (sA === 0 || sB === 0) {
+      if (game.playerStats) {
+        let sumA = 0;
+        let sumB = 0;
+        Object.keys(game.playerStats).forEach((pId) => {
+          const player = players.find((p) => p.id === pId);
+          const pts = Number((game.playerStats?.[pId] as any)?.points) || 0;
+          if (player?.teamId === game.teamAId) {
+            sumA += pts;
+          } else if (player?.teamId === game.teamBId) {
+            sumB += pts;
+          }
+        });
+        if (sA === 0 && sumA > 0) sA = sumA;
+        if (sB === 0 && sumB > 0) sB = sumB;
+      }
+    }
+
+    return { scoreA: sA, scoreB: sB };
+  };
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 antialiased font-sans pb-24 selection:bg-orange-500/30">
       {/* HEADER PRINCIPAL APPLE SPORTS STYLE */}
@@ -314,8 +340,7 @@ export function PublicTournamentPortal({ tournamentId }: { tournamentId: string 
                 const isLive = game.status === "live";
                 const isScheduled = !isFinished && !isLive;
 
-                const scoreA = game.scoreA || 0;
-                const scoreB = game.scoreB || 0;
+                const { scoreA, scoreB } = getGameEffectiveScores(game);
 
                 const teamAWon = isFinished && scoreA > scoreB;
                 const teamBWon = isFinished && scoreB > scoreA;
@@ -681,36 +706,40 @@ export function PublicTournamentPortal({ tournamentId }: { tournamentId: string 
             </div>
 
             {/* Marcador Gigante */}
-            <div className="grid grid-cols-2 gap-4 py-4 bg-zinc-950 rounded-2xl border border-zinc-800/80 text-center items-center">
-              <div>
-                <h4 className="font-bold text-white text-base truncate px-2">{selectedGameForModal.teamAName}</h4>
-                <span className="text-5xl font-black font-mono text-orange-400 tracking-tight mt-1 block">
-                  {selectedGameForModal.scoreA}
-                </span>
-              </div>
-
-              <div>
-                <h4 className="font-bold text-white text-base truncate px-2">{selectedGameForModal.teamBName}</h4>
-                <span className="text-5xl font-black font-mono text-blue-400 tracking-tight mt-1 block">
-                  {selectedGameForModal.scoreB}
-                </span>
-              </div>
-            </div>
-
-            {/* Detalle de Anotadores por Jugador (Box Score) */}
-            {selectedGameForModal.playerStats && Object.keys(selectedGameForModal.playerStats).length > 0 ? (
-              <div className="space-y-4">
-                <h4 className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
-                  Planilla Estadística del Partido
-                </h4>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Jugadores Equipo A */}
-                  <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 space-y-2">
-                    <div className="font-bold text-white text-xs border-b border-zinc-800 pb-1.5 flex items-center justify-between">
-                      <span>{selectedGameForModal.teamAName}</span>
-                      <span className="text-orange-400">{selectedGameForModal.scoreA} PTS</span>
+            {(() => {
+              const { scoreA: modalScoreA, scoreB: modalScoreB } = getGameEffectiveScores(selectedGameForModal);
+              return (
+                <>
+                  <div className="grid grid-cols-2 gap-4 py-4 bg-zinc-950 rounded-2xl border border-zinc-800/80 text-center items-center">
+                    <div>
+                      <h4 className="font-bold text-white text-base truncate px-2">{selectedGameForModal.teamAName}</h4>
+                      <span className="text-5xl font-black font-mono text-orange-400 tracking-tight mt-1 block">
+                        {modalScoreA}
+                      </span>
                     </div>
+
+                    <div>
+                      <h4 className="font-bold text-white text-base truncate px-2">{selectedGameForModal.teamBName}</h4>
+                      <span className="text-5xl font-black font-mono text-blue-400 tracking-tight mt-1 block">
+                        {modalScoreB}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Detalle de Anotadores por Jugador (Box Score) */}
+                  {selectedGameForModal.playerStats && Object.keys(selectedGameForModal.playerStats).length > 0 ? (
+                    <div className="space-y-4">
+                      <h4 className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
+                        Planilla Estadística del Partido
+                      </h4>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* Jugadores Equipo A */}
+                        <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 space-y-2">
+                          <div className="font-bold text-white text-xs border-b border-zinc-800 pb-1.5 flex items-center justify-between">
+                            <span>{selectedGameForModal.teamAName}</span>
+                            <span className="text-orange-400 font-mono font-bold">{modalScoreA} PTS</span>
+                          </div>
 
                     <div className="space-y-1.5">
                       {players
@@ -755,6 +784,9 @@ export function PublicTournamentPortal({ tournamentId }: { tournamentId: string 
                 Este partido no tiene estadísticas individuales detalladas de jugadores cargadas aún.
               </div>
             )}
+            </>
+            );
+            })()}
           </div>
         </div>
       )}

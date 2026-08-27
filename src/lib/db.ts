@@ -604,14 +604,40 @@ export const savePostMatchBoxScoreInDb = async (
   }
 ) => {
   const { scoreA, scoreB, teamAId, teamBId, roundName, date, venue, playerStats } = data;
-  const isDraw = scoreA === scoreB;
-  const winnerTeamId = isDraw ? null : scoreA > scoreB ? teamAId : teamBId;
+
+  // Si los scores vienen en 0 pero se ingresaron puntos a los jugadores, calcular automáticamente
+  let effectiveScoreA = Number(scoreA) || 0;
+  let effectiveScoreB = Number(scoreB) || 0;
+
+  if (effectiveScoreA === 0 || effectiveScoreB === 0) {
+    const playersSnap = await getDocs(collection(db, TOURNAMENTS_COLLECTION, tournamentId, PLAYERS_SUBCOLLECTION));
+    const playersList = playersSnap.docs.map(d => ({ id: d.id, ...d.data() } as TournamentPlayer));
+
+    let sumA = 0;
+    let sumB = 0;
+
+    Object.keys(playerStats || {}).forEach(pId => {
+      const p = playersList.find(player => player.id === pId);
+      const pts = Number(playerStats[pId]?.points) || 0;
+      if (p?.teamId === teamAId) {
+        sumA += pts;
+      } else if (p?.teamId === teamBId) {
+        sumB += pts;
+      }
+    });
+
+    if (effectiveScoreA === 0 && sumA > 0) effectiveScoreA = sumA;
+    if (effectiveScoreB === 0 && sumB > 0) effectiveScoreB = sumB;
+  }
+
+  const isDraw = effectiveScoreA === effectiveScoreB;
+  const winnerTeamId = isDraw ? null : effectiveScoreA > effectiveScoreB ? teamAId : teamBId;
 
   // 1. Actualizar el partido como finalizado con su box score completo
   const gameRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION, gameId);
   const updates: Record<string, any> = {
-    scoreA: Math.max(0, scoreA),
-    scoreB: Math.max(0, scoreB),
+    scoreA: Math.max(0, effectiveScoreA),
+    scoreB: Math.max(0, effectiveScoreB),
     isFinished: true,
     status: "finished",
     winnerTeamId,

@@ -112,15 +112,35 @@ export default function PostMatchBoxScorePage() {
     setPlayerStatsMap(initialMap);
   }, [activeGame, players]);
 
-  // Manejo de cambios en los inputs de los jugadores
+  // Manejo de cambios en los inputs de los jugadores con sincronización automática de marcador
   const handlePlayerStatChange = (playerId: string, field: keyof PlayerStatRow, value: number) => {
-    setPlayerStatsMap((prev) => ({
-      ...prev,
+    const validVal = Math.max(0, isNaN(value) ? 0 : value);
+    const updated = {
+      ...playerStatsMap,
       [playerId]: {
-        ...prev[playerId],
-        [field]: Math.max(0, isNaN(value) ? 0 : value),
+        ...playerStatsMap[playerId],
+        [field]: validVal,
       },
-    }));
+    };
+
+    setPlayerStatsMap(updated);
+
+    if (field === "points" && activeGame) {
+      const p = players.find(player => player.id === playerId);
+      if (p?.teamId === activeGame.teamAId) {
+        const newSumA = teamAPlayers.reduce((acc, pl) => {
+          const pts = pl.id === playerId ? validVal : (updated[pl.id]?.points || 0);
+          return acc + pts;
+        }, 0);
+        setScoreA(newSumA);
+      } else if (p?.teamId === activeGame.teamBId) {
+        const newSumB = teamBPlayers.reduce((acc, pl) => {
+          const pts = pl.id === playerId ? validVal : (updated[pl.id]?.points || 0);
+          return acc + pts;
+        }, 0);
+        setScoreB(newSumB);
+      }
+    }
   };
 
   const teamAPlayers = useMemo(() => {
@@ -145,12 +165,15 @@ export default function PostMatchBoxScorePage() {
     e.preventDefault();
     if (!tournamentId || !selectedGameId || !activeGame) return;
 
+    const finalScoreA = Number(scoreA) > 0 ? Number(scoreA) : sumPointsA;
+    const finalScoreB = Number(scoreB) > 0 ? Number(scoreB) : sumPointsB;
+
     setIsSaving(true);
 
     try {
       await savePostMatchBoxScoreInDb(tournamentId, selectedGameId, {
-        scoreA: Number(scoreA),
-        scoreB: Number(scoreB),
+        scoreA: finalScoreA,
+        scoreB: finalScoreB,
         teamAId: activeGame.teamAId,
         teamBId: activeGame.teamBId,
         roundName,
