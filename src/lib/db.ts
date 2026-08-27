@@ -753,6 +753,8 @@ export const savePostMatchBoxScoreInDb = async (
 export const recalculateTournamentStandings = async (tournamentId: string) => {
   const gamesSnap = await getDocs(collection(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION));
   const teamsSnap = await getDocs(collection(db, TOURNAMENTS_COLLECTION, tournamentId, TEAMS_SUBCOLLECTION));
+  const playersSnap = await getDocs(collection(db, TOURNAMENTS_COLLECTION, tournamentId, PLAYERS_SUBCOLLECTION));
+  const playersList = playersSnap.docs.map(d => ({ id: d.id, ...d.data() } as TournamentPlayer));
 
   const statsMap: Record<string, { wins: number; losses: number; ties: number; pointsFor: number; pointsAgainst: number }> = {};
 
@@ -763,10 +765,19 @@ export const recalculateTournamentStandings = async (tournamentId: string) => {
   gamesSnap.docs.forEach((d) => {
     const g = d.data() as TournamentGame;
     if (g.isFinished || g.status === "finished") {
-      const sA = g.scoreA || 0;
-      const sB = g.scoreB || 0;
+      let sA = Number(g.scoreA) || 0;
+      let sB = Number(g.scoreB) || 0;
       const tA = g.teamAId;
       const tB = g.teamBId;
+
+      if (sA === 0 && sB === 0 && g.playerStats) {
+        Object.keys(g.playerStats).forEach((pId) => {
+          const pts = Number((g.playerStats?.[pId] as any)?.points) || 0;
+          const p = playersList.find(pl => pl.id === pId);
+          if (p?.teamId === tA) sA += pts;
+          else if (p?.teamId === tB) sB += pts;
+        });
+      }
 
       if (statsMap[tA]) {
         statsMap[tA].pointsFor += sA;

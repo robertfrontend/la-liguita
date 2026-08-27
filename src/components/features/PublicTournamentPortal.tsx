@@ -111,12 +111,87 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
   }, [games, selectedRoundFilter, statusFilter]);
 
   const sortedTeams = useMemo(() => {
-    return [...teams].sort((a, b) => {
+    const tableMap: Record<string, {
+      id: string;
+      name: string;
+      shortName?: string;
+      wins: number;
+      losses: number;
+      ties: number;
+      pointsFor: number;
+      pointsAgainst: number;
+    }> = {};
+
+    teams.forEach((t) => {
+      tableMap[t.id] = {
+        id: t.id,
+        name: t.name,
+        shortName: t.shortName,
+        wins: t.wins || 0,
+        losses: t.losses || 0,
+        ties: 0,
+        pointsFor: t.pointsFor || 0,
+        pointsAgainst: t.pointsAgainst || 0,
+      };
+    });
+
+    games.forEach((g) => {
+      const isFin = g.isFinished || g.status === "finished";
+      if (isFin) {
+        const { scoreA, scoreB } = getGameEffectiveScores(g);
+        const tA = g.teamAId;
+        const tB = g.teamBId;
+
+        if (tableMap[tA]) {
+          tableMap[tA].pointsFor += scoreA;
+          tableMap[tA].pointsAgainst += scoreB;
+          if (scoreA > scoreB) tableMap[tA].wins += 1;
+          else if (scoreA < scoreB) tableMap[tA].losses += 1;
+          else tableMap[tA].ties += 1;
+        }
+
+        if (tableMap[tB]) {
+          tableMap[tB].pointsFor += scoreB;
+          tableMap[tB].pointsAgainst += scoreA;
+          if (scoreB > scoreA) tableMap[tB].wins += 1;
+          else if (scoreB < scoreA) tableMap[tB].losses += 1;
+          else tableMap[tB].ties += 1;
+        }
+      }
+    });
+
+    return Object.values(tableMap).sort((a, b) => {
       const diffWins = b.wins - a.wins;
       if (diffWins !== 0) return diffWins;
-      return (b.pointsFor - b.pointsAgainst) - (a.pointsFor - a.pointsAgainst);
+      const diffDiff = (b.pointsFor - b.pointsAgainst) - (a.pointsFor - a.pointsAgainst);
+      if (diffDiff !== 0) return diffDiff;
+      return b.pointsFor - a.pointsFor;
     });
-  }, [teams]);
+  }, [teams, games, players]);
+
+  // Formateador limpio de fecha y hora
+  const formatMatchDateTime = (dateString?: string) => {
+    if (!dateString) return { fullDate: "Fecha por confirmar", timeStr: "Hora por definir" };
+    try {
+      const d = new Date(dateString);
+      if (isNaN(d.getTime())) return { fullDate: "Fecha por confirmar", timeStr: "Hora por definir" };
+
+      const fullDate = d.toLocaleDateString("es-ES", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      });
+      const timeStr = d.toLocaleTimeString("es-ES", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+      });
+      return { fullDate, timeStr };
+    } catch {
+      return { fullDate: "Fecha por confirmar", timeStr: "Hora por definir" };
+    }
+  };
 
   // Líderes de Puntos Reales
   const topScorers = useMemo(() => {
@@ -365,16 +440,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                 const teamAWon = isFinished && scoreA > scoreB;
                 const teamBWon = isFinished && scoreB > scoreA;
 
-                const matchDate = new Date(game.date);
-                const formattedDate = matchDate.toLocaleDateString("es-ES", {
-                  weekday: "short",
-                  day: "numeric",
-                  month: "short",
-                });
-                const formattedTime = matchDate.toLocaleTimeString("es-ES", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                });
+                const { fullDate, timeStr } = formatMatchDateTime(game.date);
 
                 const teamA = teams.find((t) => t.id === game.teamAId);
                 const teamB = teams.find((t) => t.id === game.teamBId);
@@ -388,92 +454,134 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                     className="bg-zinc-900/70 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700/80 rounded-2xl p-5 shadow-lg transition duration-200 cursor-pointer group flex flex-col justify-between space-y-4"
                   >
                     {/* Header de la Tarjeta */}
-                    <div className="flex items-center justify-between text-[11px] font-mono">
+                    <div className="flex items-center justify-between text-[11px] font-mono border-b border-zinc-800/80 pb-2.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-zinc-400 uppercase tracking-wider">{game.roundName || "Partido Oficial"}</span>
+                        <span className="font-bold text-orange-400 uppercase tracking-wider">{game.roundName || "Partido Oficial"}</span>
                         {game.venue && (
-                          <span className="text-zinc-500 truncate max-w-[150px]">
-                            • {game.venue}
+                          <span className="text-zinc-400 truncate max-w-[160px] flex items-center gap-1">
+                            <MapPin size={11} className="text-zinc-500" />
+                            <span>{game.venue}</span>
                           </span>
                         )}
                       </div>
 
                       <div>
                         {isFinished && (
-                          <span className="px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 font-bold uppercase tracking-wider text-[10px]">
+                          <span className="px-2.5 py-0.5 rounded-md bg-zinc-800 text-zinc-300 font-bold uppercase tracking-wider text-[10px]">
                             FINAL
                           </span>
                         )}
                         {isLive && (
-                          <span className="px-2 py-0.5 rounded-md bg-red-500/20 text-red-400 font-black uppercase tracking-wider text-[10px] border border-red-500/30 animate-pulse">
+                          <span className="px-2.5 py-0.5 rounded-md bg-red-500/20 text-red-400 font-black uppercase tracking-wider text-[10px] border border-red-500/30 animate-pulse">
                             EN VIVO
                           </span>
                         )}
                         {isScheduled && (
-                          <span className="px-2.5 py-0.5 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/25 font-bold uppercase tracking-wider text-[10px]">
-                            Próximamente • {formattedDate} {formattedTime}
+                          <span className="px-2.5 py-0.5 rounded-md bg-zinc-800 text-zinc-400 font-bold text-[10px]">
+                            PROGRAMADO
                           </span>
                         )}
                       </div>
                     </div>
 
-                    {/* Fila Equipo A */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-orange-400 shrink-0">
-                            {teamA?.shortName || game.teamAName.slice(0, 2).toUpperCase()}
+                    {/* CUERPO DEL PARTIDO */}
+                    {isScheduled ? (
+                      <div className="py-1 space-y-3">
+                        {/* Fila de Equipos Programados */}
+                        <div className="space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-orange-400 shrink-0">
+                                {teamA?.shortName || game.teamAName.slice(0, 2).toUpperCase()}
+                              </div>
+                              <span className="text-sm font-bold text-white truncate">{game.teamAName}</span>
+                            </div>
+                            <span className="text-xs font-mono text-zinc-500">Local</span>
                           </div>
-                          <div className="min-w-0">
-                            <span className={`text-sm truncate block ${
-                              teamAWon ? "font-black text-white" : isFinished ? "text-zinc-400 font-semibold" : "font-bold text-zinc-200"
-                            }`}>
-                              {game.teamAName}
-                            </span>
-                            {teamA && (
-                              <span className="text-[10px] font-mono text-zinc-500">
-                                ({teamA.wins}-{teamA.losses})
-                              </span>
-                            )}
-                          </div>
-                        </div>
 
-                        <span className={`text-2xl font-mono ${
-                          teamAWon ? "font-black text-white" : isFinished ? "font-bold text-zinc-400" : "font-bold text-zinc-500"
-                        }`}>
-                          {isScheduled ? "-" : scoreA}
-                        </span>
-                      </div>
-
-                      {/* Fila Equipo B */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-blue-400 shrink-0">
-                            {teamB?.shortName || game.teamBName.slice(0, 2).toUpperCase()}
-                          </div>
-                          <div className="min-w-0">
-                            <span className={`text-sm truncate block ${
-                              teamBWon ? "font-black text-white" : isFinished ? "text-zinc-400 font-semibold" : "font-bold text-zinc-200"
-                            }`}>
-                              {game.teamBName}
-                            </span>
-                            {teamB && (
-                              <span className="text-[10px] font-mono text-zinc-500">
-                                ({teamB.wins}-{teamB.losses})
-                              </span>
-                            )}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-blue-400 shrink-0">
+                                {teamB?.shortName || game.teamBName.slice(0, 2).toUpperCase()}
+                              </div>
+                              <span className="text-sm font-bold text-white truncate">{game.teamBName}</span>
+                            </div>
+                            <span className="text-xs font-mono text-zinc-500">Visitante</span>
                           </div>
                         </div>
 
-                        <span className={`text-2xl font-mono ${
-                          teamBWon ? "font-black text-white" : isFinished ? "font-bold text-zinc-400" : "font-bold text-zinc-500"
-                        }`}>
-                          {isScheduled ? "-" : scoreB}
-                        </span>
+                        {/* BADGE CENTRAL DESTACADO: PRÓXIMAMENTE + FECHA Y HORA BIEN VISIBLES */}
+                        <div className="flex flex-col items-center justify-center py-3 px-4 bg-zinc-950/80 rounded-xl border border-zinc-800/80 text-center space-y-1 mt-1">
+                          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-orange-500/15 text-orange-400 border border-orange-500/30 text-[10px] font-black uppercase tracking-wider">
+                            <Clock size={11} className="text-orange-400" />
+                            <span>Próximamente</span>
+                          </div>
+                          <div className="text-xs font-bold text-white capitalize">
+                            {fullDate}
+                          </div>
+                          <div className="text-[11px] font-mono text-zinc-400 font-semibold">
+                            {timeStr} {game.venue ? `• ${game.venue}` : ""}
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      /* Filas de Marcador para Partido Finalizado o En Vivo */
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-orange-400 shrink-0">
+                              {teamA?.shortName || game.teamAName.slice(0, 2).toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <span className={`text-sm truncate block ${
+                                teamAWon ? "font-black text-white" : "text-zinc-400 font-semibold"
+                              }`}>
+                                {game.teamAName}
+                              </span>
+                              {teamA && (
+                                <span className="text-[10px] font-mono text-zinc-500">
+                                  ({teamA.wins}-{teamA.losses})
+                                </span>
+                              )}
+                            </div>
+                          </div>
 
-                    {/* Barra Inferior Apple Sports: MVP del Partido */}
+                          <span className={`text-2xl font-mono ${
+                            teamAWon ? "font-black text-white" : "font-bold text-zinc-400"
+                          }`}>
+                            {scoreA}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-blue-400 shrink-0">
+                              {teamB?.shortName || game.teamBName.slice(0, 2).toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <span className={`text-sm truncate block ${
+                                teamBWon ? "font-black text-white" : "text-zinc-400 font-semibold"
+                              }`}>
+                                {game.teamBName}
+                              </span>
+                              {teamB && (
+                                <span className="text-[10px] font-mono text-zinc-500">
+                                  ({teamB.wins}-{teamB.losses})
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <span className={`text-2xl font-mono ${
+                            teamBWon ? "font-black text-white" : "font-bold text-zinc-400"
+                          }`}>
+                            {scoreB}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Barra Inferior Apple Sports: MVP del Partido o Ficha */}
                     {mvp ? (
                       <div className="pt-2.5 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400">
                         <div className="flex items-center gap-1.5 truncate">

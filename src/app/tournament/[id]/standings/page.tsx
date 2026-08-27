@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { TournamentTeam, Tournament } from "@/types/tournament";
-import { subscribeToTournamentTeams, subscribeToTournament } from "@/lib/db";
+import { TournamentTeam, Tournament, TournamentGame } from "@/types/tournament";
+import { subscribeToTournamentTeams, subscribeToTournament, subscribeToTournamentGames } from "@/lib/db";
 import { Trophy, TrendingUp, Award } from "lucide-react";
 
 export default function TournamentStandingsPage() {
@@ -12,6 +12,7 @@ export default function TournamentStandingsPage() {
 
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [teams, setTeams] = useState<TournamentTeam[]>([]);
+  const [games, setGames] = useState<TournamentGame[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,23 +24,88 @@ export default function TournamentStandingsPage() {
 
     const unsubTeams = subscribeToTournamentTeams(tournamentId, (tList) => {
       setTeams(tList);
+    });
+
+    const unsubGames = subscribeToTournamentGames(tournamentId, (gList) => {
+      setGames(gList);
       setLoading(false);
     });
 
     return () => {
       unsubTournament();
       unsubTeams();
+      unsubGames();
     };
   }, [tournamentId]);
 
-  if (loading) return <div className="p-8 text-center text-zinc-500">Cargando clasificación...</div>;
+  const sortedTeams = useMemo(() => {
+    const tableMap: Record<string, {
+      id: string;
+      name: string;
+      shortName?: string;
+      wins: number;
+      losses: number;
+      ties: number;
+      pointsFor: number;
+      pointsAgainst: number;
+    }> = {};
 
-  const sortedTeams = [...teams].sort((a, b) => {
-    const diffWins = b.wins - a.wins;
-    if (diffWins !== 0) return diffWins;
-    const diffDiff = (b.pointsFor - b.pointsAgainst) - (a.pointsFor - a.pointsAgainst);
-    return diffDiff;
-  });
+    teams.forEach((t) => {
+      tableMap[t.id] = {
+        id: t.id,
+        name: t.name,
+        shortName: t.shortName,
+        wins: t.wins || 0,
+        losses: t.losses || 0,
+        ties: 0,
+        pointsFor: t.pointsFor || 0,
+        pointsAgainst: t.pointsAgainst || 0,
+      };
+    });
+
+    games.forEach((g) => {
+      const isFin = g.isFinished || g.status === "finished";
+      if (isFin) {
+        let scoreA = Number(g.scoreA) || 0;
+        let scoreB = Number(g.scoreB) || 0;
+
+        if (scoreA === 0 && scoreB === 0 && g.playerStats) {
+          Object.keys(g.playerStats).forEach((pId) => {
+            const pts = Number((g.playerStats?.[pId] as any)?.points) || 0;
+            // Si el jugador pertenece a teamA o teamB
+            // Si no podemos determinar el teamId, se mantiene
+          });
+        }
+
+        const tA = g.teamAId;
+        const tB = g.teamBId;
+
+        if (tableMap[tA]) {
+          tableMap[tA].pointsFor += scoreA;
+          tableMap[tA].pointsAgainst += scoreB;
+          if (scoreA > scoreB) tableMap[tA].wins += 1;
+          else if (scoreA < scoreB) tableMap[tA].losses += 1;
+          else tableMap[tA].ties += 1;
+        }
+
+        if (tableMap[tB]) {
+          tableMap[tB].pointsFor += scoreB;
+          tableMap[tB].pointsAgainst += scoreA;
+          if (scoreB > scoreA) tableMap[tB].wins += 1;
+          else if (scoreB < scoreA) tableMap[tB].losses += 1;
+          else tableMap[tB].ties += 1;
+        }
+      }
+    });
+
+    return Object.values(tableMap).sort((a, b) => {
+      const diffWins = b.wins - a.wins;
+      if (diffWins !== 0) return diffWins;
+      const diffDiff = (b.pointsFor - b.pointsAgainst) - (a.pointsFor - a.pointsAgainst);
+      if (diffDiff !== 0) return diffDiff;
+      return b.pointsFor - a.pointsFor;
+    });
+  }, [teams, games]);
 
   return (
     <div className="space-y-6">
