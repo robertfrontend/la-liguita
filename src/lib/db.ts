@@ -14,12 +14,29 @@ import {
   onSnapshot,
   collectionGroup
 } from "firebase/firestore";
-import type { Player, Game, League, Sport, GameStats, UserProfile } from "./types";
+import type { 
+  Player, 
+  Game, 
+  League, 
+  Sport, 
+  GameStats, 
+  UserProfile, 
+  Tournament, 
+  PlayByPlayEvent, 
+  TournamentTeam, 
+  TournamentPlayer, 
+  Referee,
+  TournamentGame
+} from "./types";
 
 // Collections
+const TOURNAMENTS_COLLECTION = "tournaments";
 const LEAGUES_COLLECTION = "leagues";
 const PLAYERS_SUBCOLLECTION = "players";
 const GAMES_SUBCOLLECTION = "games";
+const TEAMS_SUBCOLLECTION = "teams";
+const PLAY_BY_PLAY_SUBCOLLECTION = "playByPlay";
+const REFEREES_SUBCOLLECTION = "referees";
 
 // --- User Profile ---
 
@@ -51,8 +68,9 @@ export const createUserProfile = async (uid: string, email?: string, displayName
     await setDoc(docRef, profileData, { merge: true });
     const snap = await getDoc(docRef);
     return { uid: snap.id, ...snap.data() } as UserProfile;
-  } catch (error: any) {
-    console.error("DEBUG: Error in createUserProfile (write):", error.code, error.message);
+  } catch (error: unknown) {
+    const err = error as { code?: string; message?: string };
+    console.error("DEBUG: Error in createUserProfile (write):", err?.code, err?.message);
     return { uid, isPro: false, email, displayName } as UserProfile;
   }
 };
@@ -326,7 +344,214 @@ export const subscribeToGameGlobally = (gameId: string, callback: (game: Game | 
       callback(null);
   });
 };
-// --- Early Access ---
 
+// ==========================================
+// --- TOURNAMENTS (Multi-Tier SaaS) ---
+// ==========================================
 
+export const createTournamentInDb = async (tournamentData: Omit<Tournament, "id">) => {
+  const docRef = await addDoc(collection(db, TOURNAMENTS_COLLECTION), tournamentData);
+  return { id: docRef.id, ...tournamentData } as Tournament;
+};
 
+export const getTournament = async (tournamentId: string): Promise<Tournament | null> => {
+  const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId);
+  const snap = await getDoc(docRef);
+  if (snap.exists()) {
+    return { id: snap.id, ...snap.data() } as Tournament;
+  }
+  return null;
+};
+
+export const subscribeToTournament = (tournamentId: string, callback: (tournament: Tournament | null) => void) => {
+  const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId);
+  return onSnapshot(docRef, (snap) => {
+    if (snap.exists()) {
+      callback({ id: snap.id, ...snap.data() } as Tournament);
+    } else {
+      callback(null);
+    }
+  }, (error) => {
+    console.error("Error subscribing to tournament:", error);
+    callback(null);
+  });
+};
+
+export const subscribeToTournaments = (ownerId: string, callback: (tournaments: Tournament[]) => void) => {
+  if (!ownerId) return () => {};
+  const q = query(collection(db, TOURNAMENTS_COLLECTION), where("ownerId", "==", ownerId));
+  return onSnapshot(q, (snapshot) => {
+    const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Tournament));
+    callback(list);
+  }, (error) => {
+    console.error("Error subscribing to tournaments:", error);
+    callback([]);
+  });
+};
+
+export const subscribeToAllTournaments = (callback: (tournaments: Tournament[]) => void) => {
+  const q = query(collection(db, TOURNAMENTS_COLLECTION), orderBy("createdAt", "desc"));
+  return onSnapshot(q, (snapshot) => {
+    const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Tournament));
+    callback(list);
+  }, (error) => {
+    console.error("Error subscribing to all tournaments (Super Admin):", error);
+    callback([]);
+  });
+};
+
+export const subscribeToAssignedTournaments = (email: string, callback: (tournaments: Tournament[]) => void) => {
+  if (!email) return () => {};
+  const cleanEmail = email.trim().toLowerCase();
+  const q = query(collection(db, TOURNAMENTS_COLLECTION), where("adminEmails", "array-contains", cleanEmail));
+  return onSnapshot(q, (snapshot) => {
+    const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Tournament));
+    callback(list);
+  }, (error) => {
+    console.error("Error subscribing to assigned tournaments:", error);
+    callback([]);
+  });
+};
+
+export const updateTournamentInDb = async (tournamentId: string, updates: Partial<Tournament>) => {
+  const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId);
+  await updateDoc(docRef, { ...updates, updatedAt: new Date().toISOString() });
+};
+
+export const deleteTournamentFromDb = async (tournamentId: string) => {
+  const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId);
+  
+  // Clean subcollections
+  const teamsSnap = await getDocs(collection(db, TOURNAMENTS_COLLECTION, tournamentId, TEAMS_SUBCOLLECTION));
+  const deleteTeams = teamsSnap.docs.map(d => deleteDoc(d.ref));
+  
+  const gamesSnap = await getDocs(collection(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION));
+  const deleteGames = gamesSnap.docs.map(d => deleteDoc(d.ref));
+
+  const playersSnap = await getDocs(collection(db, TOURNAMENTS_COLLECTION, tournamentId, PLAYERS_SUBCOLLECTION));
+  const deletePlayers = playersSnap.docs.map(d => deleteDoc(d.ref));
+
+  const refereesSnap = await getDocs(collection(db, TOURNAMENTS_COLLECTION, tournamentId, REFEREES_SUBCOLLECTION));
+  const deleteReferees = refereesSnap.docs.map(d => deleteDoc(d.ref));
+
+  await Promise.all([...deleteTeams, ...deleteGames, ...deletePlayers, ...deleteReferees]);
+  await deleteDoc(docRef);
+};
+
+// --- Tournament Teams ---
+
+export const subscribeToTournamentTeams = (tournamentId: string, callback: (teams: TournamentTeam[]) => void) => {
+  const q = query(collection(db, TOURNAMENTS_COLLECTION, tournamentId, TEAMS_SUBCOLLECTION), orderBy("name"));
+  return onSnapshot(q, (snapshot) => {
+    const teams = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as TournamentTeam));
+    callback(teams);
+  }, (error) => {
+    console.error("Error in subscribeToTournamentTeams:", error);
+    callback([]);
+  });
+};
+
+export const addTournamentTeam = async (tournamentId: string, teamData: Omit<TournamentTeam, "id">) => {
+  const docRef = await addDoc(collection(db, TOURNAMENTS_COLLECTION, tournamentId, TEAMS_SUBCOLLECTION), teamData);
+  return { id: docRef.id, ...teamData } as TournamentTeam;
+};
+
+// --- Tournament Games ---
+
+export const subscribeToTournamentGames = (tournamentId: string, callback: (games: TournamentGame[]) => void) => {
+  const q = query(collection(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION));
+  return onSnapshot(q, (snapshot) => {
+    const games = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as TournamentGame));
+    games.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    callback(games);
+  }, (error) => {
+    console.error("Error in subscribeToTournamentGames:", error);
+    callback([]);
+  });
+};
+
+export const createTournamentGameInDb = async (tournamentId: string, gameData: Omit<TournamentGame, "id">) => {
+  const docRef = await addDoc(collection(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION), gameData);
+  return { id: docRef.id, ...gameData } as TournamentGame;
+};
+
+// --- Play-by-Play (PRO Tier) ---
+
+export const addPlayByPlayEventInDb = async (tournamentId: string, gameId: string, eventData: Omit<PlayByPlayEvent, "id">) => {
+  const docRef = await addDoc(
+    collection(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION, gameId, PLAY_BY_PLAY_SUBCOLLECTION),
+    eventData
+  );
+  return { id: docRef.id, ...eventData } as PlayByPlayEvent;
+};
+
+export const subscribeToPlayByPlay = (tournamentId: string, gameId: string, callback: (events: PlayByPlayEvent[]) => void) => {
+  const q = query(
+    collection(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION, gameId, PLAY_BY_PLAY_SUBCOLLECTION),
+    orderBy("timestamp", "asc")
+  );
+
+  return onSnapshot(q, (snapshot) => {
+    const events = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as PlayByPlayEvent));
+    callback(events);
+  }, (error) => {
+    console.error("Error in subscribeToPlayByPlay:", error);
+    callback([]);
+  });
+};
+
+export const updateTournamentTeamInDb = async (tournamentId: string, teamId: string, updates: Partial<TournamentTeam>) => {
+  const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId, TEAMS_SUBCOLLECTION, teamId);
+  await updateDoc(docRef, updates);
+};
+
+export const deleteTournamentTeamFromDb = async (tournamentId: string, teamId: string) => {
+  const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId, TEAMS_SUBCOLLECTION, teamId);
+  await deleteDoc(docRef);
+};
+
+// --- Tournament Players ---
+
+export const subscribeToTournamentPlayers = (tournamentId: string, callback: (players: TournamentPlayer[]) => void) => {
+  const q = query(collection(db, TOURNAMENTS_COLLECTION, tournamentId, PLAYERS_SUBCOLLECTION), orderBy("name"));
+  return onSnapshot(q, (snapshot) => {
+    const players = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as TournamentPlayer));
+    callback(players);
+  }, (error) => {
+    console.error("Error in subscribeToTournamentPlayers:", error);
+    callback([]);
+  });
+};
+
+export const addTournamentPlayerInDb = async (tournamentId: string, playerData: Omit<TournamentPlayer, "id">) => {
+  const docRef = await addDoc(collection(db, TOURNAMENTS_COLLECTION, tournamentId, PLAYERS_SUBCOLLECTION), playerData);
+  return { id: docRef.id, ...playerData } as TournamentPlayer;
+};
+
+export const updateTournamentPlayerInDb = async (tournamentId: string, playerId: string, updates: Partial<TournamentPlayer>) => {
+  const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId, PLAYERS_SUBCOLLECTION, playerId);
+  await updateDoc(docRef, updates);
+};
+
+export const deleteTournamentPlayerFromDb = async (tournamentId: string, playerId: string) => {
+  const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId, PLAYERS_SUBCOLLECTION, playerId);
+  await deleteDoc(docRef);
+};
+
+// --- Referees (PRO Tier) ---
+
+export const subscribeToReferees = (tournamentId: string, callback: (referees: Referee[]) => void) => {
+  const q = query(collection(db, TOURNAMENTS_COLLECTION, tournamentId, REFEREES_SUBCOLLECTION));
+  return onSnapshot(q, (snapshot) => {
+    const referees = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Referee));
+    callback(referees);
+  }, (error) => {
+    console.error("Error in subscribeToReferees:", error);
+    callback([]);
+  });
+};
+
+export const addRefereeToDb = async (tournamentId: string, refData: Omit<Referee, "id">) => {
+  const docRef = await addDoc(collection(db, TOURNAMENTS_COLLECTION, tournamentId, REFEREES_SUBCOLLECTION), refData);
+  return { id: docRef.id, ...refData } as Referee;
+};

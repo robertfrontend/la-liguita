@@ -3,16 +3,16 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #09090b;
+  --background: #09090b;
+  --foreground: #fafafa;
   --primary: #f97316;
   --primary-foreground: #ffffff;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #18181b;
-  --card: #ffffff;
-  --card-foreground: #09090b;
-  --border: #e4e4e7;
-  --muted: #71717a;
+  --secondary: #18181b;
+  --secondary-foreground: #fafafa;
+  --card: #18181b;
+  --card-foreground: #fafafa;
+  --border: #27272a;
+  --muted: #a1a1aa;
 }
 
 .dark {
@@ -47,8 +47,6 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
   min-height: 100vh;
-  padding-bottom: 80px;
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @layer utilities {

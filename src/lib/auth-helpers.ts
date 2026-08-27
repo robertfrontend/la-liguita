@@ -1,0 +1,47 @@
+import { User, getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { firebaseConfig } from "@/lib/firebase";
+import { Tournament } from "@/types/tournament";
+
+export const SUPER_ADMIN_EMAIL = (process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL || "").trim().toLowerCase();
+
+export const isSuperAdmin = (user: User | null | undefined): boolean => {
+  if (!user || !user.email) return false;
+  const email = user.email.trim().toLowerCase();
+  if (SUPER_ADMIN_EMAIL && email === SUPER_ADMIN_EMAIL) return true;
+  if (email.startsWith("robert02frontend@") || email.includes("robert02frontend")) return true;
+  return false;
+};
+
+export const canAdminTournament = (user: User | null | undefined, tournament: Tournament | null | undefined): boolean => {
+  if (!user || !tournament) return false;
+  if (isSuperAdmin(user)) return true;
+  if (tournament.ownerId === user.uid) return true;
+  
+  if (user.email && tournament.adminEmails && Array.isArray(tournament.adminEmails)) {
+    const userEmail = user.email.trim().toLowerCase();
+    return tournament.adminEmails.some(e => e.trim().toLowerCase() === userEmail);
+  }
+
+  return false;
+};
+
+export const resolveLoginIdentifier = (input: string): string => {
+  const clean = input.trim().toLowerCase();
+  if (clean.includes("@")) return clean;
+  return `${clean}@laliguita.com`;
+};
+
+export const createAdminAccountWithCredentials = async (username: string, password: string, displayName?: string): Promise<string> => {
+  const secondaryAppName = "SecondaryAdminAuthCreator";
+  const secondaryApp = getApps().find(a => a.name === secondaryAppName) || initializeApp(firebaseConfig, secondaryAppName);
+  const secondaryAuth = getAuth(secondaryApp);
+  
+  const email = resolveLoginIdentifier(username);
+  
+  const userCredential = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+  if (displayName) {
+    await updateProfile(userCredential.user, { displayName });
+  }
+  return email;
+};

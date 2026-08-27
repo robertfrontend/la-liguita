@@ -39,7 +39,10 @@ export type League = {
   sport: Sport;
   ownerId: string;
   createdAt: string;
+  tier?: 'amateur' | 'pro';
 };
+
+export * from '@/types/tournament';
 
 export type UserProfile = {
   uid: string;

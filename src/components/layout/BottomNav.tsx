@@ -21,6 +21,9 @@ export function BottomNav() {
 
   const activeGame = isMounted ? activeGameStore : null;
 
+  const isTournamentOrAdminOrPublic = pathname.startsWith("/tournament") || pathname.startsWith("/superadmin") || pathname.startsWith("/t/");
+  if (isTournamentOrAdminOrPublic) return null;
+
   const isActive = (path: string) => pathname === path;
 
   return (

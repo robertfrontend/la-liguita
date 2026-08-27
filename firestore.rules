@@ -2,26 +2,69 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // PERMITIR TODO EL READ PÚBLICO (Incluyendo perfiles)
-    match /{document=**} {
-      allow read: if true;
+    // Función auxiliar para verificar autenticación
+    function isAuthenticated() {
+      return request.auth != null;
     }
 
-    // ESCRITURA: Solo usuarios autenticados para su propio perfil
+    // Colección de Usuarios
     match /users/{userId} {
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow read: if true;
+      allow write: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Ligas y subcolecciones: Escritura para usuarios autenticados
-    match /leagues/{leagueId} {
-      allow write: if request.auth != null;
-      
+    // Colección de Torneos (Multi-Tier SaaS)
+    match /tournaments/{tournamentId} {
+      allow read: if true; // Lectura pública para fans y jugadores
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && (
+        resource.data.ownerId == request.auth.uid || 
+        request.resource.data.ownerId == request.auth.uid
+      );
+
+      // Subcolección Partidos
       match /games/{gameId} {
-        allow write: if request.auth != null;
+        allow read: if true;
+        allow write: if isAuthenticated();
+
+        // Subcolección Play-by-Play (Solo Plan PRO)
+        match /playByPlay/{eventId} {
+          allow read: if true;
+          allow write: if isAuthenticated();
+        }
+      }
+
+      // Subcolecciones Equipos, Jugadores, Árbitros
+      match /teams/{teamId} {
+        allow read: if true;
+        allow write: if isAuthenticated();
       }
       
       match /players/{playerId} {
-        allow write: if request.auth != null;
+        allow read: if true;
+        allow write: if isAuthenticated();
+      }
+
+      match /referees/{refereeId} {
+        allow read: if true;
+        allow write: if isAuthenticated();
+      }
+    }
+
+    // Colección Leagues (Compatibilidad Legacy)
+    match /leagues/{leagueId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated();
+      
+      match /games/{gameId} {
+        allow read: if true;
+        allow write: if isAuthenticated();
+      }
+      
+      match /players/{playerId} {
+        allow read: if true;
+        allow write: if isAuthenticated();
       }
     }
 

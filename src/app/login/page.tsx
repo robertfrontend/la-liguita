@@ -7,13 +7,15 @@ import { LogIn, UserPlus, Mail, Lock, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { resolveLoginIdentifier } from "@/lib/auth-helpers";
+
 export default function LoginPage() {
   const { user, signInWithGoogle, signInWithEmail, signUpWithEmail, loading } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
   
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("");
+  const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
@@ -31,15 +33,16 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
+      const resolvedIdentifier = resolveLoginIdentifier(emailOrUsername);
       if (isLogin) {
-        await signInWithEmail(email, password);
+        await signInWithEmail(resolvedIdentifier, password);
       } else {
-        await signUpWithEmail(email, password, name);
+        await signUpWithEmail(resolvedIdentifier, password, name);
       }
     } catch (err) {
       const error = err as { code?: string; message?: string };
       if (error.code === 'auth/invalid-credential') {
-        setError(t("login.invalidCredentials"));
+        setError("Credenciales incorrectas. Verifica tu usuario/correo y contraseña.");
       } else if (error.code === 'auth/email-already-in-use') {
         setError(t("login.emailInUse"));
       } else if (error.code === 'auth/weak-password') {
@@ -65,10 +68,10 @@ export default function LoginPage() {
         </div>
         
         <h1 className="text-2xl font-bold text-foreground mb-2 text-center">
-          {isLogin ? t("login.welcomeBack") : t("login.createAccount")}
+          {isLogin ? "Acceso Administrativo" : t("login.createAccount")}
         </h1>
-        <p className="text-muted-foreground mb-8 text-center">
-          {isLogin ? t("login.signInToContinue") : t("login.joinCommunity")}
+        <p className="text-muted-foreground mb-8 text-center text-xs">
+          {isLogin ? "Ingresa con tu usuario asignado o correo" : t("login.joinCommunity")}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4 mb-6">
@@ -87,13 +90,13 @@ export default function LoginPage() {
           )}
 
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={20} />
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={20} />
             <input 
-              type="email" 
-              placeholder={t("common.email")}
-              className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-foreground"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text" 
+              placeholder="Usuario o Correo Electrónico"
+              className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-foreground text-sm"
+              value={emailOrUsername}
+              onChange={(e) => setEmailOrUsername(e.target.value)}
               required
             />
           </div>
