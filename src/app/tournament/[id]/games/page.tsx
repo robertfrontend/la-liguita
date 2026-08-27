@@ -495,23 +495,13 @@ export default function TournamentGamesPage() {
                     <Trash2 size={13} />
                   </button>
 
-                  {isPro ? (
-                    <Link
-                      href={`/tournament/${tournamentId}/live-console`}
-                      className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold rounded-xl flex items-center gap-1.5 transition text-xs shadow-sm"
-                    >
-                      <Play size={12} className="fill-current" />
-                      <span>{isFinished ? "Ver Box Score" : isLive ? "Mesa Técnica" : "Iniciar Partido"}</span>
-                    </Link>
-                  ) : (
-                    <Link
-                      href={`/game/${game.id}`}
-                      className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold rounded-xl transition flex items-center gap-1.5 text-xs shadow-sm"
-                    >
-                      <Play size={12} className="fill-current" />
-                      <span>{isFinished ? "Ver Resultado" : "Marcador en Vivo"}</span>
-                    </Link>
-                  )}
+                  <Link
+                    href={`/tournament/${tournamentId}/live-console?gameId=${game.id}`}
+                    className="px-3.5 py-1.5 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold rounded-xl flex items-center gap-1.5 transition text-xs shadow-sm"
+                  >
+                    <Play size={12} className="fill-current" />
+                    <span>{isFinished ? "Ver Acta / Marcador" : isLive ? "Mesa Técnica" : "Iniciar Partido"}</span>
+                  </Link>
                 </div>
               </div>
             </div>

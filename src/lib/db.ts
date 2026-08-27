@@ -475,7 +475,118 @@ export const createTournamentGameInDb = async (tournamentId: string, gameData: O
   return { id: docRef.id, ...gameData } as TournamentGame;
 };
 
-// --- Play-by-Play (PRO Tier) ---
+export const updateTournamentGameInDb = async (tournamentId: string, gameId: string, updates: Partial<TournamentGame>) => {
+  const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION, gameId);
+  await updateDoc(docRef, updates);
+};
+
+export const deleteTournamentGameInDb = async (tournamentId: string, gameId: string) => {
+  const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION, gameId);
+  await deleteDoc(docRef);
+};
+
+// --- Play-by-Play & Live Scoring (Technical Table) ---
+
+export const recordTournamentScoreEventInDb = async (
+  tournamentId: string,
+  gameId: string,
+  eventData: Omit<PlayByPlayEvent, "id">,
+  newScoreA: number,
+  newScoreB: number,
+  period?: number,
+  gameClock?: string
+) => {
+  // 1. Guardar evento en la subcolección playByPlay
+  const eventRef = await addDoc(
+    collection(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION, gameId, PLAY_BY_PLAY_SUBCOLLECTION),
+    eventData
+  );
+
+  // 2. Actualizar inmediatamente el marcador en el documento del partido
+  const gameRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION, gameId);
+  await updateDoc(gameRef, {
+    scoreA: Math.max(0, newScoreA),
+    scoreB: Math.max(0, newScoreB),
+    status: "live",
+    currentPeriod: period || 1,
+    timeRemaining: gameClock || "10:00",
+  });
+
+  return { id: eventRef.id, ...eventData } as PlayByPlayEvent;
+};
+
+export const finishTournamentGameInDb = async (
+  tournamentId: string,
+  gameId: string,
+  teamAId: string,
+  teamBId: string,
+  scoreA: number,
+  scoreB: number
+) => {
+  const isDraw = scoreA === scoreB;
+  const winnerTeamId = isDraw ? null : scoreA > scoreB ? teamAId : teamBId;
+
+  // 1. Marcar partido como finalizado
+  const gameRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION, gameId);
+  await updateDoc(gameRef, {
+    scoreA,
+    scoreB,
+    isFinished: true,
+    status: "finished",
+    winnerTeamId,
+  });
+
+  // 2. Actualizar estadísticas de equipos en la tabla de posiciones
+  try {
+    const teamARef = doc(db, TOURNAMENTS_COLLECTION, tournamentId, TEAMS_SUBCOLLECTION, teamAId);
+    const teamBRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId, TEAMS_SUBCOLLECTION, teamBId);
+
+    const [snapA, snapB] = await Promise.all([getDoc(teamARef), getDoc(teamBRef)]);
+
+    if (snapA.exists()) {
+      const dataA = snapA.data() as TournamentTeam;
+      const won = scoreA > scoreB;
+      await updateDoc(teamARef, {
+        wins: (dataA.wins || 0) + (won ? 1 : 0),
+        losses: (dataA.losses || 0) + (!won && !isDraw ? 1 : 0),
+        pointsFor: (dataA.pointsFor || 0) + scoreA,
+        pointsAgainst: (dataA.pointsAgainst || 0) + scoreB,
+      });
+    }
+
+    if (snapB.exists()) {
+      const dataB = snapB.data() as TournamentTeam;
+      const won = scoreB > scoreA;
+      await updateDoc(teamBRef, {
+        wins: (dataB.wins || 0) + (won ? 1 : 0),
+        losses: (dataB.losses || 0) + (!won && !isDraw ? 1 : 0),
+        pointsFor: (dataB.pointsFor || 0) + scoreB,
+        pointsAgainst: (dataB.pointsAgainst || 0) + scoreA,
+      });
+    }
+  } catch (err) {
+    console.error("Error al actualizar tabla de posiciones de equipos:", err);
+  }
+};
+
+export const deletePlayByPlayEventInDb = async (
+  tournamentId: string,
+  gameId: string,
+  eventId: string,
+  revertScoreA?: number,
+  revertScoreB?: number
+) => {
+  const eventRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION, gameId, PLAY_BY_PLAY_SUBCOLLECTION, eventId);
+  await deleteDoc(eventRef);
+
+  if (revertScoreA !== undefined && revertScoreB !== undefined) {
+    const gameRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION, gameId);
+    await updateDoc(gameRef, {
+      scoreA: Math.max(0, revertScoreA),
+      scoreB: Math.max(0, revertScoreB),
+    });
+  }
+};
 
 export const addPlayByPlayEventInDb = async (tournamentId: string, gameId: string, eventData: Omit<PlayByPlayEvent, "id">) => {
   const docRef = await addDoc(
@@ -488,7 +599,7 @@ export const addPlayByPlayEventInDb = async (tournamentId: string, gameId: strin
 export const subscribeToPlayByPlay = (tournamentId: string, gameId: string, callback: (events: PlayByPlayEvent[]) => void) => {
   const q = query(
     collection(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION, gameId, PLAY_BY_PLAY_SUBCOLLECTION),
-    orderBy("timestamp", "asc")
+    orderBy("timestamp", "desc")
   );
 
   return onSnapshot(q, (snapshot) => {
