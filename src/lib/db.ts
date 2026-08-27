@@ -955,12 +955,55 @@ export const generateAdminAccessCode = (prefix: string = "LGT"): string => {
   return `${prefix.toUpperCase()}-${randomNum}`;
 };
 
+export const MASTER_SUPERADMIN_CODES = ["SUPER2026", "LGT-SUPER", "SUPERADMIN", "LGT-ROOT", "ADMIN2026", "2026", "LGT-ADMIN"];
+
 export const verifyAdminAccessCode = async (rawCode: string): Promise<{ valid: boolean; tournament?: Tournament; message?: string }> => {
   if (!rawCode || !rawCode.trim()) {
     return { valid: false, message: "Ingresa un código de acceso válido." };
   }
 
   const cleanCode = rawCode.trim().toUpperCase();
+
+  // 0. Acceso Maestro para Super Administrador
+  if (MASTER_SUPERADMIN_CODES.includes(cleanCode)) {
+    try {
+      const snap = await getDocs(collection(db, TOURNAMENTS_COLLECTION));
+      let t: Tournament;
+      if (!snap.empty) {
+        t = { id: snap.docs[0].id, ...snap.docs[0].data() } as Tournament;
+      } else {
+        t = {
+          id: "superadmin-root",
+          name: "Consola de Super Administrador",
+          organizationName: "La Liguita HQ",
+          sport: "basketball",
+          tier: "pro",
+          status: "published",
+          ownerId: "superadmin",
+          slug: "superadmin",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          settings: { maxTeams: 16 }
+        } as unknown as Tournament;
+      }
+      return { valid: true, tournament: t };
+    } catch (e) {
+      return {
+        valid: true,
+        tournament: {
+          id: "superadmin-root",
+          name: "Consola de Super Administrador",
+          sport: "basketball",
+          tier: "pro",
+          status: "published",
+          ownerId: "superadmin",
+          slug: "superadmin",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as unknown as Tournament
+      };
+    }
+  }
 
   try {
     // 1. Búsqueda directa por adminAccessCode
@@ -976,16 +1019,21 @@ export const verifyAdminAccessCode = async (rawCode: string): Promise<{ valid: b
       return { valid: true, tournament };
     }
 
-    // 2. Búsqueda de respaldo
+    // 2. Búsqueda de respaldo en todos los torneos (por derivación de ID o sin PIN previo)
     const allSnap = await getDocs(collection(db, TOURNAMENTS_COLLECTION));
     for (const d of allSnap.docs) {
       const data = d.data();
-      if (data.adminAccessCode && data.adminAccessCode.trim().toUpperCase() === cleanCode) {
+      const derivedPin = `LGT-${d.id.slice(0, 4).toUpperCase()}`;
+      if (
+        (data.adminAccessCode && data.adminAccessCode.trim().toUpperCase() === cleanCode) ||
+        cleanCode === derivedPin ||
+        cleanCode === d.id.toUpperCase()
+      ) {
         return { valid: true, tournament: { id: d.id, ...data } as Tournament };
       }
     }
 
-    return { valid: false, message: "Código o PIN inválido o no encontrado. Solicita un código al Super Administrador." };
+    return { valid: false, message: "Código o PIN no encontrado. Usa tu PIN asignado o el código maestro de Super Admin." };
   } catch (error) {
     console.error("Error verificando código de acceso:", error);
     return { valid: false, message: "Error de conexión al verificar el código." };
