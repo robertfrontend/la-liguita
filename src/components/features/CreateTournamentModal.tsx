@@ -2,21 +2,22 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { collection, addDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { TournamentTier, Sport } from "@/types/tournament";
+import { provisionConfiguredTournament } from "@/lib/tournament-generator";
 import { 
   X, 
   Trophy, 
-  Flame, 
   Sparkles, 
   Mail, 
   Building, 
   Loader2, 
   Check, 
   ShieldCheck,
-  Activity
+  Zap,
+  Users,
+  Calendar,
+  Sliders
 } from "lucide-react";
 
 interface CreateTournamentModalProps {
@@ -29,12 +30,22 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
   const router = useRouter();
   const { user } = useAuth();
 
+  // Modo de creación
+  const [creationMode, setCreationMode] = useState<"auto" | "manual">("auto");
+
+  // Parámetros Básicos
   const [name, setName] = useState("");
   const [organizationName, setOrganizationName] = useState("");
-  const [slug, setSlug] = useState("");
   const [sport, setSport] = useState<Sport>("basketball");
-  const [tier, setTier] = useState<TournamentTier>("amateur");
+  const [tier, setTier] = useState<TournamentTier>("pro");
   const [organizerEmail, setOrganizerEmail] = useState("");
+
+  // Configuración del Auto-Provisioning
+  const [numberOfTeams, setNumberOfTeams] = useState<number>(10);
+  const [playersPerTeam, setPlayersPerTeam] = useState<number>(8);
+  const [theme, setTheme] = useState<"dominican" | "nba" | "cities">("dominican");
+  const [autoGenerateSchedule, setAutoGenerateSchedule] = useState<boolean>(true);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,7 +58,7 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
       return;
     }
     if (!organizerEmail.trim()) {
-      setError("El email del organizador es obligatorio.");
+      setError("El email o usuario del organizador es obligatorio.");
       return;
     }
     if (!user) {
@@ -59,62 +70,59 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
     setIsSubmitting(true);
 
     try {
-      const cleanEmails = organizerEmail
-        .split(/[,\s]+/)
-        .map(e => e.trim().toLowerCase())
-        .filter(e => e.length > 0 && e.includes('@'));
+      if (creationMode === "auto") {
+        // Creación y provisión automática de torneo + equipos + jugadores + partidos
+        const tournamentId = await provisionConfiguredTournament({
+          tournamentName: name.trim(),
+          organizationName: organizationName.trim() || "Liga Oficial",
+          sport,
+          tier,
+          organizerEmail: organizerEmail.trim(),
+          ownerId: user.uid,
+          numberOfTeams,
+          playersPerTeam,
+          theme,
+          autoGenerateSchedule,
+        });
 
-      if (cleanEmails.length === 0) {
-        setError("Ingresa al menos un correo electrónico válido para el administrador.");
-        setIsSubmitting(false);
-        return;
-      }
-
-      const finalSlug = slug.trim() || name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-
-      const tournamentDoc = {
-        name: name.trim(),
-        slug: `${finalSlug}-${Math.random().toString(36).substring(2, 6)}`,
-        sport,
-        tier,
-        ownerId: user.uid,
-        adminEmails: cleanEmails,
-        organizationName: organizationName.trim() || "Liga Oficial",
-        status: "active",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        settings: {
-          maxTeams: tier === "pro" ? 32 : 12,
-          playersPerTeam: sport === "basketball" ? 12 : 22,
-          periodDurationMinutes: sport === "basketball" ? (tier === "pro" ? 10 : 8) : 45,
-          totalPeriods: sport === "basketball" ? 4 : 2,
-          allowOvertime: true,
-          publicLeaderboard: true,
-          trackPlayByPlay: tier === "pro",
-          trackShotCharts: tier === "pro",
-          enableRefereeAssignment: tier === "pro",
-          enableVideoHighlights: tier === "pro",
-        },
-      };
-
-      const docRef = await addDoc(collection(db, "tournaments"), tournamentDoc);
-
-      onClose();
-      if (onCreated) {
-        onCreated(docRef.id);
+        onClose();
+        if (onCreated) {
+          onCreated(tournamentId);
+        } else {
+          router.push(`/tournament/${tournamentId}/games`);
+        }
       } else {
-        router.push(`/tournament/${docRef.id}/onboarding`);
+        // Creación manual sin auto-población
+        const tournamentId = await provisionConfiguredTournament({
+          tournamentName: name.trim(),
+          organizationName: organizationName.trim() || "Liga Oficial",
+          sport,
+          tier,
+          organizerEmail: organizerEmail.trim(),
+          ownerId: user.uid,
+          numberOfTeams: 0,
+          playersPerTeam: 0,
+          theme: "dominican",
+          autoGenerateSchedule: false,
+        });
+
+        onClose();
+        if (onCreated) {
+          onCreated(tournamentId);
+        } else {
+          router.push(`/tournament/${tournamentId}/onboarding`);
+        }
       }
     } catch (err: unknown) {
-      console.error("Error al crear el torneo desde Super Admin:", err);
-      setError("Error al registrar el torneo en Firestore.");
+      console.error("Error al crear el torneo configurado:", err);
+      setError("Error al crear el torneo en Firestore.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200 font-sans">
       <div 
         className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative"
         onClick={(e) => e.stopPropagation()}
@@ -127,96 +135,136 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
           <X size={18} />
         </button>
 
+        {/* Header */}
         <div className="mb-6">
           <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2.5 py-0.5 rounded-md border border-blue-500/20 mb-2">
             <ShieldCheck size={13} />
-            <span>Consola Administrativa</span>
+            <span>Super Admin Suite</span>
           </span>
-          <h2 className="text-xl font-bold text-white tracking-tight">Crear y Asignar Nuevo Torneo</h2>
+          <h2 className="text-xl font-bold text-white tracking-tight">Crear Torneo Configurable</h2>
           <p className="text-xs text-zinc-400 mt-0.5">
-            Configura el nivel de servicio y asigna las credenciales de los organizadores oficiales.
+            Genera torneos completos con equipos, jugadores y calendario auto-provisionados al instante.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Selector de Nivel (Tier) */}
-          <div>
-            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">
-              Nivel de Operación (Tier) *
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setTier("amateur")}
-                className={`p-3.5 rounded-xl border text-left transition flex items-start justify-between ${
-                  tier === "amateur"
-                    ? "border-zinc-300 bg-zinc-800 text-white"
-                    : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700"
-                }`}
-              >
-                <div>
-                  <div className="flex items-center gap-2 font-bold text-xs">
-                    <Trophy size={15} className="text-zinc-300" />
-                    <span>Liguita Amateur</span>
-                  </div>
-                  <p className="text-[11px] text-zinc-400 mt-1">Marcador básico, tabla de posiciones y MVP rápido.</p>
-                </div>
-                {tier === "amateur" && <Check size={15} className="text-white shrink-0 mt-0.5" />}
-              </button>
+          {/* Selector de Modo: Auto-Provisioning vs Manual */}
+          <div className="grid grid-cols-2 gap-3 p-1 bg-zinc-950 rounded-xl border border-zinc-800">
+            <button
+              type="button"
+              onClick={() => setCreationMode("auto")}
+              className={`py-2.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 ${
+                creationMode === "auto"
+                  ? "bg-orange-500 text-zinc-950 shadow-sm"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              <Zap size={14} className={creationMode === "auto" ? "fill-current" : ""} />
+              <span>Auto-Generar Equipos & Jugadores</span>
+            </button>
 
-              <button
-                type="button"
-                onClick={() => setTier("pro")}
-                className={`p-3.5 rounded-xl border text-left transition flex items-start justify-between ${
-                  tier === "pro"
-                    ? "border-orange-500 bg-orange-500/10 text-white shadow-sm"
-                    : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700"
-                }`}
-              >
-                <div>
-                  <div className="flex items-center gap-2 font-bold text-xs text-orange-400">
-                    <Sparkles size={15} />
-                    <span>Torneo Profesional FIBA</span>
-                  </div>
-                  <p className="text-[11px] text-zinc-400 mt-1">Play-by-play en vivo, box score completo y árbitros.</p>
-                </div>
-                {tier === "pro" && <Check size={15} className="text-orange-400 shrink-0 mt-0.5" />}
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setCreationMode("manual")}
+              className={`py-2.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 ${
+                creationMode === "manual"
+                  ? "bg-zinc-800 text-white border border-zinc-700"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              <Sliders size={14} />
+              <span>Configuración Manual en Blanco</span>
+            </button>
           </div>
 
-          {/* Disciplina */}
-          <div>
-            <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-2">
-              Disciplina Deportiva *
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setSport("basketball")}
-                className={`py-2 px-4 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 ${
-                  sport === "basketball"
-                    ? "border-orange-500 bg-orange-500/10 text-white"
-                    : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700"
-                }`}
-              >
-                <span>Baloncesto / Basketball</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setSport("soccer")}
-                className={`py-2 px-4 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 ${
-                  sport === "soccer"
-                    ? "border-blue-500 bg-blue-500/10 text-white"
-                    : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700"
-                }`}
-              >
-                <span>Fútbol / Soccer</span>
-              </button>
-            </div>
-          </div>
+          {/* Opciones de Auto-Generación si está en modo AUTO */}
+          {creationMode === "auto" && (
+            <div className="bg-zinc-950/80 p-4 rounded-xl border border-orange-500/30 space-y-4 animate-in fade-in">
+              <div className="flex items-center justify-between border-b border-zinc-800/80 pb-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-orange-400 flex items-center gap-1.5">
+                  <Zap size={13} />
+                  <span>Plantilla y Parámetros de Generación</span>
+                </span>
+                <span className="text-[10px] text-zinc-500 font-mono">1-Click Provisioning</span>
+              </div>
 
-          {/* Nombre y Organización */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Cantidad de Equipos */}
+                <div>
+                  <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
+                    Cantidad de Equipos
+                  </label>
+                  <select
+                    value={numberOfTeams}
+                    onChange={(e) => setNumberOfTeams(Number(e.target.value))}
+                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-orange-500"
+                  >
+                    <option value={4}>4 Equipos (Torneo Relámpago)</option>
+                    <option value={6}>6 Equipos</option>
+                    <option value={8}>8 Equipos</option>
+                    <option value={10}>10 Equipos (Recomendado)</option>
+                    <option value={12}>12 Equipos (Liga Superior)</option>
+                    <option value={16}>16 Equipos (Gran Torneo)</option>
+                  </select>
+                </div>
+
+                {/* Jugadores por Equipo */}
+                <div>
+                  <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
+                    Jugadores por Equipo
+                  </label>
+                  <select
+                    value={playersPerTeam}
+                    onChange={(e) => setPlayersPerTeam(Number(e.target.value))}
+                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-orange-500"
+                  >
+                    <option value={5}>5 Jugadores (Quinteto Inicial)</option>
+                    <option value={8}>8 Jugadores (Roster Ágil)</option>
+                    <option value={10}>10 Jugadores (Roster Oficial)</option>
+                    <option value={12}>12 Jugadores (Plantilla Completa FIBA)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Estilo de Nombres */}
+                <div>
+                  <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
+                    Estilo y Nombres de Clubes
+                  </label>
+                  <select
+                    value={theme}
+                    onChange={(e) => setTheme(e.target.value as any)}
+                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-orange-500"
+                  >
+                    <option value="dominican">Torneo Superior Tradicional (Pueblo Nuevo, Cajuilitos, San Lázaro...)</option>
+                    <option value="nba">Franquicias Pro (Lakers, Celtics, Warriors, Bulls...)</option>
+                    <option value="cities">Ciudades / Provincias (Baní Titans, Santo Domingo Lions...)</option>
+                  </select>
+                </div>
+
+                {/* Generar Calendario de Partidos */}
+                <div className="flex items-center gap-2.5 pt-5">
+                  <input
+                    type="checkbox"
+                    id="autoSchedule"
+                    checked={autoGenerateSchedule}
+                    onChange={(e) => setAutoGenerateSchedule(e.target.checked)}
+                    className="w-4 h-4 rounded text-orange-500 bg-zinc-900 border-zinc-700 focus:ring-0 cursor-pointer"
+                  />
+                  <label htmlFor="autoSchedule" className="text-xs font-bold text-zinc-200 cursor-pointer">
+                    Generar Calendario de Partidos Automático
+                  </label>
+                </div>
+              </div>
+
+              <div className="text-[11px] text-zinc-400 bg-zinc-900/60 p-2.5 rounded-lg border border-zinc-800/80">
+                ⚡ Se crearán automáticamente <strong>{numberOfTeams} equipos</strong> y <strong>{numberOfTeams * playersPerTeam} jugadores</strong> con nombres, números de dorsal y posiciones oficiales.
+              </div>
+            </div>
+          )}
+
+          {/* Información Básica */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
@@ -225,7 +273,7 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
               <input
                 type="text"
                 required
-                placeholder="Ej: Torneo Superior TBS Peravia 2026"
+                placeholder="Ej: Torneo Superior Baní 2026"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-orange-500 font-medium"
@@ -262,9 +310,38 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
                 className="w-full pl-9 pr-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-orange-500"
               />
             </div>
-            <p className="text-[11px] text-zinc-500 mt-1 font-mono">
-              Este usuario tendrá control administrativo delegado sobre el torneo.
-            </p>
+          </div>
+
+          {/* Nivel de Servicio (Tier) */}
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setTier("amateur")}
+              className={`p-3 rounded-xl border text-left transition ${
+                tier === "amateur"
+                  ? "border-zinc-300 bg-zinc-800 text-white font-bold"
+                  : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700"
+              }`}
+            >
+              <div className="font-bold text-xs">Liguita Amateur</div>
+              <div className="text-[10px] text-zinc-400 mt-0.5">Marcador básico y tabla</div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTier("pro")}
+              className={`p-3 rounded-xl border text-left transition ${
+                tier === "pro"
+                  ? "border-orange-500 bg-orange-500/10 text-white font-bold"
+                  : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700"
+              }`}
+            >
+              <div className="font-bold text-xs flex items-center gap-1 text-orange-400">
+                <Sparkles size={13} />
+                <span>Torneo PRO FIBA</span>
+              </div>
+              <div className="text-[10px] text-zinc-400 mt-0.5">Play-by-play, stats y árbitros</div>
+            </button>
           </div>
 
           {error && (
@@ -290,10 +367,10 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Registrando...</span>
+                  <span>{creationMode === "auto" ? "Generando equipos y jugadores..." : "Creando torneo..."}</span>
                 </>
               ) : (
-                <span>Crear Torneo</span>
+                <span>{creationMode === "auto" ? "Generar Torneo Completo" : "Crear Torneo"}</span>
               )}
             </button>
           </div>
