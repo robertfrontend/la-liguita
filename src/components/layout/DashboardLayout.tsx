@@ -166,26 +166,38 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <span>Volver a Mis Torneos</span>
             </Link>
 
-            <div className="pt-1">
-              <div className="flex items-center justify-between gap-1.5 mb-1">
-                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider truncate">
-                  {tournament.organizationName || "Organización Oficial"}
-                </span>
+            <div className="pt-1 flex items-center gap-3">
+              {tournament.logoUrl ? (
+                <div className="w-9 h-9 rounded-lg bg-zinc-950 border border-zinc-800 p-1 flex items-center justify-center shrink-0 overflow-hidden">
+                  <img src={tournament.logoUrl} alt={tournament.name} className="w-full h-full object-contain" />
+                </div>
+              ) : (
+                <div className="w-9 h-9 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-orange-400 text-xs shrink-0">
+                  {tournament.name.slice(0, 2).toUpperCase()}
+                </div>
+              )}
 
-                {isPro ? (
-                  <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-orange-500/15 text-orange-400 border border-orange-500/30">
-                    PRO
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-1.5 mb-0.5">
+                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider truncate">
+                    {tournament.organizationName || "Organización"}
                   </span>
-                ) : (
-                  <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-zinc-800 text-zinc-400 border border-zinc-700">
-                    Amateur
-                  </span>
-                )}
+
+                  {isPro ? (
+                    <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase tracking-wider bg-orange-500/15 text-orange-400 border border-orange-500/30">
+                      PRO
+                    </span>
+                  ) : (
+                    <span className="px-1.5 py-0.2 rounded text-[8px] font-bold uppercase tracking-wider bg-zinc-800 text-zinc-400 border border-zinc-700">
+                      Amateur
+                    </span>
+                  )}
+                </div>
+
+                <h2 className="text-xs font-bold text-white truncate leading-tight">
+                  {tournament.name}
+                </h2>
               </div>
-
-              <h2 className="text-sm font-black text-white truncate leading-tight">
-                {tournament.name}
-              </h2>
             </div>
           </div>
 

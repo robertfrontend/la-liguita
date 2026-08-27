@@ -115,13 +115,25 @@ export function PublicTournamentPortal({ tournamentId }: { tournamentId: string 
             </button>
           </div>
 
-          <div>
-            <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
-              {tournament.name}
-            </h1>
-            <p className="text-xs md:text-sm text-zinc-400 mt-1 font-medium">
-              {tournament.organizationName || "Competición Oficial"} • Temporada 2026
-            </p>
+          <div className="flex items-center gap-4 pt-1">
+            {tournament.logoUrl ? (
+              <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-700/80 p-2 flex items-center justify-center shrink-0 shadow-lg overflow-hidden">
+                <img src={tournament.logoUrl} alt={tournament.name} className="w-full h-full object-contain" />
+              </div>
+            ) : (
+              <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-700/80 flex items-center justify-center font-black text-orange-400 text-xl shrink-0 shadow-lg">
+                {tournament.name.slice(0, 2).toUpperCase()}
+              </div>
+            )}
+
+            <div>
+              <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+                {tournament.name}
+              </h1>
+              <p className="text-xs md:text-sm text-zinc-400 mt-1 font-medium">
+                {tournament.organizationName || "Competición Oficial"} • Temporada 2026
+              </p>
+            </div>
           </div>
 
           {/* Tabs de Navegación Pública */}
