@@ -589,6 +589,125 @@ export const finishTournamentGameInDb = async (
   }
 };
 
+export const savePostMatchBoxScoreInDb = async (
+  tournamentId: string,
+  gameId: string,
+  data: {
+    scoreA: number;
+    scoreB: number;
+    teamAId: string;
+    teamBId: string;
+    roundName?: string;
+    date?: string;
+    venue?: string;
+    playerStats: Record<string, { points: number; fouls?: number; assists?: number; rebounds?: number }>;
+  }
+) => {
+  const { scoreA, scoreB, teamAId, teamBId, roundName, date, venue, playerStats } = data;
+  const isDraw = scoreA === scoreB;
+  const winnerTeamId = isDraw ? null : scoreA > scoreB ? teamAId : teamBId;
+
+  // 1. Actualizar el partido como finalizado con su box score completo
+  const gameRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION, gameId);
+  const updates: Record<string, any> = {
+    scoreA: Math.max(0, scoreA),
+    scoreB: Math.max(0, scoreB),
+    isFinished: true,
+    status: "finished",
+    winnerTeamId,
+    playerStats: cleanFirestoreObject(playerStats),
+  };
+  if (roundName) updates.roundName = roundName;
+  if (date) updates.date = date;
+  if (venue) updates.venue = venue;
+
+  await updateDoc(gameRef, updates);
+
+  // 2. Recalcular la tabla de posiciones completa de todos los partidos finalizados
+  await recalculateTournamentStandings(tournamentId);
+
+  // 3. Recalcular las estadísticas acumuladas de todos los jugadores
+  await recalculatePlayerCumulativeStats(tournamentId);
+};
+
+export const recalculateTournamentStandings = async (tournamentId: string) => {
+  const gamesSnap = await getDocs(collection(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION));
+  const teamsSnap = await getDocs(collection(db, TOURNAMENTS_COLLECTION, tournamentId, TEAMS_SUBCOLLECTION));
+
+  const statsMap: Record<string, { wins: number; losses: number; ties: number; pointsFor: number; pointsAgainst: number }> = {};
+
+  teamsSnap.docs.forEach((d) => {
+    statsMap[d.id] = { wins: 0, losses: 0, ties: 0, pointsFor: 0, pointsAgainst: 0 };
+  });
+
+  gamesSnap.docs.forEach((d) => {
+    const g = d.data() as TournamentGame;
+    if (g.isFinished || g.status === "finished") {
+      const sA = g.scoreA || 0;
+      const sB = g.scoreB || 0;
+      const tA = g.teamAId;
+      const tB = g.teamBId;
+
+      if (statsMap[tA]) {
+        statsMap[tA].pointsFor += sA;
+        statsMap[tA].pointsAgainst += sB;
+        if (sA > sB) statsMap[tA].wins += 1;
+        else if (sA < sB) statsMap[tA].losses += 1;
+        else statsMap[tA].ties += 1;
+      }
+
+      if (statsMap[tB]) {
+        statsMap[tB].pointsFor += sB;
+        statsMap[tB].pointsAgainst += sA;
+        if (sB > sA) statsMap[tB].wins += 1;
+        else if (sB < sA) statsMap[tB].losses += 1;
+        else statsMap[tB].ties += 1;
+      }
+    }
+  });
+
+  const updatePromises = Object.keys(statsMap).map((teamId) => {
+    const teamRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId, TEAMS_SUBCOLLECTION, teamId);
+    return updateDoc(teamRef, statsMap[teamId]);
+  });
+
+  await Promise.all(updatePromises);
+};
+
+export const recalculatePlayerCumulativeStats = async (tournamentId: string) => {
+  const gamesSnap = await getDocs(collection(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION));
+  const playersSnap = await getDocs(collection(db, TOURNAMENTS_COLLECTION, tournamentId, PLAYERS_SUBCOLLECTION));
+
+  const playerStatsAccumulator: Record<string, { gamesPlayed: number; totalPoints: number; totalAssists: number; totalFouls: number; totalRebounds: number }> = {};
+
+  playersSnap.docs.forEach((d) => {
+    playerStatsAccumulator[d.id] = { gamesPlayed: 0, totalPoints: 0, totalAssists: 0, totalFouls: 0, totalRebounds: 0 };
+  });
+
+  gamesSnap.docs.forEach((d) => {
+    const g = d.data() as TournamentGame;
+    if ((g.isFinished || g.status === "finished") && g.playerStats) {
+      Object.keys(g.playerStats).forEach((pId) => {
+        const pStat = g.playerStats[pId] as any;
+        if (playerStatsAccumulator[pId]) {
+          playerStatsAccumulator[pId].gamesPlayed += 1;
+          playerStatsAccumulator[pId].totalPoints += pStat.points || 0;
+          playerStatsAccumulator[pId].totalAssists += pStat.assists || 0;
+          playerStatsAccumulator[pId].totalFouls += pStat.fouls || pStat.personalFouls || 0;
+          playerStatsAccumulator[pId].totalRebounds += pStat.totalRebounds || pStat.rebounds || 0;
+        }
+      });
+    }
+  });
+
+  const updatePromises = Object.keys(playerStatsAccumulator).map((pId) => {
+    const pRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId, PLAYERS_SUBCOLLECTION, pId);
+    return updateDoc(pRef, playerStatsAccumulator[pId]);
+  });
+
+  await Promise.all(updatePromises);
+};
+
 export const deletePlayByPlayEventInDb = async (
   tournamentId: string,
   gameId: string,

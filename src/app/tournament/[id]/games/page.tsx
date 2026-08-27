@@ -25,7 +25,9 @@ import {
   Zap, 
   CheckCircle2, 
   Flame,
-  Filter
+  Filter,
+  Layers,
+  FileSpreadsheet
 } from "lucide-react";
 import Link from "next/link";
 
@@ -496,11 +498,15 @@ export default function TournamentGamesPage() {
                   </button>
 
                   <Link
-                    href={`/tournament/${tournamentId}/live-console?gameId=${game.id}`}
-                    className="px-3.5 py-1.5 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold rounded-xl flex items-center gap-1.5 transition text-xs shadow-sm"
+                    href={`/tournament/${tournamentId}/boxscore?gameId=${game.id}`}
+                    className={`px-3.5 py-1.5 font-bold rounded-xl flex items-center gap-1.5 transition text-xs shadow-sm ${
+                      isFinished 
+                        ? "bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700" 
+                        : "bg-orange-500 hover:bg-orange-600 text-zinc-950"
+                    }`}
                   >
-                    <Play size={12} className="fill-current" />
-                    <span>{isFinished ? "Ver Acta / Marcador" : isLive ? "Mesa Técnica" : "Iniciar Partido"}</span>
+                    <Layers size={13} />
+                    <span>{isFinished ? "Editar Acta & Stats" : "Cargar Resultado & Box Score"}</span>
                   </Link>
                 </div>
               </div>

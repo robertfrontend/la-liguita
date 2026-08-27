@@ -138,6 +138,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   // Navegación Modular Profesional
   const coreNav: NavItem[] = [
     { label: "Partidos & Calendario", href: `/tournament/${tournamentId}/games`, icon: Calendar },
+    { label: "Actas & Box Score", href: `/tournament/${tournamentId}/boxscore`, icon: Layers },
     { label: "Equipos & Plantillas", href: `/tournament/${tournamentId}/teams`, icon: Users },
     { label: "Tabla de Posiciones", href: `/tournament/${tournamentId}/standings`, icon: Trophy },
     { label: "Administradores", href: `/tournament/${tournamentId}/admins`, icon: UserCheck },
@@ -146,7 +147,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const proNav: NavItem[] = [
     { label: "Rosters & Carnets Oficiales", href: `/tournament/${tournamentId}/rosters`, icon: Award, proOnly: true },
     { label: "Estadísticas Oficiales", href: `/tournament/${tournamentId}/stats`, icon: BarChart3, proOnly: true, badge: "PRO" },
-    { label: "Mesa Técnica Live", href: `/tournament/${tournamentId}/live-console`, icon: Activity, proOnly: true, badge: "LIVE" },
     { label: "Cuerpo Arbitral", href: `/tournament/${tournamentId}/referees`, icon: ShieldAlert, proOnly: true },
     { label: "Video & Transmisión", href: `/tournament/${tournamentId}/media`, icon: Video, proOnly: true },
   ];
