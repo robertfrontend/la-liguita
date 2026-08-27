@@ -1,5 +1,5 @@
-import { AdminPortalDashboard } from "@/components/features/AdminPortalDashboard";
+import { PublicTournamentDirectory } from "@/components/features/PublicTournamentDirectory";
 
 export default function RootPage() {
-  return <AdminPortalDashboard />;
+  return <PublicTournamentDirectory />;
 }
