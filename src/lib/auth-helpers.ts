@@ -15,12 +15,23 @@ export const isSuperAdmin = (user: User | null | undefined): boolean => {
 
 export const canAdminTournament = (user: User | null | undefined, tournament: Tournament | null | undefined): boolean => {
   if (!user || !tournament) return false;
-  if (isSuperAdmin(user)) return true;
-  if (tournament.ownerId === user.uid) return true;
   
+  // 1. Super Admin tiene acceso total a todos los torneos
+  if (isSuperAdmin(user)) return true;
+  
+  // 2. Comprobar rigurosamente si el email o username está en adminEmails asignados
   if (user.email && tournament.adminEmails && Array.isArray(tournament.adminEmails)) {
     const userEmail = user.email.trim().toLowerCase();
-    return tournament.adminEmails.some(e => e.trim().toLowerCase() === userEmail);
+    const userPrefix = userEmail.split("@")[0];
+    
+    return tournament.adminEmails.some(assignedEmail => {
+      const cleanAssigned = assignedEmail.trim().toLowerCase();
+      return (
+        cleanAssigned === userEmail ||
+        cleanAssigned === userPrefix ||
+        cleanAssigned === `${userPrefix}@laliguita.com`
+      );
+    });
   }
 
   return false;

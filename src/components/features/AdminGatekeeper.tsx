@@ -6,7 +6,7 @@ import { verifyAdminAccessCode, claimTournamentWithAccessCode } from "@/lib/db";
 import { Tournament } from "@/types/tournament";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import { resolveLoginIdentifier } from "@/lib/auth-helpers";
+import { resolveLoginIdentifier, isSuperAdmin } from "@/lib/auth-helpers";
 import { 
   KeyRound, 
   ShieldCheck, 
@@ -82,9 +82,9 @@ function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperPro
     }
   }, [searchParams, unlockedTournament, isVerifying]);
 
-  // Si el usuario ya está autenticado y desbloqueó el torneo, asegurar los permisos
+  // Si el usuario ya está autenticado y desbloqueó el torneo, asegurar los permisos solo si no es superadmin-root
   useEffect(() => {
-    if (user && user.email && unlockedTournament) {
+    if (user && user.email && unlockedTournament && unlockedTournament.id !== "superadmin-root" && !isSuperAdmin(user)) {
       claimTournamentWithAccessCode(unlockedTournament.id, user.email);
     }
   }, [user, unlockedTournament]);
@@ -126,8 +126,8 @@ function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperPro
         await signUpWithEmail(resolvedIdentifier, password, name);
       }
 
-      // Si hay un torneo desbloqueado, vincular el email al torneo
-      if (unlockedTournament) {
+      // Si hay un torneo desbloqueado real, vincular el email únicamente a ese torneo
+      if (unlockedTournament && unlockedTournament.id !== "superadmin-root") {
         await claimTournamentWithAccessCode(unlockedTournament.id, resolvedIdentifier);
         if (onSuccess) {
           onSuccess(unlockedTournament);

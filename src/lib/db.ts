@@ -489,11 +489,24 @@ export const subscribeToAllTournaments = (callback: (tournaments: Tournament[]) 
 };
 
 export const subscribeToAssignedTournaments = (email: string, callback: (tournaments: Tournament[]) => void) => {
-  if (!email) return () => {};
+  if (!email) {
+    callback([]);
+    return () => {};
+  }
   const cleanEmail = email.trim().toLowerCase();
-  const q = query(collection(db, TOURNAMENTS_COLLECTION), where("adminEmails", "array-contains", cleanEmail));
+  const userPrefix = cleanEmail.split("@")[0];
+
+  const q = query(collection(db, TOURNAMENTS_COLLECTION));
   return onSnapshot(q, (snapshot) => {
-    const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Tournament));
+    const list = snapshot.docs
+      .map(d => ({ id: d.id, ...d.data() } as Tournament))
+      .filter(t => {
+        if (!t.adminEmails || !Array.isArray(t.adminEmails)) return false;
+        return t.adminEmails.some(ae => {
+          const c = ae.trim().toLowerCase();
+          return c === cleanEmail || c === userPrefix || c === `${userPrefix}@laliguita.com`;
+        });
+      });
     callback(list);
   }, (error) => {
     console.error("Error subscribing to assigned tournaments:", error);
@@ -964,45 +977,24 @@ export const verifyAdminAccessCode = async (rawCode: string): Promise<{ valid: b
 
   const cleanCode = rawCode.trim().toUpperCase();
 
-  // 0. Acceso Maestro para Super Administrador
+  // 0. Acceso Maestro para Super Administrador (Aislado, no asigna a torneos particulares)
   if (MASTER_SUPERADMIN_CODES.includes(cleanCode)) {
-    try {
-      const snap = await getDocs(collection(db, TOURNAMENTS_COLLECTION));
-      let t: Tournament;
-      if (!snap.empty) {
-        t = { id: snap.docs[0].id, ...snap.docs[0].data() } as Tournament;
-      } else {
-        t = {
-          id: "superadmin-root",
-          name: "Consola de Super Administrador",
-          organizationName: "La Liguita HQ",
-          sport: "basketball",
-          tier: "pro",
-          status: "published",
-          ownerId: "superadmin",
-          slug: "superadmin",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          settings: { maxTeams: 16 }
-        } as unknown as Tournament;
-      }
-      return { valid: true, tournament: t };
-    } catch (e) {
-      return {
-        valid: true,
-        tournament: {
-          id: "superadmin-root",
-          name: "Consola de Super Administrador",
-          sport: "basketball",
-          tier: "pro",
-          status: "published",
-          ownerId: "superadmin",
-          slug: "superadmin",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        } as unknown as Tournament
-      };
-    }
+    return {
+      valid: true,
+      tournament: {
+        id: "superadmin-root",
+        name: "Consola de Super Administrador",
+        organizationName: "La Liguita HQ",
+        sport: "basketball",
+        tier: "pro",
+        status: "published",
+        ownerId: "superadmin",
+        slug: "superadmin",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        settings: { maxTeams: 16 }
+      } as unknown as Tournament
+    };
   }
 
   try {
