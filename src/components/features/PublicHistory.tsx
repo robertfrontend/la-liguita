@@ -43,9 +43,9 @@ export function PublicHistory({ leagueId }: { leagueId: string }) {
   if (!league) return <div className="p-8 text-center text-zinc-500">League not found</div>;
 
   const isBasketball = league.sport !== 'soccer';
-  const themeBgLight = isBasketball ? "bg-orange-100 dark:bg-orange-950/40" : "bg-green-100 dark:bg-green-950/40";
-  const themeIcon = isBasketball ? "text-orange-600 dark:text-orange-400" : "text-green-600 dark:text-green-400";
-  const themeBorderHover = isBasketball ? "group-hover:border-orange-500/50" : "group-hover:border-green-600/50";
+  const themeBgLight = isBasketball ? "bg-blue-100 dark:bg-blue-950/40" : "bg-green-100 dark:bg-green-950/40";
+  const themeIcon = isBasketball ? "text-blue-600 dark:text-blue-400" : "text-green-600 dark:text-green-400";
+  const themeBorderHover = isBasketball ? "group-hover:border-blue-500/50" : "group-hover:border-green-600/50";
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 pb-24 transition-colors duration-300">
@@ -70,8 +70,8 @@ export function PublicHistory({ leagueId }: { leagueId: string }) {
              history.map((game) => {
                 const isTeamAWinner = game.scoreA > game.scoreB;
                 const gameIsBasketball = game.sport !== 'soccer'; // Default to basketball
-                const teamAColor = gameIsBasketball ? "text-orange-500" : "text-green-600";
-                const teamAWinColor = gameIsBasketball ? "text-orange-600 dark:text-orange-400" : "text-green-600 dark:text-green-400";
+                const teamAColor = gameIsBasketball ? "text-blue-500" : "text-green-600";
+                const teamAWinColor = gameIsBasketball ? "text-blue-600 dark:text-blue-400" : "text-green-600 dark:text-green-400";
                 
                 // MVP Calculation
                 let mvpId: string | null = null;

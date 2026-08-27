@@ -97,10 +97,10 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
   const getPlayer = (id: string) => players.find((p) => p.id === id);
 
   const isBasketball = game.sport !== 'soccer';
-  const teamAColor = isBasketball ? "text-orange-500" : "text-green-600";
-  const teamAColorWinner = isBasketball ? "text-orange-600" : "text-green-600";
-  const teamAColorBg = isBasketball ? "bg-orange-500" : "bg-green-600";
-  const teamAColorBorder = isBasketball ? "border-l-orange-500" : "border-l-green-600";
+  const teamAColor = isBasketball ? "text-blue-500" : "text-green-600";
+  const teamAColorWinner = isBasketball ? "text-blue-600" : "text-green-600";
+  const teamAColorBg = isBasketball ? "bg-blue-600" : "bg-green-600";
+  const teamAColorBorder = isBasketball ? "border-l-blue-600" : "border-l-green-600";
 
   const handleFinish = async () => {
     if (confirm("Are you sure you want to finish the game?")) {
@@ -152,7 +152,7 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
                 onClick={() => updateStat(playerId, 'pts', 1)}
                 className={cn(
                     "bg-white dark:bg-zinc-900 hover:text-white py-2 rounded-md font-bold text-[10px] md:text-xs transition-colors border border-zinc-200 dark:border-zinc-700 shadow-sm",
-                    isBasketball ? "hover:bg-orange-500 hover:border-orange-500" : "hover:bg-green-600 hover:border-green-600"
+                    isBasketball ? "hover:bg-blue-600 hover:border-blue-600" : "hover:bg-green-600 hover:border-green-600"
                 )}
             >
                 +1 {pointLabel}
@@ -225,7 +225,7 @@ export function LiveScoreboard({ gameId }: { gameId: string }) {
                       onChange={(e) => setName(e.target.value)}
                       onBlur={handleSave}
                       onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-                      className="w-full text-center text-lg font-black uppercase tracking-tight border-b-2 border-orange-500 outline-none bg-transparent"
+                      className="w-full text-center text-lg font-black uppercase tracking-tight border-b-2 border-blue-500 outline-none bg-transparent"
                   />
               </div>
           );

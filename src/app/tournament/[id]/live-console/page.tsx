@@ -273,7 +273,7 @@ function LiveConsoleContent() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
-              <Activity className="text-orange-500" />
+              <Activity className="text-emerald-500" />
               <span>Mesa Técnica Oficial • Live Console</span>
             </h1>
             <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
@@ -296,7 +296,7 @@ function LiveConsoleContent() {
             <select
               value={selectedGameId || ""}
               onChange={(e) => setSelectedGameId(e.target.value)}
-              className="px-3.5 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-orange-500"
+              className="px-3.5 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-emerald-500"
             >
               {games.map((g) => (
                 <option key={g.id} value={g.id}>
@@ -322,7 +322,7 @@ function LiveConsoleContent() {
                       key={p}
                       onClick={() => setPeriod(p)}
                       className={`w-7 h-7 rounded-lg text-xs font-bold transition ${
-                        period === p ? "bg-orange-500 text-zinc-950 font-black" : "bg-zinc-800 text-zinc-400 hover:text-white"
+                        period === p ? "bg-emerald-600 text-white font-black" : "bg-zinc-800 text-zinc-400 hover:text-white"
                       }`}
                     >
                       Q{p}
@@ -331,7 +331,7 @@ function LiveConsoleContent() {
                   <button
                     onClick={() => setPeriod(5)}
                     className={`px-2 h-7 rounded-lg text-xs font-bold transition ${
-                      period === 5 ? "bg-orange-500 text-zinc-950 font-black" : "bg-zinc-800 text-zinc-400 hover:text-white"
+                      period === 5 ? "bg-emerald-600 text-white font-black" : "bg-zinc-800 text-zinc-400 hover:text-white"
                     }`}
                   >
                     OT
@@ -341,7 +341,7 @@ function LiveConsoleContent() {
 
               {/* Reloj Digital */}
               <div className="flex items-center gap-2">
-                <div className="bg-black px-4 py-1.5 rounded-xl border border-zinc-800 font-mono text-2xl font-black text-orange-400 tracking-wider">
+                <div className="bg-black px-4 py-1.5 rounded-xl border border-zinc-800 font-mono text-2xl font-black text-emerald-400 tracking-wider">
                   {formatClock(clockSeconds)}
                 </div>
                 <button
@@ -398,7 +398,7 @@ function LiveConsoleContent() {
                 <div className="text-xs font-bold text-zinc-400 uppercase tracking-wider truncate mb-1">
                   {activeGame.teamAName}
                 </div>
-                <div className="text-5xl font-black font-mono text-orange-400 tracking-tight">
+                <div className="text-5xl font-black font-mono text-emerald-400 tracking-tight">
                   {activeGame.scoreA}
                 </div>
               </div>
@@ -420,10 +420,10 @@ function LiveConsoleContent() {
             <div className="bg-zinc-900/70 border border-zinc-800/90 rounded-2xl p-5 space-y-4">
               <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-orange-500" />
+                  <span className="w-3 h-3 rounded-full bg-emerald-500" />
                   <h3 className="font-black text-white text-base truncate">{activeGame.teamAName}</h3>
                 </div>
-                <span className="text-xs font-bold font-mono text-orange-400">{activeGame.scoreA} PTS</span>
+                <span className="text-xs font-bold font-mono text-emerald-400">{activeGame.scoreA} PTS</span>
               </div>
 
               {/* Lista de Jugadores Equipo A */}
@@ -440,14 +440,14 @@ function LiveConsoleContent() {
                     >
                       {/* Info Jugador */}
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                        <div className="w-8 h-8 rounded-lg bg-orange-500/15 border border-orange-500/30 text-orange-400 font-mono font-black text-xs flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono font-black text-xs flex items-center justify-center shrink-0">
                           #{p.number !== undefined ? p.number : "-"}
                         </div>
                         <div className="min-w-0">
                           <div className="font-bold text-white text-xs truncate leading-tight">{p.name}</div>
                           <div className="text-[10px] text-zinc-400 font-mono flex items-center gap-2 mt-0.5">
                             <span className="text-zinc-500">{p.position || "JUG"}</span>
-                            <span className="text-orange-400 font-bold">{points} pts</span>
+                            <span className="text-emerald-400 font-bold">{points} pts</span>
                             <span className={`${fouls >= 5 ? "text-red-400 font-bold animate-pulse" : fouls >= 4 ? "text-amber-400" : "text-zinc-500"}`}>
                               {fouls} flt
                             </span>
@@ -459,7 +459,7 @@ function LiveConsoleContent() {
                       <div className="flex items-center gap-1.5 shrink-0">
                         <button
                           onClick={() => handleScoreEvent("A", 3, "3pt_made", "Triple anotado (+3)", p)}
-                          className="px-2.5 py-1.5 bg-orange-500 hover:bg-orange-600 active:scale-95 text-zinc-950 font-black text-xs rounded-lg transition shadow-sm"
+                          className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-black text-xs rounded-lg transition shadow-sm"
                           title={`+3 Triple para ${p.name}`}
                         >
                           +3
@@ -507,19 +507,19 @@ function LiveConsoleContent() {
                 <div className="flex gap-1.5">
                   <button
                     onClick={() => handleScoreEvent("A", 3, "3pt_made", "Triple de equipo (+3)")}
-                    className="px-2 py-1 bg-zinc-800 hover:bg-orange-500 hover:text-zinc-950 text-zinc-300 font-bold text-[11px] rounded-lg transition"
+                    className="px-2 py-1 bg-zinc-800 hover:bg-emerald-600 hover:text-white text-zinc-300 font-bold text-[11px] rounded-lg transition"
                   >
                     +3
                   </button>
                   <button
                     onClick={() => handleScoreEvent("A", 2, "2pt_made", "Doble de equipo (+2)")}
-                    className="px-2 py-1 bg-zinc-800 hover:bg-orange-500 hover:text-zinc-950 text-zinc-300 font-bold text-[11px] rounded-lg transition"
+                    className="px-2 py-1 bg-zinc-800 hover:bg-emerald-600 hover:text-white text-zinc-300 font-bold text-[11px] rounded-lg transition"
                   >
                     +2
                   </button>
                   <button
                     onClick={() => handleScoreEvent("A", 1, "ft_made", "Tiro Libre de equipo (+1)")}
-                    className="px-2 py-1 bg-zinc-800 hover:bg-orange-500 hover:text-zinc-950 text-zinc-300 font-bold text-[11px] rounded-lg transition"
+                    className="px-2 py-1 bg-zinc-800 hover:bg-emerald-600 hover:text-white text-zinc-300 font-bold text-[11px] rounded-lg transition"
                   >
                     +1
                   </button>
@@ -625,19 +625,19 @@ function LiveConsoleContent() {
                 <div className="flex gap-1.5">
                   <button
                     onClick={() => handleScoreEvent("B", 3, "3pt_made", "Triple de equipo (+3)")}
-                    className="px-2 py-1 bg-zinc-800 hover:bg-blue-500 hover:text-white text-zinc-300 font-bold text-[11px] rounded-lg transition"
+                    className="px-2 py-1 bg-zinc-800 hover:bg-blue-600 hover:text-white text-zinc-300 font-bold text-[11px] rounded-lg transition"
                   >
                     +3
                   </button>
                   <button
                     onClick={() => handleScoreEvent("B", 2, "2pt_made", "Doble de equipo (+2)")}
-                    className="px-2 py-1 bg-zinc-800 hover:bg-blue-500 hover:text-white text-zinc-300 font-bold text-[11px] rounded-lg transition"
+                    className="px-2 py-1 bg-zinc-800 hover:bg-blue-600 hover:text-white text-zinc-300 font-bold text-[11px] rounded-lg transition"
                   >
                     +2
                   </button>
                   <button
                     onClick={() => handleScoreEvent("B", 1, "ft_made", "Tiro Libre de equipo (+1)")}
-                    className="px-2 py-1 bg-zinc-800 hover:bg-blue-500 hover:text-white text-zinc-300 font-bold text-[11px] rounded-lg transition"
+                    className="px-2 py-1 bg-zinc-800 hover:bg-blue-600 hover:text-white text-zinc-300 font-bold text-[11px] rounded-lg transition"
                   >
                     +1
                   </button>
@@ -657,7 +657,7 @@ function LiveConsoleContent() {
           <div className="bg-zinc-900/80 border border-zinc-800 p-5 rounded-2xl">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mb-4">
               <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <Activity size={14} className="text-orange-500" />
+                <Activity size={14} className="text-emerald-500" />
                 <span>Acta de Jugadas en Directo ({events.length})</span>
               </h3>
               <span className="text-[10px] text-zinc-500 font-mono">Sincronización instantánea</span>
@@ -673,7 +673,7 @@ function LiveConsoleContent() {
                     className="p-3 bg-zinc-950 rounded-xl border border-zinc-800/80 text-xs flex items-center justify-between gap-2 hover:border-zinc-700 transition"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isTeamA ? "bg-orange-500" : "bg-blue-500"}`} />
+                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${isTeamA ? "bg-emerald-500" : "bg-blue-500"}`} />
                       <div className="min-w-0">
                         <div className="font-bold text-white leading-tight truncate">{evt.description}</div>
                         <div className="text-[10px] text-zinc-500 font-mono mt-0.5">
@@ -708,7 +708,7 @@ function LiveConsoleContent() {
           <p className="text-xs text-zinc-500 mt-1 mb-4">Selecciona un partido del menú superior o programa uno nuevo.</p>
           <Link
             href={`/tournament/${tournamentId}/games`}
-            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold text-xs rounded-xl transition"
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition"
           >
             Ir al Calendario de Partidos
           </Link>

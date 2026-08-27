@@ -9,10 +9,10 @@ export default function TournamentMediaPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-              <Video className="text-orange-500" />
+              <Video className="text-emerald-500" />
               Video Highlights & Transmisión
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-950 shadow-sm">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-sm">
               PRO
             </span>
           </div>
@@ -21,7 +21,7 @@ export default function TournamentMediaPage() {
           </p>
         </div>
 
-        <button className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold text-sm rounded-xl transition shadow-lg shadow-orange-500/20">
+        <button className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl transition shadow-lg shadow-emerald-600/20">
           <UploadCloud size={18} />
           <span>Vincular Streaming / Highlight</span>
         </button>
@@ -30,7 +30,7 @@ export default function TournamentMediaPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl overflow-hidden group">
           <div className="h-48 bg-zinc-800/60 flex items-center justify-center relative cursor-pointer">
-            <div className="w-12 h-12 rounded-full bg-orange-500 text-zinc-950 flex items-center justify-center shadow-lg group-hover:scale-110 transition">
+            <div className="w-12 h-12 rounded-full bg-emerald-500 text-zinc-950 flex items-center justify-center shadow-lg group-hover:scale-110 transition">
               <Play size={20} className="fill-current ml-0.5" />
             </div>
             <span className="absolute bottom-3 right-3 bg-black/80 px-2 py-0.5 rounded text-[10px] font-mono text-white">
@@ -45,7 +45,7 @@ export default function TournamentMediaPage() {
 
         <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl overflow-hidden group">
           <div className="h-48 bg-zinc-800/60 flex items-center justify-center relative cursor-pointer">
-            <div className="w-12 h-12 rounded-full bg-orange-500 text-zinc-950 flex items-center justify-center shadow-lg group-hover:scale-110 transition">
+            <div className="w-12 h-12 rounded-full bg-emerald-500 text-zinc-950 flex items-center justify-center shadow-lg group-hover:scale-110 transition">
               <Play size={20} className="fill-current ml-0.5" />
             </div>
             <span className="absolute bottom-3 right-3 bg-black/80 px-2 py-0.5 rounded text-[10px] font-mono text-white">

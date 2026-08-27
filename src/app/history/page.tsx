@@ -60,14 +60,14 @@ export default function HistoryPage() {
       <div className="min-h-screen p-4 pb-24 bg-white dark:bg-zinc-950 transition-colors duration-300">
         <div className="flex items-center justify-between mb-8">
             <h1 className="text-2xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-            <CalendarDays className="text-orange-500" />
+            <CalendarDays className="text-blue-500" />
             Game History
             </h1>
             {activeLeague && (
                <Link 
                   href={`/league/${activeLeague.id}/history`}
                   target="_blank"
-                  className="flex items-center gap-2 text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 px-3 py-1.5 rounded-full hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-colors border border-orange-100 dark:border-orange-900/30"
+                  className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-3 py-1.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors border border-blue-100 dark:border-blue-900/30"
                >
                   Public View <ExternalLink size={14} />
                </Link>
@@ -85,9 +85,9 @@ export default function HistoryPage() {
                 {games.map((game) => {
                   const isTeamAWinner = game.scoreA > game.scoreB;
                   const isBasketball = game.sport !== 'soccer';
-                  const teamAColor = isBasketball ? "text-orange-500" : "text-green-600";
-                  const teamAWinColor = isBasketball ? "text-orange-600 dark:text-orange-400" : "text-green-600 dark:text-green-400";
-                  const borderHover = isBasketball ? "group-hover:border-orange-500/50" : "group-hover:border-green-600/50";
+                  const teamAColor = isBasketball ? "text-blue-500" : "text-green-600";
+                  const teamAWinColor = isBasketball ? "text-blue-600 dark:text-blue-400" : "text-green-600 dark:text-green-400";
+                  const borderHover = isBasketball ? "group-hover:border-blue-500/50" : "group-hover:border-green-600/50";
                   const pointLabel = isBasketball ? "pts" : "gls";
 
                   // MVP Calculation

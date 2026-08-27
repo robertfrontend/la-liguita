@@ -231,7 +231,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-400 font-sans">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
+          <div className="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
           <p className="text-xs font-semibold text-zinc-400">Cargando portal deportivo...</p>
         </div>
       </div>
@@ -456,7 +456,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                     {/* Header de la Tarjeta */}
                     <div className="flex items-center justify-between text-[11px] font-mono border-b border-zinc-800/80 pb-2.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-orange-400 uppercase tracking-wider">{game.roundName || "Partido Oficial"}</span>
+                        <span className="font-bold text-blue-400 uppercase tracking-wider">{game.roundName || "Partido Oficial"}</span>
                         {game.venue && (
                           <span className="text-zinc-400 truncate max-w-[160px] flex items-center gap-1">
                             <MapPin size={11} className="text-zinc-500" />

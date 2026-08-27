@@ -48,10 +48,10 @@ export default function TournamentRefereesPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-              <ShieldAlert className="text-orange-500" />
+              <ShieldAlert className="text-emerald-500" />
               Cuerpo Arbitral y Mesa Técnica
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-950 shadow-sm">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-sm">
               PRO
             </span>
           </div>
@@ -62,7 +62,7 @@ export default function TournamentRefereesPage() {
 
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold text-sm rounded-xl transition shadow-lg shadow-orange-500/20"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl transition shadow-lg shadow-emerald-600/20"
         >
           <Plus size={18} />
           <span>Registrar Árbitro</span>
@@ -70,8 +70,8 @@ export default function TournamentRefereesPage() {
       </div>
 
       {isAdding && (
-        <form onSubmit={handleAdd} className="bg-zinc-900 p-6 rounded-2xl border border-orange-500/30 space-y-4 animate-in fade-in">
-          <h3 className="text-sm font-bold text-orange-400 uppercase tracking-wider">Nuevo Árbitro / Oficial</h3>
+        <form onSubmit={handleAdd} className="bg-zinc-900 p-6 rounded-2xl border border-emerald-500/30 space-y-4 animate-in fade-in">
+          <h3 className="text-sm font-bold text-emerald-400 uppercase tracking-wider">Nuevo Árbitro / Oficial</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-zinc-400 mb-1">Nombre Completo *</label>
@@ -106,7 +106,7 @@ export default function TournamentRefereesPage() {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold text-xs rounded-lg"
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg"
             >
               Guardar Árbitro
             </button>
@@ -117,7 +117,7 @@ export default function TournamentRefereesPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {referees.map((ref) => (
           <div key={ref.id} className="bg-zinc-900/60 border border-zinc-800 p-5 rounded-2xl flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center font-bold text-orange-400 border border-zinc-700">
+            <div className="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center font-bold text-emerald-400 border border-zinc-700">
               <UserCheck size={20} />
             </div>
             <div>

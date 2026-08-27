@@ -16,10 +16,10 @@ export function PlayerStatsDetail({ player, games, onClose, sport }: PlayerStats
   const isBasketball = sport !== 'soccer';
   const pointLabelShort = isBasketball ? 'PTS' : 'GLS';
   
-  const themeBg = isBasketball ? "bg-orange-500" : "bg-green-600";
-  const themeText = isBasketball ? "text-orange-500" : "text-green-600";
-  const themeBgLight = isBasketball ? "bg-orange-100 dark:bg-orange-950/40" : "bg-green-100 dark:bg-green-950/40";
-  const themeTextDark = isBasketball ? "text-orange-600 dark:text-orange-400" : "text-green-700 dark:text-green-400";
+  const themeBg = isBasketball ? "bg-blue-600" : "bg-green-600";
+  const themeText = isBasketball ? "text-blue-500" : "text-green-600";
+  const themeBgLight = isBasketball ? "bg-blue-100 dark:bg-blue-950/40" : "bg-green-100 dark:bg-green-950/40";
+  const themeTextDark = isBasketball ? "text-blue-600 dark:text-blue-400" : "text-green-700 dark:text-green-400";
 
   // Filter games where the player participated and sort by date descending
   const playerGames = games

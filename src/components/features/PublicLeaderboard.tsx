@@ -66,11 +66,11 @@ export function PublicLeaderboard({ leagueId }: { leagueId: string }) {
   const isBasketball = league.sport !== 'soccer';
   const pointLabel = isBasketball ? 'Points' : 'Goals';
   const pointLabelShort = isBasketball ? 'PTS' : 'GLS';
-  const themeBg = isBasketball ? "bg-orange-500" : "bg-green-600";
-  const themeTextDark = isBasketball ? "text-orange-600 dark:text-orange-400" : "text-green-700 dark:text-green-400";
-  const themeBorder = isBasketball ? "border-orange-500" : "border-green-600";
-  const themeShadow = isBasketball ? "shadow-orange-500/20" : "shadow-green-500/20";
-  const themeBgLight = isBasketball ? "bg-orange-50 dark:bg-orange-950/40" : "bg-green-50 dark:bg-green-950/40";
+  const themeBg = isBasketball ? "bg-blue-600" : "bg-green-600";
+  const themeTextDark = isBasketball ? "text-blue-600 dark:text-blue-400" : "text-green-700 dark:text-green-400";
+  const themeBorder = isBasketball ? "border-blue-600" : "border-green-600";
+  const themeShadow = isBasketball ? "shadow-blue-500/20" : "shadow-green-500/20";
+  const themeBgLight = isBasketball ? "bg-blue-50 dark:bg-blue-950/40" : "bg-green-50 dark:bg-green-950/40";
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 pb-24 transition-colors duration-300">
@@ -139,7 +139,7 @@ export function PublicLeaderboard({ leagueId }: { leagueId: string }) {
                                 "flex items-center justify-center w-8 h-8 rounded-lg font-black text-sm transition-colors",
                                 index === 0 ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-500" :
                                 index === 1 ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400" :
-                                index === 2 ? (isBasketball ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-500" : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-500") :
+                                index === 2 ? (isBasketball ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-500" : "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-500") :
                                 "bg-zinc-50 dark:bg-zinc-950 text-zinc-400 dark:text-zinc-600"
                             )}>
                                 {index + 1}
@@ -173,7 +173,7 @@ export function PublicLeaderboard({ leagueId }: { leagueId: string }) {
                                 "absolute left-0 top-0 bottom-0 w-1 opacity-0 transition-opacity group-hover:opacity-100",
                                 index === 0 ? "bg-yellow-400 opacity-100" : 
                                 index === 1 ? "bg-zinc-300 dark:bg-zinc-700" :
-                                index === 2 ? (isBasketball ? "bg-orange-300 dark:bg-orange-700" : "bg-green-300 dark:bg-green-700") : "bg-transparent"
+                                index === 2 ? (isBasketball ? "bg-blue-300 dark:bg-blue-700" : "bg-green-300 dark:bg-green-700") : "bg-transparent"
                             )} />
                         </div>
                     );

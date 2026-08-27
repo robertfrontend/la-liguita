@@ -165,7 +165,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
         {/* Header del Wizard */}
         <div>
           <div className="flex items-center justify-between gap-4 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-orange-400 flex items-center gap-1.5">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
               <Sparkles size={14} /> Asistente de Configuración Inicial
             </span>
             <span className="text-xs font-mono text-zinc-500">Paso {step} de 4</span>
@@ -183,7 +183,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
               <div
                 key={i}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
-                  step >= i ? "bg-orange-500 shadow-sm shadow-orange-500/50" : "bg-zinc-800"
+                  step >= i ? "bg-emerald-500 shadow-sm shadow-emerald-500/50" : "bg-zinc-800"
                 }`}
               />
             ))}
@@ -194,7 +194,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
         {step === 1 && (
           <div className="bg-zinc-900/70 border border-zinc-800 p-6 md:p-8 rounded-3xl space-y-6 animate-in fade-in">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
                 1
               </div>
               <div>
@@ -212,7 +212,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-orange-500"
+                    className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500"
                   />
                 </div>
 
@@ -223,7 +223,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
                     value={org}
                     onChange={(e) => setOrg(e.target.value)}
                     placeholder="Ej: ABASAP"
-                    className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-orange-500"
+                    className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500"
                   />
                 </div>
               </div>
@@ -249,7 +249,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
                     onClick={() => setTier("pro")}
                     className={`p-3.5 rounded-xl border text-left transition ${
                       tier === "pro"
-                        ? "border-orange-500 bg-orange-500/10 text-orange-400"
+                        ? "border-emerald-500 bg-emerald-500/10 text-emerald-400"
                         : "border-zinc-800 bg-zinc-950 text-zinc-400"
                     }`}
                   >
@@ -263,7 +263,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
             <div className="flex justify-end pt-4 border-t border-zinc-800">
               <button
                 onClick={handleSaveStep1}
-                className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold text-xs rounded-xl transition flex items-center gap-2"
+                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition flex items-center gap-2"
               >
                 <span>Siguiente: Administradores</span>
                 <ArrowRight size={14} />
@@ -276,7 +276,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
         {step === 2 && (
           <div className="bg-zinc-900/70 border border-zinc-800 p-6 md:p-8 rounded-3xl space-y-6 animate-in fade-in">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
                 2
               </div>
               <div>
@@ -287,7 +287,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
 
             {/* Crear Credencial Rápida */}
             <div className="bg-zinc-950 p-4 rounded-2xl border border-zinc-800 space-y-3">
-              <div className="text-xs font-bold text-orange-400 flex items-center gap-1.5">
+              <div className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
                 <KeyRound size={14} />
                 <span>Opción Rápida: Crear Usuario & Contraseña</span>
               </div>
@@ -298,14 +298,14 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
                   placeholder="Usuario (ej: admin_peravia)"
                   value={newUsername}
                   onChange={(e) => setNewUsername(e.target.value)}
-                  className="px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-orange-500"
+                  className="px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-emerald-500"
                 />
                 <input
                   type="text"
                   placeholder="Contraseña (mín 6 carácteres)"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-orange-500"
+                  className="px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
@@ -318,7 +318,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
               </button>
 
               {createdAdminAlert && (
-                <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-xl text-xs text-green-400">
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs text-emerald-400">
                   ¡Cuenta creada!: Usuario: <strong>{createdAdminAlert.u}</strong> | Contraseña: <strong>{createdAdminAlert.p}</strong>
                 </div>
               )}
@@ -333,7 +333,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
                 value={adminInput}
                 onChange={(e) => setAdminInput(e.target.value)}
                 placeholder="organizador1@gmail.com, organizador2@gmail.com"
-                className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-orange-500"
+                className="w-full p-3 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-emerald-500"
               />
             </div>
 
@@ -348,7 +348,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
 
               <button
                 onClick={handleAddEmailAdmin}
-                className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold text-xs rounded-xl transition flex items-center gap-2"
+                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition flex items-center gap-2"
               >
                 <span>Siguiente: Equipos</span>
                 <ArrowRight size={14} />
@@ -361,7 +361,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
         {step === 3 && (
           <div className="bg-zinc-900/70 border border-zinc-800 p-6 md:p-8 rounded-3xl space-y-6 animate-in fade-in">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
                 3
               </div>
               <div>
@@ -380,7 +380,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
                     value={teamNameInput}
                     onChange={(e) => setTeamNameInput(e.target.value)}
                     required
-                    className="w-full px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-orange-500"
+                    className="w-full px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500"
                   />
                 </div>
                 <div>
@@ -390,14 +390,14 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
                     maxLength={4}
                     value={teamShortNameInput}
                     onChange={(e) => setTeamShortNameInput(e.target.value)}
-                    className="w-full px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs uppercase focus:outline-none focus:border-orange-500"
+                    className="w-full px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs uppercase focus:outline-none focus:border-emerald-500"
                   />
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold text-xs rounded-xl transition flex items-center gap-1.5"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5"
               >
                 <Plus size={14} />
                 <span>Agregar a la Lista</span>
@@ -410,7 +410,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {teams.map((t) => (
                   <div key={t.id} className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-zinc-800 text-orange-400 font-bold text-xs flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-zinc-800 text-emerald-400 font-bold text-xs flex items-center justify-center">
                       {t.shortName || t.name.slice(0, 2).toUpperCase()}
                     </div>
                     <span className="font-bold text-xs text-white truncate">{t.name}</span>
@@ -430,7 +430,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
 
               <button
                 onClick={() => setStep(4)}
-                className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold text-xs rounded-xl transition flex items-center gap-2"
+                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition flex items-center gap-2"
               >
                 <span>Finalizar Configuración</span>
                 <ArrowRight size={14} />
@@ -442,7 +442,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
         {/* PASO 4: LISTO & DIFUSIÓN */}
         {step === 4 && (
           <div className="bg-zinc-900/70 border border-zinc-800 p-6 md:p-8 rounded-3xl space-y-6 text-center animate-in fade-in">
-            <div className="w-16 h-16 rounded-2xl bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-400 mx-auto">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mx-auto">
               <Check size={36} />
             </div>
 
@@ -457,7 +457,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
             <div className="p-4 bg-zinc-950 rounded-2xl border border-zinc-800 max-w-md mx-auto text-left space-y-2">
               <span className="text-[11px] font-bold text-zinc-400 uppercase">Enlace Público para Fanáticos:</span>
               <div className="flex items-center justify-between gap-2 bg-zinc-900 p-2.5 rounded-xl text-xs font-mono">
-                <span className="text-orange-400 truncate">/t/{tournament.slug || tournament.id}</span>
+                <span className="text-emerald-400 truncate">/t/{tournament.slug || tournament.id}</span>
                 <button
                   onClick={handleCopyLink}
                   className="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold rounded-lg transition shrink-0"
@@ -470,7 +470,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
             <div className="pt-4 flex justify-center gap-3">
               <button
                 onClick={() => router.push(`/tournament/${tournament.id}/games`)}
-                className="px-8 py-3.5 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-black text-sm rounded-xl transition shadow-xl shadow-orange-500/20 flex items-center gap-2"
+                className="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm rounded-xl transition shadow-xl shadow-emerald-600/20 flex items-center gap-2"
               >
                 <span>Abrir Calendario de Partidos</span>
                 <ArrowRight size={16} />

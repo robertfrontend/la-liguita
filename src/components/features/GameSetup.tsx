@@ -26,18 +26,18 @@ export function GameSetup() {
   const maxPlayers = isBasketball ? 10 : 22;
   const minPlayers = 4;
 
-  const themeColor = isBasketball ? "text-orange-500" : "text-green-600";
-  const themeBg = isBasketball ? "bg-orange-500" : "bg-green-600";
-  const themeBgHover = isBasketball ? "hover:bg-orange-600" : "hover:bg-green-700";
-  const themeBorder = isBasketball ? "border-orange-500" : "border-green-600";
-  const themeBorderLight = isBasketball ? "border-orange-200" : "border-green-200";
-  const themeRing = isBasketball ? "focus:ring-orange-500/20" : "focus:ring-green-500/20";
-  const themeShadow = isBasketball ? "shadow-orange-500/20" : "shadow-green-500/20";
-  const themeIcon = isBasketball ? "text-orange-500" : "text-green-600";
-  const themeBorderL = isBasketball ? "border-l-orange-500" : "border-l-green-600";
-  const themeRingActive = isBasketball ? "ring-orange-500" : "ring-green-600";
-  const themeTextActive = isBasketball ? "text-orange-500" : "text-green-600";
-  const themeBorderFocus = isBasketball ? "focus:border-orange-500" : "focus:border-green-600";
+  const themeColor = isBasketball ? "text-blue-500" : "text-green-600";
+  const themeBg = isBasketball ? "bg-blue-600" : "bg-green-600";
+  const themeBgHover = isBasketball ? "hover:bg-blue-700" : "hover:bg-green-700";
+  const themeBorder = isBasketball ? "border-blue-600" : "border-green-600";
+  const themeBorderLight = isBasketball ? "border-blue-200" : "border-green-200";
+  const themeRing = isBasketball ? "focus:ring-blue-500/20" : "focus:ring-green-500/20";
+  const themeShadow = isBasketball ? "shadow-blue-500/20" : "shadow-green-500/20";
+  const themeIcon = isBasketball ? "text-blue-500" : "text-green-600";
+  const themeBorderL = isBasketball ? "border-l-blue-600" : "border-l-green-600";
+  const themeRingActive = isBasketball ? "ring-blue-500" : "ring-green-600";
+  const themeTextActive = isBasketball ? "text-blue-500" : "text-green-600";
+  const themeBorderFocus = isBasketball ? "focus:border-blue-500" : "focus:border-green-600";
 
   useEffect(() => {
     // Reset any active game state when starting a new setup
@@ -165,14 +165,14 @@ export function GameSetup() {
 
        return (
       <div className="w-full max-w-md mx-auto p-4 pb-32">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
             <UserPlus className={themeIcon} />
             Select Players
             </h1>
             <button
             onClick={() => setIsAdding(!isAdding)}
-            className={cn("p-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full shadow-sm text-zinc-500 transition-colors", isBasketball ? "hover:text-orange-500 hover:border-orange-500" : "hover:text-green-600 hover:border-green-600")}
+            className={cn("p-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full shadow-sm text-zinc-500 transition-colors", isBasketball ? "hover:text-blue-500 hover:border-blue-500" : "hover:text-green-600 hover:border-green-600")}
             >
             {isAdding ? <X size={20} /> : <Plus size={20} />}
             </button>
@@ -194,7 +194,7 @@ export function GameSetup() {
                 value={newPlayerName}
                 onChange={(e) => setNewPlayerName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddPlayer()}
-                className={cn("flex-1 px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none transition-all font-medium", themeRing, isBasketball ? "focus:border-orange-500" : "focus:border-green-600")}
+                className={cn("flex-1 px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none transition-all font-medium", themeRing, isBasketball ? "focus:border-blue-500" : "focus:border-green-600")}
                 />
                 <button
                 onClick={handleAddPlayer}
@@ -210,7 +210,7 @@ export function GameSetup() {
         <p className="text-zinc-500 dark:text-zinc-400 mb-4 flex justify-between items-center">
           <span>Select {minPlayers}-{maxPlayers} players ({selectedIds.length})</span>
           {!isValidCount && selectedIds.length > 0 && (
-              <span className={cn("text-xs font-bold px-2 py-1 rounded-full", isBasketball ? "text-orange-500 bg-orange-50 dark:bg-orange-950/40" : "text-green-600 bg-green-50 dark:bg-green-950/40")}>
+              <span className={cn("text-xs font-bold px-2 py-1 rounded-full", isBasketball ? "text-blue-500 bg-blue-50 dark:bg-blue-950/40" : "text-green-600 bg-green-50 dark:bg-green-950/40")}>
                   {selectedIds.length % 2 !== 0 ? "Need even number" : `Min ${minPlayers} required`}
               </span>
           )}
@@ -312,7 +312,7 @@ export function GameSetup() {
         <div className="fixed bottom-16 left-0 right-0 p-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-t border-zinc-200 dark:border-zinc-800 z-50 pointer-events-none">
           <div className="max-w-md mx-auto pb-safe pointer-events-auto">
             <Button
-              className="w-full h-12 text-lg bg-zinc-900 dark:bg-orange-500 text-white hover:bg-zinc-800 dark:hover:bg-orange-600"
+              className="w-full h-12 text-lg bg-zinc-900 dark:bg-blue-600 text-white hover:bg-zinc-800 dark:hover:bg-blue-700"
               disabled={!isValidCount}
               onClick={handleCreateTeams}
             >

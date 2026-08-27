@@ -45,7 +45,7 @@ export default function GameDetailPage() {
   if (loading) {
     return (
         <div className="min-h-screen flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
         </div>
     );
   }
@@ -54,7 +54,7 @@ export default function GameDetailPage() {
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-4">
             <h1 className="text-xl font-bold mb-2">Game not found</h1>
-            <Link href="/history" className="text-orange-500 hover:underline">Return to History</Link>
+            <Link href="/history" className="text-blue-500 hover:underline">Return to History</Link>
         </div>
     );
   }
@@ -62,11 +62,11 @@ export default function GameDetailPage() {
   const isTeamAWinner = game.scoreA > game.scoreB;
   const isTeamBWinner = game.scoreB > game.scoreA;
   const isBasketball = game.sport !== 'soccer';
-  const teamAColor = isBasketball ? "text-orange-500" : "text-green-600";
-  const teamAWinColor = isBasketball ? "text-orange-600 dark:text-orange-400" : "text-green-600 dark:text-green-400";
-  const teamAWinBg = isBasketball ? "bg-orange-50 dark:bg-orange-950/40" : "bg-green-50 dark:bg-green-950/40";
-  const teamAIconBg = isBasketball ? "bg-orange-100 dark:bg-orange-900/30" : "bg-green-100 dark:bg-green-900/30";
-  const teamAIconText = isBasketball ? "text-orange-600 dark:text-orange-400" : "text-green-600 dark:text-green-400";
+  const teamAColor = isBasketball ? "text-blue-500" : "text-green-600";
+  const teamAWinColor = isBasketball ? "text-blue-600 dark:text-blue-400" : "text-green-600 dark:text-green-400";
+  const teamAWinBg = isBasketball ? "bg-blue-50 dark:bg-blue-950/40" : "bg-green-50 dark:bg-green-950/40";
+  const teamAIconBg = isBasketball ? "bg-blue-100 dark:bg-blue-900/30" : "bg-green-100 dark:bg-green-900/30";
+  const teamAIconText = isBasketball ? "text-blue-600 dark:text-blue-400" : "text-green-600 dark:text-green-400";
   const pointLabel = isBasketball ? "PTS" : "GLS";
 
   // MVP Calculation
@@ -242,7 +242,7 @@ export default function GameDetailPage() {
             onClick={handleShare}
             className={cn(
                 "w-full flex items-center justify-center gap-2 h-14 text-lg font-bold text-white rounded-xl transition-all shadow-md active:scale-[0.98]",
-                isBasketball ? "bg-orange-500 hover:bg-orange-600" : "bg-green-600 hover:bg-green-700"
+                isBasketball ? "bg-blue-600 hover:bg-blue-700" : "bg-green-600 hover:bg-green-700"
             )}
           >
             <Share size={20} />

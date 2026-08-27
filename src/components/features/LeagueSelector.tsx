@@ -58,7 +58,7 @@ export function LeagueSelector() {
                     autoFocus
                     type="text"
                     placeholder="e.g. Sunday Hoops"
-                    className="w-full p-3 border border-zinc-200 rounded-lg bg-zinc-50 focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all font-medium text-zinc-900 placeholder:text-zinc-400"
+                    className="w-full p-3 border border-zinc-200 rounded-lg bg-zinc-50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium text-zinc-900 placeholder:text-zinc-400"
                     value={newLeagueName}
                     onChange={(e) => setNewLeagueName(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleCreate()}
@@ -72,7 +72,7 @@ export function LeagueSelector() {
                         className={cn(
                             "flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all",
                             selectedSport === 'basketball' 
-                                ? "border-orange-500 bg-orange-50 text-orange-700" 
+                                ? "border-blue-500 bg-blue-50 text-blue-700" 
                                 : "border-zinc-100 hover:border-zinc-200 text-zinc-500"
                         )}
                     >
@@ -103,7 +103,7 @@ export function LeagueSelector() {
                 <button 
                     onClick={handleCreate}
                     disabled={!newLeagueName.trim()}
-                    className="px-5 py-2 rounded-lg text-sm font-bold bg-orange-500 text-white hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-all active:scale-95"
+                    className="px-5 py-2 rounded-lg text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-all active:scale-95"
                 >
                     Create League
                 </button>
@@ -116,7 +116,7 @@ export function LeagueSelector() {
   if (leagues.length === 0) {
     return (
         <>
-            <Button onClick={handleOpenCreate} variant="outline" size="sm" className="gap-2 border-dashed border-zinc-300 hover:border-orange-500 hover:text-orange-600 hover:bg-orange-50">
+            <Button onClick={handleOpenCreate} variant="outline" size="sm" className="gap-2 border-dashed border-zinc-300 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50">
                 <Plus size={16} />
                 Create League
             </Button>
@@ -131,11 +131,11 @@ export function LeagueSelector() {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors group"
       >
-        <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-md flex items-center justify-center text-orange-600 dark:text-orange-500 group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition-colors">
+        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-md flex items-center justify-center text-blue-600 dark:text-blue-500 group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors">
             <Trophy size={16} />
         </div>
         <div className="text-left hidden md:block">
-            <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider group-hover:text-orange-500 transition-colors">Current League</div>
+            <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider group-hover:text-blue-500 transition-colors">Current League</div>
             <div className="font-bold text-sm leading-none max-w-[120px] truncate text-zinc-900 dark:text-white">{activeLeague?.name || "Select League"}</div>
         </div>
         <ChevronDown size={16} className="text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-600 dark:group-hover:text-zinc-300" />
@@ -161,7 +161,7 @@ export function LeagueSelector() {
                                 className={cn(
                                     "flex-1 text-left px-3 py-2.5 rounded-lg flex items-center justify-between text-sm font-medium transition-colors group",
                                     activeLeague?.id === league.id 
-                                        ? "bg-orange-50 dark:bg-orange-950/40 text-orange-800 dark:text-orange-400" 
+                                        ? "bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-400" 
                                         : "hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
                                 )}
                             >
@@ -169,7 +169,7 @@ export function LeagueSelector() {
                                     <span>{league.sport === 'soccer' ? '⚽' : '🏀'}</span>
                                     {league.name}
                                 </span>
-                                {activeLeague?.id === league.id && <Check size={16} className="text-orange-500 shrink-0 ml-2" />}
+                                {activeLeague?.id === league.id && <Check size={16} className="text-blue-500 shrink-0 ml-2" />}
                             </button>
                             <button 
                                 onClick={(e) => handleDeleteLeague(e, league.id, league.name)}
@@ -184,7 +184,7 @@ export function LeagueSelector() {
                 <div className="border-t border-zinc-100 dark:border-zinc-800 pt-2">
                     <button 
                         onClick={handleOpenCreate}
-                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-bold text-white bg-zinc-900 dark:bg-orange-500 hover:bg-zinc-800 dark:hover:bg-orange-600 rounded-lg transition-colors shadow-sm"
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-bold text-white bg-zinc-900 dark:bg-blue-600 hover:bg-zinc-800 dark:hover:bg-blue-700 rounded-lg transition-colors shadow-sm"
                     >
                         <Plus size={16} />
                         Create New League

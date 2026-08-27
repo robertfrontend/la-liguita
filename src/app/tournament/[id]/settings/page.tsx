@@ -104,7 +104,7 @@ export default function TournamentSettingsPage() {
       {/* Header */}
       <div className="bg-zinc-900/60 p-6 rounded-2xl border border-zinc-800/80">
         <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-          <Settings className="text-orange-500" />
+          <Settings className="text-emerald-500" />
           <span>Configuración del Torneo</span>
         </h1>
         <p className="text-xs text-zinc-400 mt-1">
@@ -118,7 +118,7 @@ export default function TournamentSettingsPage() {
           <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
             <div>
               <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <ImageIcon size={16} className="text-orange-500" />
+                <ImageIcon size={16} className="text-emerald-500" />
                 <span>Logo Oficial del Torneo</span>
               </h3>
               <p className="text-xs text-zinc-400 mt-0.5">
@@ -171,7 +171,7 @@ export default function TournamentSettingsPage() {
                   onClick={() => fileInputRef.current?.click()}
                   className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs rounded-xl transition flex items-center gap-2 border border-zinc-700 shadow-sm"
                 >
-                  <Upload size={14} className="text-orange-400" />
+                  <Upload size={14} className="text-emerald-400" />
                   <span>Subir Archivo de Imagen</span>
                 </button>
               </div>
@@ -187,7 +187,7 @@ export default function TournamentSettingsPage() {
                     value={logoUrl}
                     onChange={(e) => setLogoUrl(e.target.value)}
                     placeholder="https://ejemplo.com/logo.png"
-                    className="w-full pl-9 pr-3.5 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-orange-500 placeholder:text-zinc-600"
+                    className="w-full pl-9 pr-3.5 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-emerald-500 placeholder:text-zinc-600"
                   />
                 </div>
               </div>
@@ -210,7 +210,7 @@ export default function TournamentSettingsPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-orange-500"
+              className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-emerald-500"
             />
           </div>
 
@@ -223,7 +223,7 @@ export default function TournamentSettingsPage() {
               value={org}
               onChange={(e) => setOrg(e.target.value)}
               placeholder="Ej: ABASAP"
-              className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-orange-500"
+              className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-emerald-500"
             />
           </div>
 
@@ -236,7 +236,7 @@ export default function TournamentSettingsPage() {
               value={adminEmailsStr}
               onChange={(e) => setAdminEmailsStr(e.target.value)}
               placeholder="admin1@gmail.com, admin2@gmail.com"
-              className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-orange-500"
+              className="w-full px-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-emerald-500"
             />
             <p className="text-[11px] text-zinc-500 mt-1">
               Correos electrónicos separados por coma con acceso administrativo a este torneo.
@@ -269,11 +269,11 @@ export default function TournamentSettingsPage() {
               onClick={() => setTier("pro")}
               className={`p-4 rounded-xl border-2 text-left transition ${
                 tier === "pro"
-                  ? "border-orange-500 bg-orange-500/10 text-white font-bold"
+                  ? "border-emerald-500 bg-emerald-500/10 text-white font-bold"
                   : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700"
               }`}
             >
-              <div className="font-bold text-xs flex items-center gap-1.5 text-orange-400">
+              <div className="font-bold text-xs flex items-center gap-1.5 text-emerald-400">
                 <Sparkles size={14} />
                 <span>Torneo Profesional PRO</span>
               </div>
@@ -287,14 +287,14 @@ export default function TournamentSettingsPage() {
           <button
             type="submit"
             disabled={isSaving}
-            className="px-6 py-3 bg-orange-500 hover:bg-orange-600 font-bold text-zinc-950 text-xs rounded-xl transition flex items-center gap-2 shadow-sm"
+            className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 font-bold text-white text-xs rounded-xl transition flex items-center gap-2 shadow-sm"
           >
             <Save size={15} />
             <span>{isSaving ? "Guardando Cambios..." : "Guardar Configuración"}</span>
           </button>
 
           {saveSuccess && (
-            <span className="text-xs font-bold text-green-400 flex items-center gap-1 animate-in fade-in">
+            <span className="text-xs font-bold text-emerald-400 flex items-center gap-1 animate-in fade-in">
               <Check size={14} />
               <span>¡Configuración y logo actualizados correctamente!</span>
             </span>

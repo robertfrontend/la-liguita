@@ -33,7 +33,7 @@ export function BottomNav() {
           href="/leaderboard"
           className={cn(
             "flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors",
-            isActive("/leaderboard") ? "text-orange-500" : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
+            isActive("/leaderboard") ? "text-blue-500" : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
           )}
         >
           <Trophy size={24} />
@@ -44,7 +44,7 @@ export function BottomNav() {
           href={activeGame ? `/game/${activeGame.id}` : "/game/new"}
           className={cn(
             "flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors",
-            pathname.startsWith("/game") ? "text-orange-500" : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
+            pathname.startsWith("/game") ? "text-blue-500" : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
           )}
         >
           <PlayCircle size={24} />
@@ -55,7 +55,7 @@ export function BottomNav() {
           href="/history"
           className={cn(
             "flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors",
-            isActive("/history") ? "text-orange-500" : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
+            isActive("/history") ? "text-blue-500" : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
           )}
         >
           <History size={24} />

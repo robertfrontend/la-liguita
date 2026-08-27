@@ -166,10 +166,10 @@ export default function TournamentAdminsPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-              <UserCheck className="text-orange-500" />
+              <UserCheck className="text-emerald-500" />
               <span>Administradores del Torneo</span>
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-orange-500/10 text-orange-400 border border-orange-500/20">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
               {currentAdmins.length} Activo(s)
             </span>
           </div>
@@ -182,15 +182,15 @@ export default function TournamentAdminsPage() {
           onClick={handleCopyInviteLink}
           className="flex items-center gap-2 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs rounded-xl transition border border-zinc-700 shrink-0"
         >
-          {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+          {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
           <span>{copied ? "¡Link de Login Copiado!" : "Copiar Link de Acceso"}</span>
         </button>
       </div>
 
       {/* Alerta de credenciales recién creadas para compartir */}
       {createdCredentialsAlert && (
-        <div className="p-5 bg-green-500/10 border border-green-500/30 rounded-2xl space-y-3 animate-in fade-in">
-          <div className="flex items-center gap-2 text-green-400 font-black text-sm">
+        <div className="p-5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl space-y-3 animate-in fade-in">
+          <div className="flex items-center gap-2 text-emerald-400 font-black text-sm">
             <Check size={18} />
             <span>¡Cuenta de Administrador Creada Exitosamente!</span>
           </div>
@@ -204,7 +204,7 @@ export default function TournamentAdminsPage() {
             </div>
             <div>
               <span className="text-zinc-500 block text-[10px] uppercase">Contraseña:</span>
-              <span className="text-orange-400 font-bold">{createdCredentialsAlert.pass}</span>
+              <span className="text-emerald-400 font-bold">{createdCredentialsAlert.pass}</span>
             </div>
           </div>
         </div>
@@ -214,7 +214,7 @@ export default function TournamentAdminsPage() {
       <div className="bg-zinc-900/70 p-6 rounded-2xl border border-zinc-800/80 space-y-5 shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800 pb-4">
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
-            <UserPlus size={16} className="text-orange-400" />
+            <UserPlus size={16} className="text-emerald-400" />
             <span>Agregar Administrador</span>
           </h3>
 
@@ -225,7 +225,7 @@ export default function TournamentAdminsPage() {
               onClick={() => setMethod("credentials")}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
                 method === "credentials"
-                  ? "bg-orange-500 text-zinc-950 shadow-sm"
+                  ? "bg-emerald-600 text-white shadow-sm"
                   : "text-zinc-400 hover:text-white"
               }`}
             >
@@ -238,7 +238,7 @@ export default function TournamentAdminsPage() {
               onClick={() => setMethod("email")}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
                 method === "email"
-                  ? "bg-orange-500 text-zinc-950 shadow-sm"
+                  ? "bg-emerald-600 text-white shadow-sm"
                   : "text-zinc-400 hover:text-white"
               }`}
             >
@@ -259,7 +259,7 @@ export default function TournamentAdminsPage() {
                   placeholder="Ej: Mesa Técnica TBS"
                   value={adminName}
                   onChange={(e) => setAdminName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-orange-500"
+                  className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
@@ -273,7 +273,7 @@ export default function TournamentAdminsPage() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value.toLowerCase().trim())}
                     required
-                    className="w-full pl-9 pr-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-orange-500"
+                    className="w-full pl-9 pr-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-emerald-500"
                   />
                 </div>
               </div>
@@ -289,7 +289,7 @@ export default function TournamentAdminsPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     minLength={6}
-                    className="w-full pl-9 pr-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-orange-500"
+                    className="w-full pl-9 pr-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-emerald-500"
                   />
                 </div>
               </div>
@@ -299,7 +299,7 @@ export default function TournamentAdminsPage() {
               <button
                 type="submit"
                 disabled={isSubmitting || !username.trim() || !password.trim()}
-                className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-zinc-950 font-black text-xs rounded-xl transition shadow-lg shadow-orange-500/20"
+                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-black text-xs rounded-xl transition shadow-lg shadow-emerald-600/20"
               >
                 {isSubmitting ? "Creando Credenciales..." : "Crear y Asignar Cuenta"}
               </button>
@@ -318,14 +318,14 @@ export default function TournamentAdminsPage() {
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-orange-500"
+                className="w-full pl-10 pr-4 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-emerald-500"
               />
             </div>
 
             <button
               type="submit"
               disabled={isSubmitting || !newEmail.trim()}
-              className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-zinc-950 font-black text-xs rounded-xl transition shadow-lg shadow-orange-500/20 shrink-0"
+              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-black text-xs rounded-xl transition shadow-lg shadow-emerald-600/20 shrink-0"
             >
               {isSubmitting ? "Guardando..." : "Asignar Correo"}
             </button>
@@ -347,13 +347,13 @@ export default function TournamentAdminsPage() {
           {/* Dueño / Super Admin */}
           <div className="p-4 flex items-center justify-between hover:bg-zinc-800/20 transition">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-400">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
                 <ShieldCheck size={18} />
               </div>
               <div>
                 <div className="font-bold text-white text-xs flex items-center gap-2">
                   <span>Super Administrador Maestro</span>
-                  <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-orange-500 text-zinc-950">
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                     robert02frontend
                   </span>
                 </div>
@@ -372,7 +372,7 @@ export default function TournamentAdminsPage() {
               <div key={email} className="p-4 flex items-center justify-between hover:bg-zinc-800/30 transition">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300">
-                    {isSystemUser ? <KeyRound size={16} className="text-orange-400" /> : <UserCheck size={16} />}
+                    {isSystemUser ? <KeyRound size={16} className="text-emerald-400" /> : <UserCheck size={16} />}
                   </div>
                   <div>
                     <div className="font-bold text-white text-xs font-mono flex items-center gap-2">
