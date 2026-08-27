@@ -39,15 +39,15 @@ export function SetupReminderBanner({ tournament }: { tournament: Tournament }) 
   if (!needsTeams && !needsGames) return null;
 
   return (
-    <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-orange-500/15 via-amber-500/10 to-zinc-900 border border-orange-500/30 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg shadow-orange-500/5 animate-in fade-in">
+    <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-zinc-900 border border-emerald-500/30 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg shadow-emerald-500/5 animate-in fade-in">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
           <Sparkles size={20} className="animate-pulse" />
         </div>
         <div>
           <h4 className="font-bold text-sm text-white flex items-center gap-2">
             <span>Configuración Inicial del Torneo Pendiente</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-orange-500 text-zinc-950">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-600 text-white">
               Paso a Paso
             </span>
           </h4>
@@ -64,7 +64,7 @@ export function SetupReminderBanner({ tournament }: { tournament: Tournament }) 
       <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end shrink-0">
         <Link
           href={`/tournament/${tournament.id}/onboarding`}
-          className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-black text-xs rounded-xl transition flex items-center gap-1.5 shadow-md shadow-orange-500/20"
+          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-xl transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20"
         >
           <span>Completar Paso a Paso</span>
           <ArrowRight size={14} />

@@ -95,7 +95,7 @@ export function CreateTournamentForm() {
     <div className="w-full max-w-4xl mx-auto py-10 px-4 font-sans">
       {/* Encabezado */}
       <div className="text-center mb-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 text-orange-400 text-xs font-bold uppercase tracking-wider mb-3 border border-orange-500/20">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-3 border border-emerald-500/20">
           <Sparkles size={14} /> Creación y Provisión de Torneos
         </div>
         <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
@@ -114,7 +114,7 @@ export function CreateTournamentForm() {
             onClick={() => setCreationMode("auto")}
             className={`py-3 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${
               creationMode === "auto"
-                ? "bg-orange-500 text-zinc-950 shadow-md shadow-orange-500/20"
+                ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
                 : "text-zinc-400 hover:text-white"
             }`}
           >
@@ -138,10 +138,10 @@ export function CreateTournamentForm() {
 
         {/* Panel de Auto-Provisioning */}
         {creationMode === "auto" && (
-          <div className="bg-zinc-950/90 p-6 rounded-2xl border border-orange-500/30 space-y-5 animate-in fade-in">
+          <div className="bg-zinc-950/90 p-6 rounded-2xl border border-emerald-500/30 space-y-5 animate-in fade-in">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-orange-400 flex items-center gap-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
                   <Zap size={14} />
                   <span>Motor de Auto-Provisión</span>
                 </h3>
@@ -162,7 +162,7 @@ export function CreateTournamentForm() {
                 <select
                   value={numberOfTeams}
                   onChange={(e) => setNumberOfTeams(Number(e.target.value))}
-                  className="w-full px-3.5 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-orange-500"
+                  className="w-full px-3.5 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-emerald-500"
                 >
                   <option value={4}>4 Equipos (Cuadrangular)</option>
                   <option value={6}>6 Equipos</option>
@@ -180,7 +180,7 @@ export function CreateTournamentForm() {
                 <select
                   value={playersPerTeam}
                   onChange={(e) => setPlayersPerTeam(Number(e.target.value))}
-                  className="w-full px-3.5 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-orange-500"
+                  className="w-full px-3.5 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-emerald-500"
                 >
                   <option value={5}>5 Jugadores (Quinteto Inicial)</option>
                   <option value={8}>8 Jugadores (Roster Ágil)</option>
@@ -198,7 +198,7 @@ export function CreateTournamentForm() {
                 <select
                   value={theme}
                   onChange={(e) => setTheme(e.target.value as any)}
-                  className="w-full px-3.5 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-orange-500"
+                  className="w-full px-3.5 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500"
                 >
                   <option value="dominican">Torneo Superior Tradicional (Pueblo Nuevo, Cajuilitos, San Lázaro...)</option>
                   <option value="nba">Franquicias Pro (Lakers, Celtics, Warriors, Bulls...)</option>
@@ -212,7 +212,7 @@ export function CreateTournamentForm() {
                   id="autoSchedulePage"
                   checked={autoGenerateSchedule}
                   onChange={(e) => setAutoGenerateSchedule(e.target.checked)}
-                  className="w-4 h-4 rounded text-orange-500 bg-zinc-900 border-zinc-700 focus:ring-0 cursor-pointer"
+                  className="w-4 h-4 rounded text-emerald-500 bg-zinc-900 border-zinc-700 focus:ring-0 cursor-pointer"
                 />
                 <label htmlFor="autoSchedulePage" className="text-xs font-bold text-zinc-200 cursor-pointer">
                   Generar Calendario de Partidos Oficial (Jornadas)
@@ -222,7 +222,7 @@ export function CreateTournamentForm() {
 
             <div className="text-xs text-zinc-400 bg-zinc-900/60 p-3 rounded-xl border border-zinc-800 flex items-center justify-between">
               <span>Se crearán automáticamente:</span>
-              <span className="font-mono text-orange-400 font-bold">
+              <span className="font-mono text-emerald-400 font-bold">
                 {numberOfTeams} Equipos • {numberOfTeams * playersPerTeam} Jugadores
               </span>
             </div>
@@ -254,11 +254,11 @@ export function CreateTournamentForm() {
                 onClick={() => setTier("pro")}
                 className={`p-3.5 rounded-xl border text-left transition ${
                   tier === "pro"
-                    ? "border-orange-500 bg-orange-500/10 text-white font-bold"
+                    ? "border-emerald-500 bg-emerald-500/10 text-white font-bold"
                     : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700"
                 }`}
               >
-                <div className="font-bold text-xs flex items-center gap-1.5 text-orange-400">
+                <div className="font-bold text-xs flex items-center gap-1.5 text-emerald-400">
                   <Sparkles size={13} />
                   <span>PRO FIBA</span>
                 </div>
@@ -277,7 +277,7 @@ export function CreateTournamentForm() {
                 onClick={() => setSport("basketball")}
                 className={`py-3 px-4 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 ${
                   sport === "basketball"
-                    ? "border-orange-500 bg-orange-500/10 text-white"
+                    ? "border-emerald-500 bg-emerald-500/10 text-white font-bold"
                     : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700"
                 }`}
               >
@@ -288,7 +288,7 @@ export function CreateTournamentForm() {
                 onClick={() => setSport("soccer")}
                 className={`py-3 px-4 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-2 ${
                   sport === "soccer"
-                    ? "border-blue-500 bg-blue-500/10 text-white"
+                    ? "border-blue-500 bg-blue-500/10 text-white font-bold"
                     : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700"
                 }`}
               >
@@ -310,7 +310,7 @@ export function CreateTournamentForm() {
               placeholder="Ej: Torneo Superior TBS 2026"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-orange-500"
+              className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-emerald-500"
             />
           </div>
 
@@ -323,7 +323,7 @@ export function CreateTournamentForm() {
               placeholder="Ej: Asociación de Baloncesto Oficial"
               value={organizationName}
               onChange={(e) => setOrganizationName(e.target.value)}
-              className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-orange-500"
+              className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-emerald-500"
             />
           </div>
         </div>
@@ -339,7 +339,7 @@ export function CreateTournamentForm() {
           <button
             type="submit"
             disabled={isSubmitting || !name.trim()}
-            className="px-8 py-3.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-zinc-950 font-bold text-xs rounded-xl transition shadow-lg shadow-orange-500/20 flex items-center gap-2"
+            className="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-emerald-600/25 flex items-center gap-2"
           >
             {isSubmitting ? (
               <>

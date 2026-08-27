@@ -11,6 +11,7 @@ import {
   deleteTournamentFromDb 
 } from "@/lib/db";
 import { CreateTournamentModal } from "@/components/features/CreateTournamentModal";
+import { AdminGatekeeper } from "@/components/features/AdminGatekeeper";
 import { 
   Trophy, 
   Calendar, 
@@ -92,68 +93,37 @@ export function AdminPortalDashboard() {
   const amateurTournaments = tournaments.filter(t => t.tier === "amateur").length;
   const totalOrganizers = new Set(tournaments.flatMap(t => t.adminEmails || [])).size;
 
-  // Si no está autenticado, mostramos login institucional
+  // Si no está autenticado, mostramos el Gatekeeper protegido por PIN único
   if (!authLoading && !user) {
     return (
-      <div className="min-h-[85vh] flex flex-col items-center justify-center p-6 bg-zinc-950 text-white">
-        <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl p-8 shadow-2xl text-center space-y-6">
-          <div className="w-14 h-14 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 mx-auto">
-            <ShieldCheck size={32} />
-          </div>
-
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-white uppercase">
-              La Liguita • Management Suite
-            </h1>
-            <p className="text-xs text-zinc-400 mt-1.5 leading-relaxed">
-              Plataforma B2B para la administración oficial de torneos, ligas y mesas técnicas.
-            </p>
-          </div>
-
-          <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 text-left text-xs space-y-2 text-zinc-400">
-            <div className="flex items-center gap-2 font-bold text-zinc-200">
-              <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-              <span>Acceso Administrativo Cerrado</span>
-            </div>
-            <p className="text-[11px] leading-normal text-zinc-400">
-              Solo usuarios con credenciales de organizador o Super Administrador pueden acceder a la consola.
-            </p>
-          </div>
-
-          <Link
-            href="/login"
-            className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-sm"
-          >
-            <LogIn size={16} />
-            <span>Acceder con Credenciales</span>
-          </Link>
-        </div>
+      <div className="py-8">
+        <AdminGatekeeper
+          title="Management Suite • Acceso Administrativo"
+          subtitle="Para ingresar a la consola de gestión de torneos, introduce el Código o PIN Único proporcionado por el Super Administrador."
+          onSuccess={(tournament) => {
+            window.location.href = `/tournament/${tournament.id}/games`;
+          }}
+        />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] bg-zinc-950 text-zinc-100 antialiased font-sans">
+    <div className="flex min-h-[calc(100vh-3.5rem)] bg-zinc-950 text-zinc-100 antialiased font-sans selection:bg-emerald-500/30">
       {/* Sidebar de Navegación del SaaS */}
       <aside className="w-64 border-r border-zinc-800/80 bg-zinc-900/40 backdrop-blur-xl flex flex-col justify-between shrink-0 p-4">
         <div className="space-y-5">
           {/* Header del Perfil de Admin */}
           <div className={`p-3.5 rounded-xl border transition ${
             superAdmin 
-              ? "bg-zinc-900/90 border-blue-500/30 shadow-sm" 
+              ? "bg-zinc-900/90 border-emerald-500/30 shadow-sm" 
               : "bg-zinc-900 border-zinc-800"
           }`}>
             <div className="flex items-center gap-2 mb-1.5">
-              <div className={`w-6 h-6 rounded-md flex items-center justify-center ${
-                superAdmin 
-                  ? "bg-blue-500/15 text-blue-400" 
-                  : "bg-orange-500/15 text-orange-400"
-              }`}>
+              <div className="w-6 h-6 rounded-md flex items-center justify-center bg-emerald-500/15 text-emerald-400">
                 <ShieldCheck size={14} />
               </div>
-              <span className={`text-[10px] font-black uppercase tracking-wider ${
-                superAdmin ? "text-blue-400" : "text-orange-400"
-              }`}>
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
                 {superAdmin ? "Super Admin" : "Organizador"}
               </span>
             </div>
@@ -163,7 +133,7 @@ export function AdminPortalDashboard() {
             {superAdmin && (
               <Link
                 href="/superadmin"
-                className="mt-2.5 w-full py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] uppercase rounded-lg transition flex items-center justify-center gap-1 shadow-sm"
+                className="mt-2.5 w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] uppercase rounded-lg transition flex items-center justify-center gap-1 shadow-sm"
               >
                 <span>Panel Super Admin</span>
                 <ArrowUpRight size={12} />
@@ -181,12 +151,12 @@ export function AdminPortalDashboard() {
               onClick={() => setActiveSection("tournaments")}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition ${
                 activeSection === "tournaments"
-                  ? "bg-zinc-800 text-white border border-zinc-700 font-bold"
+                  ? "bg-zinc-800/90 text-white border-l-2 border-l-emerald-500 border border-zinc-700 font-bold"
                   : "text-zinc-400 hover:text-white hover:bg-zinc-900"
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <Trophy size={15} className={activeSection === "tournaments" ? "text-orange-400" : "text-zinc-500"} />
+                <Trophy size={15} className={activeSection === "tournaments" ? "text-emerald-400" : "text-zinc-500"} />
                 <span>Torneos Asignados</span>
               </div>
               <span className="text-[10px] font-mono text-zinc-400">{tournaments.length}</span>
@@ -196,12 +166,12 @@ export function AdminPortalDashboard() {
               onClick={() => setActiveSection("games")}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition ${
                 activeSection === "games"
-                  ? "bg-zinc-800 text-white border border-zinc-700 font-bold"
+                  ? "bg-zinc-800/90 text-white border-l-2 border-l-emerald-500 border border-zinc-700 font-bold"
                   : "text-zinc-400 hover:text-white hover:bg-zinc-900"
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <Calendar size={15} className={activeSection === "games" ? "text-orange-400" : "text-zinc-500"} />
+                <Calendar size={15} className={activeSection === "games" ? "text-emerald-400" : "text-zinc-500"} />
                 <span>Calendario de Partidos</span>
               </div>
             </button>
@@ -210,12 +180,12 @@ export function AdminPortalDashboard() {
               onClick={() => setActiveSection("teams")}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition ${
                 activeSection === "teams"
-                  ? "bg-zinc-800 text-white border border-zinc-700 font-bold"
+                  ? "bg-zinc-800/90 text-white border-l-2 border-l-emerald-500 border border-zinc-700 font-bold"
                   : "text-zinc-400 hover:text-white hover:bg-zinc-900"
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <Users size={15} className={activeSection === "teams" ? "text-orange-400" : "text-zinc-500"} />
+                <Users size={15} className={activeSection === "teams" ? "text-emerald-400" : "text-zinc-500"} />
                 <span>Equipos & Plantillas</span>
               </div>
             </button>
@@ -224,12 +194,12 @@ export function AdminPortalDashboard() {
               onClick={() => setActiveSection("public-portals")}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition ${
                 activeSection === "public-portals"
-                  ? "bg-zinc-800 text-white border border-zinc-700 font-bold"
+                  ? "bg-zinc-800/90 text-white border-l-2 border-l-emerald-500 border border-zinc-700 font-bold"
                   : "text-zinc-400 hover:text-white hover:bg-zinc-900"
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <Globe size={15} className={activeSection === "public-portals" ? "text-orange-400" : "text-zinc-500"} />
+                <Globe size={15} className={activeSection === "public-portals" ? "text-emerald-400" : "text-zinc-500"} />
                 <span>Portales Públicos</span>
               </div>
             </button>
@@ -264,7 +234,7 @@ export function AdminPortalDashboard() {
             {superAdmin && (
               <button
                 onClick={() => setIsCreateModalOpen(true)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold text-xs rounded-xl transition shadow-sm"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow-sm"
               >
                 <Plus size={16} />
                 <span>Nuevo Torneo</span>
@@ -286,9 +256,9 @@ export function AdminPortalDashboard() {
           <div className="bg-zinc-900/50 border border-zinc-800/80 p-4 rounded-xl">
             <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1 flex items-center justify-between">
               <span>Nivel PRO FIBA</span>
-              <Sparkles size={14} className="text-orange-400" />
+              <Sparkles size={14} className="text-emerald-400" />
             </div>
-            <div className="text-2xl font-black text-orange-400 font-mono">{proTournaments}</div>
+            <div className="text-2xl font-black text-emerald-400 font-mono">{proTournaments}</div>
           </div>
 
           <div className="bg-zinc-900/50 border border-zinc-800/80 p-4 rounded-xl">
@@ -302,9 +272,9 @@ export function AdminPortalDashboard() {
           <div className="bg-zinc-900/50 border border-zinc-800/80 p-4 rounded-xl">
             <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1 flex items-center justify-between">
               <span>Organizadores</span>
-              <Users size={14} className="text-blue-400" />
+              <Users size={14} className="text-emerald-400" />
             </div>
-            <div className="text-2xl font-black text-blue-400 font-mono">{totalOrganizers}</div>
+            <div className="text-2xl font-black text-emerald-400 font-mono">{totalOrganizers}</div>
           </div>
         </div>
 
@@ -320,7 +290,7 @@ export function AdminPortalDashboard() {
                   placeholder="Buscar torneo, organización o admin..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-orange-500 placeholder:text-zinc-500 font-medium"
+                  className="w-full pl-9 pr-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 placeholder:text-zinc-500 font-medium"
                 />
               </div>
 
@@ -370,7 +340,7 @@ export function AdminPortalDashboard() {
                         <tr key={t.id} className="hover:bg-zinc-800/20 transition">
                           <td className="py-4 px-5">
                             <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-orange-400 text-xs">
+                              <div className="w-9 h-9 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-emerald-400 text-xs">
                                 {t.sport === "soccer" ? "FÚT" : "BAL"}
                               </div>
                               <div>
@@ -389,7 +359,7 @@ export function AdminPortalDashboard() {
 
                           <td className="py-4 px-3 text-center">
                             {isPro ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-orange-500/15 text-orange-400 border border-orange-500/30">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
                                 PRO
                               </span>
                             ) : (
@@ -428,7 +398,7 @@ export function AdminPortalDashboard() {
                             <div className="flex items-center justify-end gap-1.5">
                               <Link
                                 href={`/tournament/${t.id}/games`}
-                                className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold text-xs rounded-lg transition flex items-center gap-1 shadow-sm"
+                                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg transition flex items-center gap-1 shadow-sm"
                               >
                                 <span>Administrar</span>
                                 <ArrowUpRight size={13} />
@@ -535,7 +505,7 @@ export function AdminPortalDashboard() {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Portal Público</span>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono text-orange-400 bg-orange-500/10 border border-orange-500/20">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono text-blue-400 bg-blue-500/10 border border-blue-500/20">
                         /t/{t.slug || t.id}
                       </span>
                     </div>
@@ -546,7 +516,7 @@ export function AdminPortalDashboard() {
                   <Link
                     href={`/t/${t.slug || t.id}`}
                     target="_blank"
-                    className="mt-4 w-full py-2 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 border border-orange-500/30"
+                    className="mt-4 w-full py-2 bg-blue-600/15 hover:bg-blue-600/25 text-blue-400 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 border border-blue-500/30"
                   >
                     <Globe size={14} />
                     <span>Abrir Portal en Vivo</span>

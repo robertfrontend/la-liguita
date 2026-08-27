@@ -81,7 +81,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-zinc-950 text-white">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
+          <Loader2 className="h-6 w-6 animate-spin text-emerald-500" />
           <p className="text-xs font-semibold text-zinc-400">Cargando panel de gestión...</p>
         </div>
       </div>
@@ -108,7 +108,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   if (!hasAdminAccess) {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center bg-zinc-950 p-6 text-center text-white">
-        <div className="w-14 h-14 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400 mb-4">
+        <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4">
           <Lock size={28} />
         </div>
         <h2 className="text-xl font-bold">Acceso Administrativo Restringido</h2>
@@ -118,7 +118,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         <div className="flex gap-3 mt-6">
           <Link
             href={`/t/${tournament.slug || tournament.id}`}
-            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold text-xs rounded-xl transition"
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition"
           >
             Ver Portal Público
           </Link>
@@ -152,7 +152,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] bg-zinc-950 text-zinc-100 antialiased font-sans">
+    <div className="flex min-h-[calc(100vh-3.5rem)] bg-zinc-950 text-zinc-100 antialiased font-sans selection:bg-emerald-500/30">
       {/* Sidebar Desktop Profesional */}
       <aside className="w-64 border-r border-zinc-800/80 bg-zinc-900/40 backdrop-blur-xl flex flex-col justify-between shrink-0">
         <div>
@@ -172,7 +172,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   <img src={tournament.logoUrl} alt={tournament.name} className="w-full h-full object-contain" />
                 </div>
               ) : (
-                <div className="w-9 h-9 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-orange-400 text-xs shrink-0">
+                <div className="w-9 h-9 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-emerald-400 text-xs shrink-0">
                   {tournament.name.slice(0, 2).toUpperCase()}
                 </div>
               )}
@@ -184,7 +184,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   </span>
 
                   {isPro ? (
-                    <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase tracking-wider bg-orange-500/15 text-orange-400 border border-orange-500/30">
+                    <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
                       PRO
                     </span>
                   ) : (
@@ -219,12 +219,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                       href={item.href}
                       className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition ${
                         isActive
-                          ? "bg-zinc-800 text-white border border-zinc-700 font-bold"
+                          ? "bg-zinc-800/90 text-white border-l-2 border-l-emerald-500 border border-zinc-700 font-bold shadow-sm"
                           : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900"
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
-                        <Icon size={15} className={isActive ? "text-orange-400" : "text-zinc-500"} />
+                        <Icon size={15} className={isActive ? "text-emerald-400" : "text-zinc-500"} />
                         <span>{item.label}</span>
                       </div>
                     </Link>
@@ -237,7 +237,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <div>
               <div className="px-2 py-1 text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center justify-between">
                 <span>Mesa Técnica & Stats</span>
-                {isPro && <span className="text-[9px] text-orange-400 font-bold">PRO</span>}
+                {isPro && <span className="text-[9px] text-emerald-400 font-bold">PRO</span>}
               </div>
               <nav className="space-y-0.5 mt-1">
                 {proNav.map((item) => {
@@ -250,12 +250,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                       href={item.href}
                       className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition ${
                         isActive
-                          ? "bg-zinc-800 text-white border border-zinc-700 font-bold"
+                          ? "bg-zinc-800/90 text-white border-l-2 border-l-emerald-500 border border-zinc-700 font-bold shadow-sm"
                           : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900"
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
-                        <Icon size={15} className={isActive ? "text-orange-400" : "text-zinc-500"} />
+                        <Icon size={15} className={isActive ? "text-emerald-400" : "text-zinc-500"} />
                         <span>{item.label}</span>
                       </div>
 

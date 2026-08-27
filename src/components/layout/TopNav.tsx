@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { isSuperAdmin } from "@/lib/auth-helpers";
-import { User as UserIcon, ShieldCheck, LogOut, Globe } from "lucide-react";
+import { User as UserIcon, ShieldCheck, LogOut, Globe, Lock } from "lucide-react";
 
 export function TopNav() {
   const { user, logout } = useAuth();
@@ -23,7 +23,7 @@ export function TopNav() {
       {/* Brand / Logo */}
       <div className="flex items-center gap-3">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-7 h-7 rounded-lg bg-orange-500 flex items-center justify-center font-black text-zinc-950 text-xs shadow-sm shadow-orange-500/20">
+          <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center font-black text-white text-xs shadow-sm shadow-blue-600/25">
             L
           </div>
           <div className="flex items-baseline gap-1.5">
@@ -31,7 +31,7 @@ export function TopNav() {
               La Liguita
             </span>
             <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest hidden sm:inline">
-              Management Suite
+              Sports Platform
             </span>
           </div>
         </Link>
@@ -55,10 +55,10 @@ export function TopNav() {
             {superAdmin && (
               <Link 
                 href="/superadmin"
-                className="h-8 px-3 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 text-[11px] font-bold uppercase tracking-wider transition hidden sm:inline-flex items-center gap-1.5"
+                className="h-8 px-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold uppercase tracking-wider transition hidden sm:inline-flex items-center gap-1.5"
                 title="Consola Super Administrador"
               >
-                <ShieldCheck size={13} className="text-blue-400" />
+                <ShieldCheck size={13} className="text-emerald-400" />
                 <span>Super Admin</span>
               </Link>
             )}
@@ -95,10 +95,12 @@ export function TopNav() {
           </div>
         ) : (
           <Link 
-            href="/login" 
-            className="h-8 px-4 text-xs font-bold bg-orange-500 hover:bg-orange-600 text-zinc-950 rounded-lg transition shadow-sm flex items-center"
+            href="/admin" 
+            className="h-8 px-3 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border border-zinc-800 rounded-lg transition flex items-center gap-1.5"
+            title="Acceso restringido para organizadores con PIN"
           >
-            {isMounted ? t("common.getStarted") : "Acceder"}
+            <Lock size={12} className="text-zinc-500" />
+            <span>Acceso Organizador</span>
           </Link>
         )}
       </div>

@@ -199,10 +199,10 @@ export default function PostMatchBoxScorePage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-              <FileSpreadsheet className="text-orange-500" />
+              <FileSpreadsheet className="text-emerald-400" />
               <span>Actas & Box Score Post-Partido</span>
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-orange-500/10 text-orange-400 border border-orange-500/20">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
               Oficial
             </span>
           </div>
@@ -218,7 +218,7 @@ export default function PostMatchBoxScorePage() {
             <select
               value={selectedGameId || ""}
               onChange={(e) => setSelectedGameId(e.target.value)}
-              className="px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-orange-500"
+              className="px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-emerald-500"
             >
               {games.map((g) => (
                 <option key={g.id} value={g.id}>
@@ -236,11 +236,11 @@ export default function PostMatchBoxScorePage() {
           <div className="bg-zinc-900/70 border border-zinc-800 p-6 rounded-2xl shadow-xl space-y-6">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <Trophy size={14} className="text-orange-500" />
+                <Trophy size={14} className="text-emerald-400" />
                 <span>Marcador Final Oficial</span>
               </h3>
               <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${
-                activeGame.isFinished ? "bg-green-500/15 text-green-400 border border-green-500/30 font-bold" : "bg-zinc-800 text-zinc-400"
+                activeGame.isFinished ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold" : "bg-zinc-800 text-zinc-400"
               }`}>
                 {activeGame.isFinished ? "Acta Guardada / Finalizado" : "En Espera de Resultados"}
               </span>
@@ -252,7 +252,7 @@ export default function PostMatchBoxScorePage() {
               <div className="bg-zinc-950/80 p-5 rounded-2xl border border-zinc-800/80 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase text-zinc-400 truncate">Equipo Local</span>
-                  <span className="w-2.5 h-2.5 rounded-full bg-orange-500" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                 </div>
                 <h4 className="text-lg font-black text-white truncate">{activeGame.teamAName}</h4>
 
@@ -266,13 +266,13 @@ export default function PostMatchBoxScorePage() {
                     required
                     value={scoreA}
                     onChange={(e) => setScoreA(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-full px-4 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-2xl font-black font-mono text-orange-400 focus:outline-none focus:border-orange-500 text-center"
+                    className="w-full px-4 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-2xl font-black font-mono text-emerald-400 focus:outline-none focus:border-emerald-500 text-center"
                   />
                 </div>
 
                 <div className="flex items-center justify-between text-[11px] font-mono pt-1 text-zinc-400">
                   <span>Suma planilla jugadores:</span>
-                  <span className={`font-bold ${sumPointsA === Number(scoreA) ? "text-green-400" : "text-amber-400"}`}>
+                  <span className={`font-bold ${sumPointsA === Number(scoreA) ? "text-emerald-400" : "text-amber-400"}`}>
                     {sumPointsA} pts {sumPointsA === Number(scoreA) ? "✓" : `(Diferencia: ${Number(scoreA) - sumPointsA})`}
                   </span>
                 </div>
@@ -302,7 +302,7 @@ export default function PostMatchBoxScorePage() {
 
                 <div className="flex items-center justify-between text-[11px] font-mono pt-1 text-zinc-400">
                   <span>Suma planilla jugadores:</span>
-                  <span className={`font-bold ${sumPointsB === Number(scoreB) ? "text-green-400" : "text-amber-400"}`}>
+                  <span className={`font-bold ${sumPointsB === Number(scoreB) ? "text-emerald-400" : "text-amber-400"}`}>
                     {sumPointsB} pts {sumPointsB === Number(scoreB) ? "✓" : `(Diferencia: ${Number(scoreB) - sumPointsB})`}
                   </span>
                 </div>
@@ -318,7 +318,7 @@ export default function PostMatchBoxScorePage() {
                   value={roundName}
                   onChange={(e) => setRoundName(e.target.value)}
                   placeholder="Ej: Jornada 1"
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-orange-500"
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
@@ -328,7 +328,7 @@ export default function PostMatchBoxScorePage() {
                   type="datetime-local"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-orange-500"
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
@@ -339,7 +339,7 @@ export default function PostMatchBoxScorePage() {
                   value={venue}
                   onChange={(e) => setVenue(e.target.value)}
                   placeholder="Ej: Polideportivo Baní"
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-orange-500"
+                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-emerald-500"
                 />
               </div>
             </div>
@@ -349,7 +349,7 @@ export default function PostMatchBoxScorePage() {
           <div className="bg-zinc-900/70 border border-zinc-800 p-6 rounded-2xl shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-orange-500" />
+                <span className="w-3 h-3 rounded-full bg-emerald-500" />
                 <h3 className="font-bold text-white text-sm">
                   Planilla Individual • {activeGame.teamAName}
                 </h3>
@@ -366,7 +366,7 @@ export default function PostMatchBoxScorePage() {
                     <th className="py-2.5 px-3 w-14 text-center">#</th>
                     <th className="py-2.5 px-3">Jugador</th>
                     <th className="py-2.5 px-3 w-20 text-center">Pos</th>
-                    <th className="py-2.5 px-3 w-28 text-center font-bold text-orange-400">Puntos (PTS)</th>
+                    <th className="py-2.5 px-3 w-28 text-center font-bold text-emerald-400">Puntos (PTS)</th>
                     <th className="py-2.5 px-3 w-24 text-center">Faltas (FLT)</th>
                     <th className="py-2.5 px-3 w-24 text-center">Asistencias (AST)</th>
                     <th className="py-2.5 px-3 w-24 text-center">Rebotes (REB)</th>
@@ -378,7 +378,7 @@ export default function PostMatchBoxScorePage() {
 
                     return (
                       <tr key={p.id} className="hover:bg-zinc-800/20 transition">
-                        <td className="py-2.5 px-3 text-center font-mono font-bold text-orange-400">
+                        <td className="py-2.5 px-3 text-center font-mono font-bold text-emerald-400">
                           #{p.number !== undefined ? p.number : "-"}
                         </td>
                         <td className="py-2.5 px-3 font-bold text-white">
@@ -393,7 +393,7 @@ export default function PostMatchBoxScorePage() {
                             min="0"
                             value={stat.points || ""}
                             onChange={(e) => handlePlayerStatChange(p.id, "points", parseInt(e.target.value) || 0)}
-                            className="w-20 px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-white font-mono font-bold text-xs text-center focus:outline-none focus:border-orange-500"
+                            className="w-20 px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-white font-mono font-bold text-xs text-center focus:outline-none focus:border-emerald-500"
                             placeholder="0"
                           />
                         </td>
@@ -404,7 +404,7 @@ export default function PostMatchBoxScorePage() {
                             max="5"
                             value={stat.fouls || ""}
                             onChange={(e) => handlePlayerStatChange(p.id, "fouls", parseInt(e.target.value) || 0)}
-                            className="w-16 px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-zinc-300 font-mono text-xs text-center focus:outline-none focus:border-orange-500"
+                            className="w-16 px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-zinc-300 font-mono text-xs text-center focus:outline-none focus:border-emerald-500"
                             placeholder="0"
                           />
                         </td>
@@ -414,7 +414,7 @@ export default function PostMatchBoxScorePage() {
                             min="0"
                             value={stat.assists || ""}
                             onChange={(e) => handlePlayerStatChange(p.id, "assists", parseInt(e.target.value) || 0)}
-                            className="w-16 px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-zinc-300 font-mono text-xs text-center focus:outline-none focus:border-orange-500"
+                            className="w-16 px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-zinc-300 font-mono text-xs text-center focus:outline-none focus:border-emerald-500"
                             placeholder="0"
                           />
                         </td>
@@ -424,7 +424,7 @@ export default function PostMatchBoxScorePage() {
                             min="0"
                             value={stat.rebounds || ""}
                             onChange={(e) => handlePlayerStatChange(p.id, "rebounds", parseInt(e.target.value) || 0)}
-                            className="w-16 px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-zinc-300 font-mono text-xs text-center focus:outline-none focus:border-orange-500"
+                            className="w-16 px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded-lg text-zinc-300 font-mono text-xs text-center focus:outline-none focus:border-emerald-500"
                             placeholder="0"
                           />
                         </td>
@@ -551,7 +551,7 @@ export default function PostMatchBoxScorePage() {
 
             <div className="flex items-center gap-3 w-full sm:w-auto">
               {saveSuccess && (
-                <span className="text-xs font-bold text-green-400 flex items-center gap-1.5 animate-in fade-in">
+                <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5 animate-in fade-in">
                   <CheckCircle2 size={16} />
                   <span>¡Acta y estadísticas guardadas con éxito!</span>
                 </span>
@@ -560,7 +560,7 @@ export default function PostMatchBoxScorePage() {
               <button
                 type="submit"
                 disabled={isSaving}
-                className="w-full sm:w-auto px-8 py-3 bg-orange-500 hover:bg-orange-600 active:scale-95 disabled:opacity-50 text-zinc-950 font-black text-xs rounded-xl transition shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-500 active:scale-95 disabled:opacity-50 text-white font-black text-xs rounded-xl transition shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2"
               >
                 <Save size={15} />
                 <span>{isSaving ? "Guardando Acta y Estadísticas..." : "Guardar Acta Oficial"}</span>
@@ -575,7 +575,7 @@ export default function PostMatchBoxScorePage() {
           <p className="text-xs text-zinc-500 mt-1 mb-4">Primero crea partidos en el calendario para poder cargar sus actas.</p>
           <Link
             href={`/tournament/${tournamentId}/games`}
-            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold text-xs rounded-xl transition"
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow-sm"
           >
             Ir a Partidos & Calendario
           </Link>

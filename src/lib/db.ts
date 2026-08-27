@@ -936,3 +936,83 @@ export const addRefereeToDb = async (tournamentId: string, refData: Omit<Referee
   const docRef = await addDoc(collection(db, TOURNAMENTS_COLLECTION, tournamentId, REFEREES_SUBCOLLECTION), refData);
   return { id: docRef.id, ...refData } as Referee;
 };
+
+// --- Unique Access Codes / PIN System for Admin Gatekeeper ---
+
+export const generateAdminAccessCode = (prefix: string = "LGT"): string => {
+  const randomNum = Math.floor(1000 + Math.random() * 9000);
+  return `${prefix.toUpperCase()}-${randomNum}`;
+};
+
+export const verifyAdminAccessCode = async (rawCode: string): Promise<{ valid: boolean; tournament?: Tournament; message?: string }> => {
+  if (!rawCode || !rawCode.trim()) {
+    return { valid: false, message: "Ingresa un código de acceso válido." };
+  }
+
+  const cleanCode = rawCode.trim().toUpperCase();
+
+  try {
+    // 1. Búsqueda directa por adminAccessCode
+    const q = query(
+      collection(db, TOURNAMENTS_COLLECTION),
+      where("adminAccessCode", "==", cleanCode)
+    );
+    const snap = await getDocs(q);
+
+    if (!snap.empty) {
+      const docSnap = snap.docs[0];
+      const tournament = { id: docSnap.id, ...docSnap.data() } as Tournament;
+      return { valid: true, tournament };
+    }
+
+    // 2. Búsqueda de respaldo
+    const allSnap = await getDocs(collection(db, TOURNAMENTS_COLLECTION));
+    for (const d of allSnap.docs) {
+      const data = d.data();
+      if (data.adminAccessCode && data.adminAccessCode.trim().toUpperCase() === cleanCode) {
+        return { valid: true, tournament: { id: d.id, ...data } as Tournament };
+      }
+    }
+
+    return { valid: false, message: "Código o PIN inválido o no encontrado. Solicita un código al Super Administrador." };
+  } catch (error) {
+    console.error("Error verificando código de acceso:", error);
+    return { valid: false, message: "Error de conexión al verificar el código." };
+  }
+};
+
+export const regenerateTournamentAccessCode = async (tournamentId: string, customCode?: string): Promise<string> => {
+  const newCode = customCode ? customCode.trim().toUpperCase() : generateAdminAccessCode();
+  const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId);
+  await updateDoc(docRef, {
+    adminAccessCode: newCode,
+    updatedAt: new Date().toISOString(),
+  });
+  return newCode;
+};
+
+export const claimTournamentWithAccessCode = async (tournamentId: string, userEmail: string): Promise<boolean> => {
+  if (!tournamentId || !userEmail) return false;
+  const cleanEmail = userEmail.trim().toLowerCase();
+
+  try {
+    const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId);
+    const snap = await getDoc(docRef);
+    if (!snap.exists()) return false;
+
+    const data = snap.data() as Tournament;
+    const existing = (data.adminEmails || []).map(e => e.trim().toLowerCase());
+
+    if (!existing.includes(cleanEmail)) {
+      existing.push(cleanEmail);
+      await updateDoc(docRef, {
+        adminEmails: existing,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+    return true;
+  } catch (error) {
+    console.error("Error claiming tournament admin rights:", error);
+    return false;
+  }
+};

@@ -297,7 +297,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 antialiased font-sans pb-24 selection:bg-orange-500/30">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 antialiased font-sans pb-24 selection:bg-blue-500/30">
       {/* HEADER PRINCIPAL APPLE SPORTS STYLE */}
       <header className="bg-zinc-900/70 border-b border-zinc-800/80 backdrop-blur-xl sticky top-14 z-40">
         <div className="max-w-5xl mx-auto px-4 md:px-6 pt-5 pb-4 space-y-4">
@@ -309,7 +309,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                   <img src={tournament.logoUrl} alt={tournament.name} className="w-full h-full object-contain" />
                 </div>
               ) : (
-                <div className="w-12 h-12 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-orange-400 text-lg shrink-0 shadow-lg">
+                <div className="w-12 h-12 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-blue-400 text-lg shrink-0 shadow-lg">
                   {tournament.name.slice(0, 2).toUpperCase()}
                 </div>
               )}
@@ -320,7 +320,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                     {tournament.organizationName || "Liga Oficial"}
                   </span>
                   {isPro && (
-                    <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider bg-orange-500/15 text-orange-400 border border-orange-500/30">
+                    <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30">
                       PRO
                     </span>
                   )}
@@ -350,7 +350,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                   : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
-              <Calendar size={13} className={activeTab === "games" ? "text-orange-400" : ""} />
+              <Calendar size={13} className={activeTab === "games" ? "text-blue-400" : ""} />
               <span className="truncate">Calendario</span>
             </button>
 
@@ -362,7 +362,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                   : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
-              <Trophy size={13} className={activeTab === "standings" ? "text-orange-400" : ""} />
+              <Trophy size={13} className={activeTab === "standings" ? "text-blue-400" : ""} />
               <span className="truncate">Posiciones</span>
             </button>
 
@@ -374,7 +374,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                   : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
-              <Award size={13} className={activeTab === "leaders" ? "text-orange-400" : ""} />
+              <Award size={13} className={activeTab === "leaders" ? "text-blue-400" : ""} />
               <span className="truncate">Líderes</span>
             </button>
 
@@ -386,7 +386,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                   : "text-zinc-400 hover:text-zinc-200"
               }`}
             >
-              <Users size={13} className={activeTab === "teams" ? "text-orange-400" : ""} />
+              <Users size={13} className={activeTab === "teams" ? "text-blue-400" : ""} />
               <span className="truncate">Clubes</span>
             </button>
           </div>
@@ -406,7 +406,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                 onClick={() => setSelectedRoundFilter("all")}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition ${
                   selectedRoundFilter === "all"
-                    ? "bg-orange-500 text-zinc-950 shadow-sm"
+                    ? "bg-blue-600 text-white shadow-sm"
                     : "bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
                 }`}
               >
@@ -419,7 +419,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                   onClick={() => setSelectedRoundFilter(round)}
                   className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition ${
                     selectedRoundFilter === round
-                      ? "bg-orange-500 text-zinc-950 shadow-sm"
+                      ? "bg-blue-600 text-white shadow-sm"
                       : "bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
                   }`}
                 >
@@ -491,7 +491,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                         <div className="space-y-2.5">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3 min-w-0">
-                              <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-orange-400 shrink-0">
+                              <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-blue-400 shrink-0">
                                 {teamA?.shortName || game.teamAName.slice(0, 2).toUpperCase()}
                               </div>
                               <span className="text-sm font-bold text-white truncate">{game.teamAName}</span>
@@ -501,7 +501,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
 
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3 min-w-0">
-                              <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-blue-400 shrink-0">
+                              <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-indigo-400 shrink-0">
                                 {teamB?.shortName || game.teamBName.slice(0, 2).toUpperCase()}
                               </div>
                               <span className="text-sm font-bold text-white truncate">{game.teamBName}</span>
@@ -512,8 +512,8 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
 
                         {/* BADGE CENTRAL DESTACADO: PRÓXIMAMENTE + FECHA Y HORA BIEN VISIBLES */}
                         <div className="flex flex-col items-center justify-center py-3 px-4 bg-zinc-950/80 rounded-xl border border-zinc-800/80 text-center space-y-1 mt-1">
-                          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-orange-500/15 text-orange-400 border border-orange-500/30 text-[10px] font-black uppercase tracking-wider">
-                            <Clock size={11} className="text-orange-400" />
+                          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/30 text-[10px] font-black uppercase tracking-wider">
+                            <Clock size={11} className="text-blue-400" />
                             <span>Próximamente</span>
                           </div>
                           <div className="text-xs font-bold text-white capitalize">
@@ -529,7 +529,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-orange-400 shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-blue-400 shrink-0">
                               {teamA?.shortName || game.teamAName.slice(0, 2).toUpperCase()}
                             </div>
                             <div className="min-w-0">
@@ -555,7 +555,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
 
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-blue-400 shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-indigo-400 shrink-0">
                               {teamB?.shortName || game.teamBName.slice(0, 2).toUpperCase()}
                             </div>
                             <div className="min-w-0">
@@ -587,7 +587,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                         <div className="flex items-center gap-1.5 truncate">
                           <span className="text-amber-400 font-bold">⭐ MVP:</span>
                           <span className="font-bold text-zinc-200">{mvp.name}</span>
-                          <span className="font-mono text-orange-400 font-black">({mvp.points} pts)</span>
+                          <span className="font-mono text-blue-400 font-black">({mvp.points} pts)</span>
                         </div>
                         <span className="text-[10px] text-zinc-500 group-hover:text-zinc-300 transition flex items-center gap-0.5">
                           <span>Box Score</span>
@@ -623,7 +623,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
           <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-2xl overflow-hidden shadow-xl">
             <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
               <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <Trophy size={16} className="text-orange-500" />
+                <Trophy size={16} className="text-blue-500" />
                 <span>Tabla General de Posiciones</span>
               </h2>
               <span className="text-xs font-mono text-zinc-500">Temporada 2026</span>
@@ -641,7 +641,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                     <th className="py-3 px-3 text-center">PF</th>
                     <th className="py-3 px-3 text-center">PC</th>
                     <th className="py-3 px-3 text-center font-bold">DIF</th>
-                    <th className="py-3 px-4 text-center font-bold text-orange-400">% VIC</th>
+                    <th className="py-3 px-4 text-center font-bold text-blue-400">% VIC</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800/60 font-medium">
@@ -656,7 +656,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                           <span className={`inline-flex items-center justify-center w-6 h-6 rounded text-xs ${
                             idx === 0 ? "bg-amber-400/20 text-amber-400 font-black border border-amber-400/30" :
                             idx === 1 ? "bg-zinc-300/20 text-zinc-300 font-bold" :
-                            idx === 2 ? "bg-orange-500/20 text-orange-400 font-bold" :
+                            idx === 2 ? "bg-blue-500/20 text-blue-400 font-bold" :
                             "text-zinc-500"
                           }`}>
                             {idx + 1}
@@ -664,7 +664,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                         </td>
 
                         <td className="py-3.5 px-4 font-bold text-white flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-black text-orange-400 border border-zinc-700 shrink-0">
+                          <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-black text-blue-400 border border-zinc-700 shrink-0">
                             {team.shortName || team.name.slice(0, 2).toUpperCase()}
                           </div>
                           <span className="truncate">{team.name}</span>
@@ -680,7 +680,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                         }`}>
                           {diff > 0 ? `+${diff}` : diff}
                         </td>
-                        <td className="py-3.5 px-4 text-center font-mono font-bold text-orange-400">
+                        <td className="py-3.5 px-4 text-center font-mono font-bold text-blue-400">
                           {winRate}%
                         </td>
                       </tr>
@@ -708,7 +708,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
             <div className="bg-zinc-900/60 border border-zinc-800/80 p-6 rounded-2xl">
               <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mb-4">
                 <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                  <Award size={15} className="text-orange-500" />
+                  <Award size={15} className="text-blue-500" />
                   <span>Top 10 Máximos Anotadores del Torneo</span>
                 </h3>
                 <span className="text-[10px] font-mono text-zinc-500">Oficial</span>
@@ -727,13 +727,13 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                         <span className={`w-6 text-center font-black font-mono text-sm ${
                           idx === 0 ? "text-amber-400 font-black text-base" :
                           idx === 1 ? "text-zinc-300 font-bold" :
-                          idx === 2 ? "text-orange-400 font-bold" :
+                          idx === 2 ? "text-blue-400 font-bold" :
                           "text-zinc-500"
                         }`}>
                           {idx + 1}
                         </span>
 
-                        <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center font-mono font-bold text-xs text-orange-400 shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center font-mono font-bold text-xs text-blue-400 shrink-0">
                           #{player.number !== undefined ? player.number : "-"}
                         </div>
 
@@ -748,7 +748,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                       </div>
 
                       <div className="text-right">
-                        <div className="text-lg font-black font-mono text-orange-400">{player.totalPoints || 0} PTS</div>
+                        <div className="text-lg font-black font-mono text-blue-400">{player.totalPoints || 0} PTS</div>
                         <div className="text-[10px] font-mono text-zinc-500">{ppg} PPG • {player.gamesPlayed || 0} PJ</div>
                       </div>
                     </div>
@@ -776,7 +776,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
               return (
                 <div key={team.id} className="bg-zinc-900/60 border border-zinc-800 p-5 rounded-2xl space-y-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-zinc-800 flex items-center justify-center font-black text-orange-400 text-base border border-zinc-700 shrink-0">
+                    <div className="w-11 h-11 rounded-xl bg-zinc-800 flex items-center justify-center font-black text-blue-400 text-base border border-zinc-700 shrink-0">
                       {team.shortName || team.name.slice(0, 2).toUpperCase()}
                     </div>
                     <div className="min-w-0">
@@ -825,7 +825,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
 
             {/* Header del Modal */}
             <div className="text-center pt-2 space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-orange-400 font-mono">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 font-mono">
                 {selectedGameForModal.roundName || "Partido Oficial"} • {selectedGameForModal.venue || "Cancha Principal"}
               </span>
               <div className="text-xs text-zinc-400 font-mono">
@@ -841,14 +841,14 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                   <div className="grid grid-cols-2 gap-4 py-4 bg-zinc-950 rounded-2xl border border-zinc-800/80 text-center items-center">
                     <div>
                       <h4 className="font-bold text-white text-base truncate px-2">{selectedGameForModal.teamAName}</h4>
-                      <span className="text-5xl font-black font-mono text-orange-400 tracking-tight mt-1 block">
+                      <span className="text-5xl font-black font-mono text-blue-400 tracking-tight mt-1 block">
                         {modalScoreA}
                       </span>
                     </div>
 
                     <div>
                       <h4 className="font-bold text-white text-base truncate px-2">{selectedGameForModal.teamBName}</h4>
-                      <span className="text-5xl font-black font-mono text-blue-400 tracking-tight mt-1 block">
+                      <span className="text-5xl font-black font-mono text-indigo-400 tracking-tight mt-1 block">
                         {modalScoreB}
                       </span>
                     </div>
@@ -866,7 +866,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                         <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 space-y-2">
                           <div className="font-bold text-white text-xs border-b border-zinc-800 pb-1.5 flex items-center justify-between">
                             <span>{selectedGameForModal.teamAName}</span>
-                            <span className="text-orange-400 font-mono font-bold">{modalScoreA} PTS</span>
+                            <span className="text-blue-400 font-mono font-bold">{modalScoreA} PTS</span>
                           </div>
 
                     <div className="space-y-1.5">
@@ -877,7 +877,7 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                           return (
                             <div key={p.id} className="flex items-center justify-between text-xs py-1">
                               <span className="text-zinc-300">#{p.number} {p.name}</span>
-                              <span className="font-mono font-bold text-orange-400">{stat.points || 0} pts</span>
+                              <span className="font-mono font-bold text-blue-400">{stat.points || 0} pts</span>
                             </div>
                           );
                         })}

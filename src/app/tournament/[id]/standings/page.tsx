@@ -111,8 +111,8 @@ export default function TournamentStandingsPage() {
     <div className="space-y-6">
       <div className="bg-zinc-900/60 p-6 rounded-2xl border border-zinc-800/80">
         <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-          <Trophy className="text-orange-400" />
-          Tabla de Posiciones
+          <Trophy className="text-emerald-400" />
+          <span>Tabla de Posiciones</span>
         </h1>
         <p className="text-xs text-zinc-400 mt-1">
           Clasificación oficial actualizada en tiempo real según victorias, derrotas y diferencia de puntos/goles.
@@ -147,14 +147,14 @@ export default function TournamentStandingsPage() {
                       <span className={`inline-flex items-center justify-center w-6 h-6 rounded-md text-xs ${
                         idx === 0 ? "bg-amber-400/20 text-amber-400 font-black border border-amber-400/30" :
                         idx === 1 ? "bg-zinc-300/20 text-zinc-300 font-bold" :
-                        idx === 2 ? "bg-orange-500/20 text-orange-400 font-bold" :
+                        idx === 2 ? "bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30" :
                         "text-zinc-500"
                       }`}>
                         {idx + 1}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 font-bold text-white flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-black text-orange-400 border border-zinc-700">
+                      <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-black text-emerald-400 border border-zinc-700">
                         {team.shortName || team.name.slice(0, 2).toUpperCase()}
                       </div>
                       <span>{team.name}</span>
@@ -169,7 +169,7 @@ export default function TournamentStandingsPage() {
                     }`}>
                       {diff > 0 ? `+${diff}` : diff}
                     </td>
-                    <td className="py-3.5 px-4 text-center font-mono font-bold text-orange-400">
+                    <td className="py-3.5 px-4 text-center font-mono font-bold text-emerald-400">
                       {winRate}%
                     </td>
                   </tr>

@@ -171,11 +171,11 @@ export default function TournamentGamesPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-              <Calendar className="text-orange-500" />
+              <Calendar className="text-emerald-400" />
               <span>Calendario & Partidos Oficiales</span>
             </h1>
             {isPro && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-orange-500/10 text-orange-400 border border-orange-500/20">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 PRO FIBA Live
               </span>
             )}
@@ -196,7 +196,7 @@ export default function TournamentGamesPage() {
 
           <button
             onClick={() => setIsCreating(!isCreating)}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold text-xs rounded-xl transition shadow-lg shadow-orange-500/20"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-emerald-600/25"
           >
             <Plus size={16} />
             <span>Programar Partido</span>
@@ -231,9 +231,9 @@ export default function TournamentGamesPage() {
 
       {/* Formulario de Programación de Partido */}
       {isCreating && (
-        <form onSubmit={handleCreateGame} className="bg-zinc-900 p-6 rounded-2xl border border-orange-500/30 space-y-5 animate-in fade-in">
+        <form onSubmit={handleCreateGame} className="bg-zinc-900 p-6 rounded-2xl border border-emerald-500/30 space-y-5 animate-in fade-in">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800 pb-3">
-            <h3 className="text-sm font-bold text-orange-400 uppercase tracking-wider">
+            <h3 className="text-sm font-bold text-emerald-400 uppercase tracking-wider">
               {createMode === "scheduled" ? "Programar Partido en Calendario" : "Iniciar Partido Ahora Mismo"}
             </h3>
 
@@ -244,7 +244,7 @@ export default function TournamentGamesPage() {
                 onClick={() => setCreateMode("scheduled")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
                   createMode === "scheduled"
-                    ? "bg-orange-500 text-zinc-950 shadow-sm"
+                    ? "bg-emerald-600 text-white shadow-sm"
                     : "text-zinc-400 hover:text-white"
                 }`}
               >
@@ -257,7 +257,7 @@ export default function TournamentGamesPage() {
                 onClick={() => setCreateMode("now")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
                   createMode === "now"
-                    ? "bg-orange-500 text-zinc-950 shadow-sm"
+                    ? "bg-emerald-600 text-white shadow-sm"
                     : "text-zinc-400 hover:text-white"
                 }`}
               >
@@ -274,7 +274,7 @@ export default function TournamentGamesPage() {
                 value={selectedTeamAId}
                 onChange={(e) => setSelectedTeamAId(e.target.value)}
                 required
-                className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-orange-500"
+                className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-emerald-500"
               >
                 {teams.map((team) => (
                   <option key={team.id} value={team.id}>
@@ -290,7 +290,7 @@ export default function TournamentGamesPage() {
                 value={selectedTeamBId}
                 onChange={(e) => setSelectedTeamBId(e.target.value)}
                 required
-                className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-orange-500"
+                className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-emerald-500"
               >
                 {teams.map((team) => (
                   <option key={team.id} value={team.id}>
@@ -309,7 +309,7 @@ export default function TournamentGamesPage() {
                 placeholder="Ej: Jornada 1 / Semifinal"
                 value={roundName}
                 onChange={(e) => setRoundName(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-orange-500"
+                className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-emerald-500"
               />
             </div>
 
@@ -321,7 +321,7 @@ export default function TournamentGamesPage() {
                   value={scheduledDateTime}
                   onChange={(e) => setScheduledDateTime(e.target.value)}
                   required
-                  className="w-full px-3.5 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-orange-500"
+                  className="w-full px-3.5 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-emerald-500"
                 />
               </div>
             )}
@@ -333,7 +333,7 @@ export default function TournamentGamesPage() {
                 placeholder="Ej: Polideportivo Baní"
                 value={venue}
                 onChange={(e) => setVenue(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-orange-500"
+                className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-emerald-500"
               />
             </div>
           </div>
@@ -348,7 +348,7 @@ export default function TournamentGamesPage() {
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold text-xs rounded-xl transition shadow-md shadow-orange-500/20 flex items-center gap-1.5"
+              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow-md shadow-emerald-600/20 flex items-center gap-1.5"
             >
               {createMode === "now" ? (
                 <>
@@ -383,7 +383,7 @@ export default function TournamentGamesPage() {
           onClick={() => setFilterTab("scheduled")}
           className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
             filterTab === "scheduled"
-              ? "bg-zinc-800 text-orange-400"
+              ? "bg-zinc-800 text-emerald-400"
               : "text-zinc-400 hover:text-white"
           }`}
         >
@@ -444,7 +444,7 @@ export default function TournamentGamesPage() {
                     <span className="font-bold text-white uppercase tracking-wider">{game.roundName}</span>
                     {game.venue && (
                       <span className="text-[11px] text-zinc-400 flex items-center gap-1">
-                        <MapPin size={11} className="text-orange-400" />
+                        <MapPin size={11} className="text-emerald-400" />
                         <span>{game.venue}</span>
                       </span>
                     )}
@@ -455,7 +455,7 @@ export default function TournamentGamesPage() {
                       ? "bg-zinc-800 text-zinc-300 border border-zinc-700" 
                       : isLive
                       ? "bg-green-500/15 text-green-400 border border-green-500/30 animate-pulse"
-                      : "bg-orange-500/10 text-orange-400 border border-orange-500/20"
+                      : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                   }`}>
                     {isFinished ? "Finalizado" : isLive ? "En Vivo" : "Próximamente"}
                   </span>
@@ -465,7 +465,7 @@ export default function TournamentGamesPage() {
                 <div className="flex items-center justify-between py-4 border-y border-zinc-800/60 my-2">
                   <div className="flex-1 text-center">
                     <h4 className="font-bold text-white text-sm truncate">{game.teamAName}</h4>
-                    <span className="text-3xl font-black text-orange-400 font-mono mt-1 block">
+                    <span className="text-3xl font-black text-emerald-400 font-mono mt-1 block">
                       {isScheduled ? "-" : game.scoreA}
                     </span>
                   </div>
@@ -502,7 +502,7 @@ export default function TournamentGamesPage() {
                     className={`px-3.5 py-1.5 font-bold rounded-xl flex items-center gap-1.5 transition text-xs shadow-sm ${
                       isFinished 
                         ? "bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700" 
-                        : "bg-orange-500 hover:bg-orange-600 text-zinc-950"
+                        : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/25"
                     }`}
                   >
                     <Layers size={13} />
@@ -521,7 +521,7 @@ export default function TournamentGamesPage() {
             <p className="text-xs text-zinc-500 mt-1 mb-4">Programa encuentros para definir el calendario oficial.</p>
             <button
               onClick={() => setIsCreating(true)}
-              className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold text-xs rounded-xl transition"
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow-md shadow-emerald-600/20"
             >
               Programar Partido
             </button>

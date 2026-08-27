@@ -17,7 +17,8 @@ import {
   Zap,
   Users,
   Calendar,
-  Sliders
+  Sliders,
+  KeyRound
 } from "lucide-react";
 
 interface CreateTournamentModalProps {
@@ -39,6 +40,7 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
   const [sport, setSport] = useState<Sport>("basketball");
   const [tier, setTier] = useState<TournamentTier>("pro");
   const [organizerEmail, setOrganizerEmail] = useState("");
+  const [adminAccessCode, setAdminAccessCode] = useState<string>(() => `LGT-${Math.floor(1000 + Math.random() * 9000)}`);
 
   // Configuración del Auto-Provisioning
   const [numberOfTeams, setNumberOfTeams] = useState<number>(10);
@@ -78,6 +80,7 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
           sport,
           tier,
           organizerEmail: organizerEmail.trim(),
+          adminAccessCode: adminAccessCode.trim().toUpperCase(),
           ownerId: user.uid,
           numberOfTeams,
           playersPerTeam,
@@ -99,6 +102,7 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
           sport,
           tier,
           organizerEmail: organizerEmail.trim(),
+          adminAccessCode: adminAccessCode.trim().toUpperCase(),
           ownerId: user.uid,
           numberOfTeams: 0,
           playersPerTeam: 0,
@@ -110,7 +114,7 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
         if (onCreated) {
           onCreated(tournamentId);
         } else {
-          router.push(`/tournament/${tournamentId}/onboarding`);
+          router.push(`/tournament/${tournamentId}/games`);
         }
       }
     } catch (err: unknown) {
@@ -137,7 +141,7 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
 
         {/* Header */}
         <div className="mb-6">
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2.5 py-0.5 rounded-md border border-blue-500/20 mb-2">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2.5 py-0.5 rounded-md border border-emerald-500/20 mb-2">
             <ShieldCheck size={13} />
             <span>Super Admin Suite</span>
           </span>
@@ -155,7 +159,7 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
               onClick={() => setCreationMode("auto")}
               className={`py-2.5 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 ${
                 creationMode === "auto"
-                  ? "bg-orange-500 text-zinc-950 shadow-sm"
+                  ? "bg-emerald-600 text-white shadow-sm"
                   : "text-zinc-400 hover:text-white"
               }`}
             >
@@ -179,9 +183,9 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
 
           {/* Opciones de Auto-Generación si está en modo AUTO */}
           {creationMode === "auto" && (
-            <div className="bg-zinc-950/80 p-4 rounded-xl border border-orange-500/30 space-y-4 animate-in fade-in">
+            <div className="bg-zinc-950/80 p-4 rounded-xl border border-emerald-500/30 space-y-4 animate-in fade-in">
               <div className="flex items-center justify-between border-b border-zinc-800/80 pb-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-orange-400 flex items-center gap-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
                   <Zap size={13} />
                   <span>Plantilla y Parámetros de Generación</span>
                 </span>
@@ -197,7 +201,7 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
                   <select
                     value={numberOfTeams}
                     onChange={(e) => setNumberOfTeams(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-orange-500"
+                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-emerald-500"
                   >
                     <option value={4}>4 Equipos (Torneo Relámpago)</option>
                     <option value={6}>6 Equipos</option>
@@ -216,7 +220,7 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
                   <select
                     value={playersPerTeam}
                     onChange={(e) => setPlayersPerTeam(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-orange-500"
+                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs font-bold focus:outline-none focus:border-emerald-500"
                   >
                     <option value={5}>5 Jugadores (Quinteto Inicial)</option>
                     <option value={8}>8 Jugadores (Roster Ágil)</option>
@@ -235,7 +239,7 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
                   <select
                     value={theme}
                     onChange={(e) => setTheme(e.target.value as any)}
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-orange-500"
+                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500"
                   >
                     <option value="dominican">Torneo Superior Tradicional (Pueblo Nuevo, Cajuilitos, San Lázaro...)</option>
                     <option value="nba">Franquicias Pro (Lakers, Celtics, Warriors, Bulls...)</option>
@@ -250,7 +254,7 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
                     id="autoSchedule"
                     checked={autoGenerateSchedule}
                     onChange={(e) => setAutoGenerateSchedule(e.target.checked)}
-                    className="w-4 h-4 rounded text-orange-500 bg-zinc-900 border-zinc-700 focus:ring-0 cursor-pointer"
+                    className="w-4 h-4 rounded text-emerald-500 bg-zinc-900 border-zinc-700 focus:ring-0 cursor-pointer"
                   />
                   <label htmlFor="autoSchedule" className="text-xs font-bold text-zinc-200 cursor-pointer">
                     Generar Calendario de Partidos Automático
@@ -276,7 +280,7 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
                 placeholder="Ej: Torneo Superior Baní 2026"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-orange-500 font-medium"
+                className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 font-medium"
               />
             </div>
 
@@ -289,26 +293,54 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
                 placeholder="Ej: Asociación de Baloncesto de Baní"
                 value={organizationName}
                 onChange={(e) => setOrganizationName(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-orange-500 font-medium"
+                className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 font-medium"
               />
             </div>
           </div>
 
-          {/* Email Organizador */}
-          <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-              Email o Usuario del Organizador Encargado *
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" size={15} />
-              <input
-                type="text"
-                required
-                placeholder="organizador@laliguita.com o usuario"
-                value={organizerEmail}
-                onChange={(e) => setOrganizerEmail(e.target.value)}
-                className="w-full pl-9 pr-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-orange-500"
-              />
+          {/* Email Organizador & PIN de Acceso */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+                Email o Usuario del Organizador *
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" size={15} />
+                <input
+                  type="text"
+                  required
+                  placeholder="organizador@laliguita.com o usuario"
+                  value={organizerEmail}
+                  onChange={(e) => setOrganizerEmail(e.target.value)}
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-zinc-300">
+                  PIN Único de Administración *
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setAdminAccessCode(`LGT-${Math.floor(1000 + Math.random() * 9000)}`)}
+                  className="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold"
+                >
+                  Regenerar
+                </button>
+              </div>
+              <div className="relative">
+                <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-400" size={15} />
+                <input
+                  type="text"
+                  required
+                  placeholder="Ej: LGT-8492"
+                  value={adminAccessCode}
+                  onChange={(e) => setAdminAccessCode(e.target.value.toUpperCase())}
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-zinc-950 border border-emerald-500/40 rounded-xl text-emerald-400 font-bold text-xs font-mono uppercase focus:outline-none focus:border-emerald-500"
+                />
+              </div>
             </div>
           </div>
 
@@ -332,11 +364,11 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
               onClick={() => setTier("pro")}
               className={`p-3 rounded-xl border text-left transition ${
                 tier === "pro"
-                  ? "border-orange-500 bg-orange-500/10 text-white font-bold"
+                  ? "border-emerald-500 bg-emerald-500/10 text-white font-bold"
                   : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700"
               }`}
             >
-              <div className="font-bold text-xs flex items-center gap-1 text-orange-400">
+              <div className="font-bold text-xs flex items-center gap-1 text-emerald-400">
                 <Sparkles size={13} />
                 <span>Torneo PRO FIBA</span>
               </div>
@@ -362,7 +394,7 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
             <button
               type="submit"
               disabled={isSubmitting || !name.trim() || !organizerEmail.trim()}
-              className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-zinc-950 font-bold text-xs rounded-xl transition shadow-sm flex items-center gap-2"
+              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-emerald-600/25 flex items-center gap-2"
             >
               {isSubmitting ? (
                 <>

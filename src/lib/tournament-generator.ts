@@ -9,6 +9,7 @@ export interface ProvisionOptions {
   sport: Sport;
   tier: TournamentTier;
   organizerEmail: string;
+  adminAccessCode?: string;
   ownerId: string;
   numberOfTeams: number; // 4, 6, 8, 10, 12, 16
   playersPerTeam: number; // 5, 8, 10, 12
@@ -125,6 +126,9 @@ export async function provisionConfiguredTournament(options: ProvisionOptions): 
 
   const slug = slugify(tournamentName);
 
+  // Generar PIN / Código de acceso único si no viene especificado
+  const generatedPin = options.adminAccessCode?.trim().toUpperCase() || `LGT-${Math.floor(1000 + Math.random() * 9000)}`;
+
   // 1. Crear Torneo en Firestore
   const tournamentDoc = {
     name: tournamentName.trim(),
@@ -133,6 +137,7 @@ export async function provisionConfiguredTournament(options: ProvisionOptions): 
     tier,
     ownerId,
     adminEmails: cleanEmails,
+    adminAccessCode: generatedPin,
     organizationName: organizationName.trim() || "Liga Oficial",
     status: "active",
     createdAt: new Date().toISOString(),

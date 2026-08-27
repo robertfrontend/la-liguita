@@ -50,14 +50,14 @@ export function PublicTournamentDirectory() {
   }, [tournaments, searchQuery, sportFilter]);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans pb-24 selection:bg-orange-500/30">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans pb-24 selection:bg-blue-500/30">
       {/* HEADER PRINCIPAL / HERO */}
       <header className="border-b border-zinc-800/80 bg-gradient-to-b from-zinc-900/80 via-zinc-950/90 to-zinc-950 pt-10 pb-8 px-4 md:px-8 backdrop-blur-xl">
         <div className="max-w-5xl mx-auto space-y-6">
           {/* Top Line con Acceso Administrativo si el usuario está logueado */}
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse" />
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
               <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">
                 Portal Público Oficial • Temporada 2026
               </span>
@@ -68,7 +68,7 @@ export function PublicTournamentDirectory() {
                 href="/superadmin"
                 className="flex items-center gap-1.5 px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white rounded-xl text-xs font-bold border border-zinc-800 transition shadow-sm"
               >
-                <Lock size={12} className="text-orange-400" />
+                <Lock size={12} className="text-emerald-400" />
                 <span>Panel Administrativo</span>
               </Link>
             ) : (
@@ -100,7 +100,7 @@ export function PublicTournamentDirectory() {
                 placeholder="Buscar torneo o liga por nombre u organización..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-zinc-900/90 border border-zinc-800 rounded-xl text-xs font-semibold text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 transition"
+                className="w-full pl-10 pr-4 py-2.5 bg-zinc-900/90 border border-zinc-800 rounded-xl text-xs font-semibold text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 transition"
               />
             </div>
 
@@ -116,7 +116,7 @@ export function PublicTournamentDirectory() {
               <button
                 onClick={() => setSportFilter("basketball")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
-                  sportFilter === "basketball" ? "bg-orange-500/20 text-orange-400 border border-orange-500/30" : "text-zinc-400 hover:text-zinc-200"
+                  sportFilter === "basketball" ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" : "text-zinc-400 hover:text-zinc-200"
                 }`}
               >
                 <span>🏀 Baloncesto</span>
@@ -138,7 +138,7 @@ export function PublicTournamentDirectory() {
       <main className="max-w-5xl mx-auto px-4 md:px-8 pt-8 space-y-4">
         {loading ? (
           <div className="py-24 text-center text-zinc-500 flex flex-col items-center gap-3">
-            <div className="w-8 h-8 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
+            <div className="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
             <p className="text-xs font-semibold">Cargando competiciones disponibles...</p>
           </div>
         ) : filteredTournaments.length > 0 ? (
@@ -153,7 +153,7 @@ export function PublicTournamentDirectory() {
                 className="w-full bg-zinc-900/60 hover:bg-zinc-900/90 border border-zinc-800/90 hover:border-zinc-700/90 rounded-3xl p-6 transition duration-200 shadow-xl group relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
               >
                 {/* Acento de Luz Sutil */}
-                <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-orange-500 to-amber-500 opacity-80 group-hover:opacity-100 transition" />
+                <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-blue-500 to-indigo-600 opacity-80 group-hover:opacity-100 transition" />
 
                 {/* Sección Izquierda: Escudo/Logo e Información Principal */}
                 <div className="flex items-start md:items-center gap-5 min-w-0 flex-1 pl-2">
@@ -163,7 +163,7 @@ export function PublicTournamentDirectory() {
                       <img src={t.logoUrl} alt={t.name} className="w-full h-full object-contain" />
                     </div>
                   ) : (
-                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-zinc-800/90 border border-zinc-700/80 flex items-center justify-center font-black text-orange-400 text-2xl shrink-0 shadow-lg group-hover:border-orange-500/50 transition">
+                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-zinc-800/90 border border-zinc-700/80 flex items-center justify-center font-black text-blue-400 text-2xl shrink-0 shadow-lg group-hover:border-blue-500/50 transition">
                       {t.name.slice(0, 2).toUpperCase()}
                     </div>
                   )}
@@ -181,26 +181,26 @@ export function PublicTournamentDirectory() {
                       </span>
 
                       {isPro && (
-                        <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-orange-500/15 text-orange-400 border border-orange-500/30">
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30">
                           PRO FIBA
                         </span>
                       )}
 
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-green-500/10 text-green-400 border border-green-500/20 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                         <span>En Disputa</span>
                       </span>
                     </div>
 
                     {/* Nombre del Torneo */}
-                    <h2 className="text-xl md:text-2xl font-black text-white tracking-tight truncate group-hover:text-orange-400 transition">
+                    <h2 className="text-xl md:text-2xl font-black text-white tracking-tight truncate group-hover:text-blue-400 transition">
                       {t.name}
                     </h2>
 
                     {/* Fila de Características */}
                     <div className="flex items-center gap-4 text-xs text-zinc-400 font-mono pt-0.5 flex-wrap">
                       <span className="flex items-center gap-1.5">
-                        <Users size={13} className="text-orange-400" />
+                        <Users size={13} className="text-blue-400" />
                         <span>{t.settings?.maxTeams || 8} Equipos</span>
                       </span>
                       <span>•</span>
@@ -220,7 +220,7 @@ export function PublicTournamentDirectory() {
                 <div className="w-full md:w-auto shrink-0 pl-2 md:pl-0 pt-2 md:pt-0">
                   <Link
                     href={publicUrl}
-                    className="w-full md:w-auto px-6 py-3.5 bg-orange-500 hover:bg-orange-600 active:scale-95 text-zinc-950 font-black text-xs rounded-2xl transition shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 group/btn"
+                    className="w-full md:w-auto px-6 py-3.5 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-black text-xs rounded-2xl transition shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 group/btn"
                   >
                     <span>Ver Calendario & Posiciones</span>
                     <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
