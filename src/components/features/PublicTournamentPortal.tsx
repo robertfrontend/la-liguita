@@ -79,7 +79,14 @@ export function PublicTournamentPortal({ tournamentId }: { tournamentId: string 
     games.forEach((g) => {
       if (g.roundName) rounds.add(g.roundName);
     });
-    return Array.from(rounds);
+    return Array.from(rounds).sort((a, b) => {
+      const numA = parseInt(a.replace(/\D/g, "") || "0", 10);
+      const numB = parseInt(b.replace(/\D/g, "") || "0", 10);
+      if (numA > 0 && numB > 0 && numA !== numB) {
+        return numA - numB;
+      }
+      return a.localeCompare(b);
+    });
   }, [games]);
 
   const filteredGames = useMemo(() => {

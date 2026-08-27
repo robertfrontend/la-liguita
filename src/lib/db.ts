@@ -458,12 +458,29 @@ export const addTournamentTeam = async (tournamentId: string, teamData: Omit<Tou
 
 // --- Tournament Games ---
 
+export const sortTournamentGames = (games: TournamentGame[]): TournamentGame[] => {
+  return [...games].sort((a, b) => {
+    // 1. Extraer número de jornada si existe (ej: "Jornada 1" vs "Jornada 2")
+    const numA = parseInt(a.roundName?.replace(/\D/g, "") || "0", 10);
+    const numB = parseInt(b.roundName?.replace(/\D/g, "") || "0", 10);
+
+    if (numA > 0 && numB > 0 && numA !== numB) {
+      return numA - numB;
+    }
+
+    // 2. Orden cronológico ascendente (partidos iniciales / Jornada 1 primero)
+    const timeA = a.date ? new Date(a.date).getTime() : 0;
+    const timeB = b.date ? new Date(b.date).getTime() : 0;
+    return timeA - timeB;
+  });
+};
+
 export const subscribeToTournamentGames = (tournamentId: string, callback: (games: TournamentGame[]) => void) => {
   const q = query(collection(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION));
   return onSnapshot(q, (snapshot) => {
-    const games = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as TournamentGame));
-    games.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    callback(games);
+    const rawGames = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as TournamentGame));
+    const sorted = sortTournamentGames(rawGames);
+    callback(sorted);
   }, (error) => {
     console.error("Error in subscribeToTournamentGames:", error);
     callback([]);
