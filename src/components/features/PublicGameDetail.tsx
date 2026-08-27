@@ -272,8 +272,8 @@ export function PublicGameDetail({ tournamentSlugOrId, gameId }: PublicGameDetai
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${game?.teamAName} vs ${game?.teamBName} | ${tournament?.name || "La Liguita"}`,
-          text: `Sigue los detalles y estadísticas del partido ${game?.teamAName} vs ${game?.teamBName} en vivo.`,
+          title: `${game?.teamAName} vs ${game?.teamBName} | ${tournament?.name || ""}`,
+          text: `${game?.teamAName} vs ${game?.teamBName} - ${tournament?.name || ""}`,
           url,
         });
         return;

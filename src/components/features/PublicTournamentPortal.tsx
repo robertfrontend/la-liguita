@@ -257,12 +257,12 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
     if (navigator.share) {
       navigator.share({
         title: tournament.name,
-        text: `Sigue los resultados y el calendario oficial de ${tournament.name} en La Liguita 🏀`,
+        text: tournament.name,
         url: shareUrl,
       }).catch(() => {});
     } else {
       navigator.clipboard.writeText(shareUrl);
-      alert("¡Enlace oficial copiado al portapapeles!");
+      alert("¡Enlace del torneo copiado al portapapeles!");
     }
   };
 

@@ -454,6 +454,42 @@ export const subscribeToTournamentBySlugOrId = (
   };
 };
 
+export const getTournamentBySlugOrId = async (
+  slugOrId: string
+): Promise<Tournament | null> => {
+  if (!slugOrId) return null;
+  const clean = slugOrId.toLowerCase().trim();
+
+  // 1. Buscar por slug
+  try {
+    const qSlug = query(
+      collection(db, TOURNAMENTS_COLLECTION),
+      where("slug", "==", clean),
+      limit(1)
+    );
+    const snap = await getDocs(qSlug);
+    if (!snap.empty) {
+      const docSnap = snap.docs[0];
+      return { ...docSnap.data(), id: docSnap.id } as Tournament;
+    }
+  } catch (err) {
+    console.error("Error getting tournament by slug:", err);
+  }
+
+  // 2. Buscar por ID de documento
+  try {
+    const docRef = doc(db, TOURNAMENTS_COLLECTION, slugOrId);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      return { ...snap.data(), id: snap.id } as Tournament;
+    }
+  } catch (err) {
+    console.error("Error getting tournament by ID:", err);
+  }
+
+  return null;
+};
+
 export const subscribeToTournaments = (ownerId: string, callback: (tournaments: Tournament[]) => void) => {
   if (!ownerId) return () => {};
   const q = query(collection(db, TOURNAMENTS_COLLECTION), where("ownerId", "==", ownerId));
@@ -596,6 +632,19 @@ export const createTournamentGameInDb = async (tournamentId: string, gameData: O
 export const updateTournamentGameInDb = async (tournamentId: string, gameId: string, updates: Partial<TournamentGame>) => {
   const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION, gameId);
   await updateDoc(docRef, updates);
+};
+
+export const getTournamentGame = async (tournamentId: string, gameId: string): Promise<TournamentGame | null> => {
+  try {
+    const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId, GAMES_SUBCOLLECTION, gameId);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      return { id: snap.id, ...snap.data() } as TournamentGame;
+    }
+  } catch (err) {
+    console.error("Error getting tournament game:", err);
+  }
+  return null;
 };
 
 export const deleteTournamentGameInDb = async (tournamentId: string, gameId: string) => {
