@@ -65,21 +65,13 @@ export function PublicTournamentDirectory() {
               </span>
             </div>
 
-            {user ? (
+            {user && (
               <Link
                 href="/superadmin"
                 className="flex items-center gap-1.5 px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white rounded-xl text-xs font-bold border border-zinc-800 transition shadow-sm"
               >
                 <Lock size={12} className="text-emerald-400" />
                 <span>Panel Administrativo</span>
-              </Link>
-            ) : (
-              <Link
-                href="/admin"
-                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 rounded-xl text-xs font-bold border border-zinc-800 transition"
-              >
-                <Lock size={12} className="text-zinc-500" />
-                <span>Acceso Organizadores</span>
               </Link>
             )}
           </div>

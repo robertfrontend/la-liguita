@@ -93,16 +93,7 @@ export function TopNav() {
               </button>
             </div>
           </div>
-        ) : (
-          <Link 
-            href="/admin" 
-            className="h-8 px-3 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 border border-zinc-800 rounded-lg transition flex items-center gap-1.5"
-            title="Acceso restringido para organizadores con PIN"
-          >
-            <Lock size={12} className="text-zinc-500" />
-            <span>Acceso Organizador</span>
-          </Link>
-        )}
+        ) : null}
       </div>
     </header>
   );
