@@ -345,7 +345,7 @@ export function SuperAdminDashboard() {
                             </Link>
 
                             <Link
-                              href={`/t/${t.id}`}
+                              href={`/t/${t.slug || t.id}`}
                               target="_blank"
                               className="p-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition border border-zinc-700"
                               title="Ver Portal Público"

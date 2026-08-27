@@ -152,7 +152,8 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
   };
 
   const handleCopyLink = () => {
-    const url = `${window.location.origin}/t/${tournamentId}`;
+    const slug = tournament?.slug || tournamentId;
+    const url = `${window.location.origin}/t/${slug}`;
     navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
@@ -456,7 +457,7 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
             <div className="p-4 bg-zinc-950 rounded-2xl border border-zinc-800 max-w-md mx-auto text-left space-y-2">
               <span className="text-[11px] font-bold text-zinc-400 uppercase">Enlace Público para Fanáticos:</span>
               <div className="flex items-center justify-between gap-2 bg-zinc-900 p-2.5 rounded-xl text-xs font-mono">
-                <span className="text-orange-400 truncate">/t/{tournament.id}</span>
+                <span className="text-orange-400 truncate">/t/{tournament.slug || tournament.id}</span>
                 <button
                   onClick={handleCopyLink}
                   className="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold rounded-lg transition shrink-0"

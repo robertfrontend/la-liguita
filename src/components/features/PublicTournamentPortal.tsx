@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Tournament, TournamentGame, TournamentPlayer, TournamentTeam } from "@/types/tournament";
 import { 
-  subscribeToTournament, 
+  subscribeToTournamentBySlugOrId, 
   subscribeToTournamentGames, 
   subscribeToTournamentTeams,
   subscribeToTournamentPlayers
@@ -29,7 +29,7 @@ import {
   Filter
 } from "lucide-react";
 
-export function PublicTournamentPortal({ tournamentId }: { tournamentId: string }) {
+export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { tournamentId: string }) {
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [games, setGames] = useState<TournamentGame[]>([]);
   const [teams, setTeams] = useState<TournamentTeam[]>([]);
@@ -46,33 +46,43 @@ export function PublicTournamentPortal({ tournamentId }: { tournamentId: string 
   // Modal para ver Box Score detallado del partido
   const [selectedGameForModal, setSelectedGameForModal] = useState<TournamentGame | null>(null);
 
+  // 1. Resolver el torneo por Slug o por ID
   useEffect(() => {
-    if (!tournamentId) return;
+    if (!tournamentSlugOrId) return;
 
-    const unsubTournament = subscribeToTournament(tournamentId, (t) => {
+    const unsubTournament = subscribeToTournamentBySlugOrId(tournamentSlugOrId, (t) => {
       setTournament(t);
+      if (!t) setLoading(false);
     });
 
-    const unsubGames = subscribeToTournamentGames(tournamentId, (gList) => {
+    return () => {
+      unsubTournament();
+    };
+  }, [tournamentSlugOrId]);
+
+  // 2. Suscribirse a las subcolecciones utilizando el ID resuelto del torneo
+  useEffect(() => {
+    if (!tournament?.id) return;
+
+    const unsubGames = subscribeToTournamentGames(tournament.id, (gList) => {
       setGames(gList);
     });
 
-    const unsubTeams = subscribeToTournamentTeams(tournamentId, (tList) => {
+    const unsubTeams = subscribeToTournamentTeams(tournament.id, (tList) => {
       setTeams(tList);
     });
 
-    const unsubPlayers = subscribeToTournamentPlayers(tournamentId, (pList) => {
+    const unsubPlayers = subscribeToTournamentPlayers(tournament.id, (pList) => {
       setPlayers(pList);
       setLoading(false);
     });
 
     return () => {
-      unsubTournament();
       unsubGames();
       unsubTeams();
       unsubPlayers();
     };
-  }, [tournamentId]);
+  }, [tournament?.id]);
 
   const roundsList = useMemo(() => {
     const rounds = new Set<string>();
@@ -140,15 +150,18 @@ export function PublicTournamentPortal({ tournamentId }: { tournamentId: string 
   const isBasketball = tournament.sport === "basketball";
 
   const handleShare = () => {
+    const shareSlug = tournament.slug || tournament.id;
+    const shareUrl = `${window.location.origin}/t/${shareSlug}`;
+
     if (navigator.share) {
       navigator.share({
         title: tournament.name,
         text: `Sigue los resultados y el calendario oficial de ${tournament.name} en La Liguita 🏀`,
-        url: window.location.href,
+        url: shareUrl,
       }).catch(() => {});
     } else {
-      navigator.clipboard.writeText(window.location.href);
-      alert("¡Enlace copiado al portapapeles!");
+      navigator.clipboard.writeText(shareUrl);
+      alert("¡Enlace oficial copiado al portapapeles!");
     }
   };
 

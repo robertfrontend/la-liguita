@@ -12,7 +12,8 @@ import {
   where, 
   orderBy, 
   onSnapshot,
-  collectionGroup
+  collectionGroup,
+  limit
 } from "firebase/firestore";
 import type { 
   Player, 
@@ -349,9 +350,28 @@ export const subscribeToGameGlobally = (gameId: string, callback: (game: Game | 
 // --- TOURNAMENTS (Multi-Tier SaaS) ---
 // ==========================================
 
+export const slugify = (text: string): string => {
+  return (text || "")
+    .toString()
+    .toLowerCase()
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Remover tildes y acentos
+    .replace(/[^a-z0-9 -]/g, "") // Remover caracteres no alfanuméricos
+    .replace(/\s+/g, "-") // Espacios a guiones
+    .replace(/-+/g, "-") // Remover guiones duplicados
+    .replace(/^-+/, "")
+    .replace(/-+$/, "");
+};
+
 export const createTournamentInDb = async (tournamentData: Omit<Tournament, "id">) => {
-  const docRef = await addDoc(collection(db, TOURNAMENTS_COLLECTION), tournamentData);
-  return { id: docRef.id, ...tournamentData } as Tournament;
+  const cleanSlug = tournamentData.slug || slugify(tournamentData.name);
+  const payload = {
+    ...tournamentData,
+    slug: cleanSlug,
+  };
+  const docRef = await addDoc(collection(db, TOURNAMENTS_COLLECTION), payload);
+  return { id: docRef.id, ...payload } as Tournament;
 };
 
 export const getTournament = async (tournamentId: string): Promise<Tournament | null> => {
@@ -375,6 +395,63 @@ export const subscribeToTournament = (tournamentId: string, callback: (tournamen
     console.error("Error subscribing to tournament:", error);
     callback(null);
   });
+};
+
+export const subscribeToTournamentBySlugOrId = (
+  slugOrId: string,
+  callback: (tournament: Tournament | null) => void
+) => {
+  if (!slugOrId) {
+    callback(null);
+    return () => {};
+  }
+
+  // 1. Escuchar por slug primero
+  const qSlug = query(
+    collection(db, TOURNAMENTS_COLLECTION),
+    where("slug", "==", slugOrId.toLowerCase().trim()),
+    limit(1)
+  );
+
+  let isUnsubscribed = false;
+  let docUnsub: (() => void) | null = null;
+
+  const slugUnsub = onSnapshot(qSlug, (snapshot) => {
+    if (!snapshot.empty) {
+      const docSnap = snapshot.docs[0];
+      callback({ ...docSnap.data(), id: docSnap.id } as Tournament);
+    } else {
+      // 2. Si no se encontró por slug, escuchar por ID de documento directo
+      if (!docUnsub && !isUnsubscribed) {
+        const docRef = doc(db, TOURNAMENTS_COLLECTION, slugOrId);
+        docUnsub = onSnapshot(docRef, (snap) => {
+          if (snap.exists()) {
+            const data = snap.data() as Tournament;
+            // Si no tiene slug asignado, auto-actualizar en background
+            if (!data.slug && data.name) {
+              const generatedSlug = slugify(data.name);
+              updateDoc(docRef, { slug: generatedSlug }).catch(() => {});
+            }
+            callback({ ...data, id: snap.id } as Tournament);
+          } else {
+            callback(null);
+          }
+        }, (err) => {
+          console.error("Error subscribing by ID:", err);
+          callback(null);
+        });
+      }
+    }
+  }, (error) => {
+    console.error("Error subscribing by slug:", error);
+    callback(null);
+  });
+
+  return () => {
+    isUnsubscribed = true;
+    slugUnsub();
+    if (docUnsub) docUnsub();
+  };
 };
 
 export const subscribeToTournaments = (ownerId: string, callback: (tournaments: Tournament[]) => void) => {

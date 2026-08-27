@@ -1,5 +1,6 @@
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { slugify } from "@/lib/db";
 import { TournamentTier, Sport, TournamentGame } from "@/types/tournament";
 
 export interface ProvisionOptions {
@@ -122,12 +123,12 @@ export async function provisionConfiguredTournament(options: ProvisionOptions): 
     .map(e => e.trim().toLowerCase())
     .filter(e => e.length > 0 && e.includes('@'));
 
-  const slug = tournamentName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const slug = slugify(tournamentName);
 
   // 1. Crear Torneo en Firestore
   const tournamentDoc = {
     name: tournamentName.trim(),
-    slug: `${slug}-${Math.random().toString(36).substring(2, 6)}`,
+    slug,
     sport,
     tier,
     ownerId,

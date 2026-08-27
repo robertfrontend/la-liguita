@@ -435,7 +435,7 @@ export function AdminPortalDashboard() {
                               </Link>
 
                               <Link
-                                href={`/t/${t.id}`}
+                                href={`/t/${t.slug || t.id}`}
                                 target="_blank"
                                 className="p-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition border border-zinc-700"
                                 title="Portal Público"
@@ -536,7 +536,7 @@ export function AdminPortalDashboard() {
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Portal Público</span>
                       <span className="px-2 py-0.5 rounded text-[10px] font-mono text-orange-400 bg-orange-500/10 border border-orange-500/20">
-                        /t/{t.id}
+                        /t/{t.slug || t.id}
                       </span>
                     </div>
                     <h3 className="font-bold text-white text-base">{t.name}</h3>
@@ -544,7 +544,7 @@ export function AdminPortalDashboard() {
                   </div>
 
                   <Link
-                    href={`/t/${t.id}`}
+                    href={`/t/${t.slug || t.id}`}
                     target="_blank"
                     className="mt-4 w-full py-2 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 border border-orange-500/30"
                   >

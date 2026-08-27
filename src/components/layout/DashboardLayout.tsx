@@ -117,7 +117,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </p>
         <div className="flex gap-3 mt-6">
           <Link
-            href={`/t/${tournament.id}`}
+            href={`/t/${tournament.slug || tournament.id}`}
             className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold text-xs rounded-xl transition"
           >
             Ver Portal Público
@@ -299,7 +299,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
           <div className="flex items-center gap-2.5">
             <Link
-              href={`/t/${tournamentId}`}
+              href={`/t/${tournament.slug || tournament.id}`}
               target="_blank"
               className="flex items-center gap-1.5 px-3 py-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-lg text-xs font-semibold border border-zinc-800 transition"
             >
