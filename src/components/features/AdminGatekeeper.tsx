@@ -66,7 +66,9 @@ function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperPro
 
   // Auto-detectar PIN desde URL si viene con ?pin=... o ?code=...
   useEffect(() => {
-    const urlPin = searchParams.get("pin") || searchParams.get("code");
+    if (unlockedTournament || isVerifying) return;
+
+    const urlPin = searchParams?.get("pin") || searchParams?.get("code");
     if (urlPin) {
       setPinCode(urlPin.trim().toUpperCase());
       handleVerifyPin(urlPin.trim().toUpperCase());
@@ -78,7 +80,7 @@ function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperPro
         handleVerifyPin(savedPin);
       }
     }
-  }, [searchParams]);
+  }, [searchParams, unlockedTournament, isVerifying]);
 
   // Si el usuario ya está autenticado y desbloqueó el torneo, asegurar los permisos
   useEffect(() => {
@@ -106,9 +108,6 @@ function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperPro
         sessionStorage.setItem("admin_unlocked_pin", targetCode);
         sessionStorage.setItem("admin_unlocked_tournament_id", result.tournament.id);
       }
-      if (onSuccess) {
-        onSuccess(result.tournament);
-      }
     } else {
       setPinError(result.message || "Código o PIN inválido. Verifica con el Super Administrador.");
     }
@@ -130,6 +129,9 @@ function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperPro
       // Si hay un torneo desbloqueado, vincular el email al torneo
       if (unlockedTournament) {
         await claimTournamentWithAccessCode(unlockedTournament.id, resolvedIdentifier);
+        if (onSuccess) {
+          onSuccess(unlockedTournament);
+        }
       }
     } catch (err) {
       const error = err as { code?: string; message?: string };

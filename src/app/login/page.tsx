@@ -15,7 +15,12 @@ export default function LoginPage() {
       if (isSuperAdmin(user)) {
         router.push("/superadmin");
       } else {
-        router.push("/admin");
+        const unlockedId = typeof window !== "undefined" ? sessionStorage.getItem("admin_unlocked_tournament_id") : null;
+        if (unlockedId && unlockedId !== "superadmin-root") {
+          router.push(`/tournament/${unlockedId}/games`);
+        } else {
+          router.push("/admin");
+        }
       }
     }
   }, [user, loading, router]);
@@ -29,9 +34,6 @@ export default function LoginPage() {
       <AdminGatekeeper
         title="Acceso Administrativo"
         subtitle="Ingresa el Código o PIN Único de administración para acceder a la gestión de tu torneo."
-        onSuccess={(tournament) => {
-          router.push(`/tournament/${tournament.id}/games`);
-        }}
       />
     </div>
   );

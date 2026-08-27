@@ -100,9 +100,6 @@ export function AdminPortalDashboard() {
         <AdminGatekeeper
           title="Management Suite • Acceso Administrativo"
           subtitle="Para ingresar a la consola de gestión de torneos, introduce el Código o PIN Único proporcionado por el Super Administrador."
-          onSuccess={(tournament) => {
-            window.location.href = `/tournament/${tournament.id}/games`;
-          }}
         />
       </div>
     );
