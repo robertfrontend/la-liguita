@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Tournament, TournamentGame, TournamentPlayer, TournamentTeam } from "@/types/tournament";
 import { 
   subscribeToTournamentBySlugOrId, 
@@ -30,6 +32,7 @@ import {
 } from "lucide-react";
 
 export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { tournamentId: string }) {
+  const router = useRouter();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [games, setGames] = useState<TournamentGame[]>([]);
   const [teams, setTeams] = useState<TournamentTeam[]>([]);
@@ -42,9 +45,6 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
   // Filtros de calendario Apple Sports
   const [selectedRoundFilter, setSelectedRoundFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "finished" | "scheduled">("all");
-
-  // Modal para ver Box Score detallado del partido
-  const [selectedGameForModal, setSelectedGameForModal] = useState<TournamentGame | null>(null);
 
   // 1. Resolver el torneo por Slug o por ID
   useEffect(() => {
@@ -450,8 +450,8 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                 return (
                   <div
                     key={game.id}
-                    onClick={() => setSelectedGameForModal(game)}
-                    className="bg-zinc-900/70 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700/80 rounded-2xl p-5 shadow-lg transition duration-200 cursor-pointer group flex flex-col justify-between space-y-4"
+                    onClick={() => router.push(`/t/${tournamentSlugOrId}/game/${game.id}`)}
+                    className="bg-zinc-900/70 hover:bg-zinc-900 border border-zinc-800 hover:border-blue-500/40 rounded-2xl p-5 shadow-lg transition duration-200 cursor-pointer group flex flex-col justify-between space-y-4"
                   >
                     {/* Header de la Tarjeta */}
                     <div className="flex items-center justify-between text-[11px] font-mono border-b border-zinc-800/80 pb-2.5">
@@ -808,116 +808,6 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
           </div>
         )}
       </main>
-
-      {/* MODAL DETALLADO BOX SCORE AL TOCAR UN PARTIDO (APPLE SPORTS DRAWER) */}
-      {selectedGameForModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-          <div 
-            className="bg-zinc-900 border border-zinc-800 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative space-y-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setSelectedGameForModal(null)}
-              className="absolute top-5 right-5 p-2 text-zinc-400 hover:text-white rounded-full bg-zinc-800/80 hover:bg-zinc-700 transition"
-            >
-              <X size={18} />
-            </button>
-
-            {/* Header del Modal */}
-            <div className="text-center pt-2 space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 font-mono">
-                {selectedGameForModal.roundName || "Partido Oficial"} • {selectedGameForModal.venue || "Cancha Principal"}
-              </span>
-              <div className="text-xs text-zinc-400 font-mono">
-                {new Date(selectedGameForModal.date).toLocaleDateString("es-ES", { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-              </div>
-            </div>
-
-            {/* Marcador Gigante */}
-            {(() => {
-              const { scoreA: modalScoreA, scoreB: modalScoreB } = getGameEffectiveScores(selectedGameForModal);
-              return (
-                <>
-                  <div className="grid grid-cols-2 gap-4 py-4 bg-zinc-950 rounded-2xl border border-zinc-800/80 text-center items-center">
-                    <div>
-                      <h4 className="font-bold text-white text-base truncate px-2">{selectedGameForModal.teamAName}</h4>
-                      <span className="text-5xl font-black font-mono text-blue-400 tracking-tight mt-1 block">
-                        {modalScoreA}
-                      </span>
-                    </div>
-
-                    <div>
-                      <h4 className="font-bold text-white text-base truncate px-2">{selectedGameForModal.teamBName}</h4>
-                      <span className="text-5xl font-black font-mono text-indigo-400 tracking-tight mt-1 block">
-                        {modalScoreB}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Detalle de Anotadores por Jugador (Box Score) */}
-                  {selectedGameForModal.playerStats && Object.keys(selectedGameForModal.playerStats).length > 0 ? (
-                    <div className="space-y-4">
-                      <h4 className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
-                        Planilla Estadística del Partido
-                      </h4>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* Jugadores Equipo A */}
-                        <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 space-y-2">
-                          <div className="font-bold text-white text-xs border-b border-zinc-800 pb-1.5 flex items-center justify-between">
-                            <span>{selectedGameForModal.teamAName}</span>
-                            <span className="text-blue-400 font-mono font-bold">{modalScoreA} PTS</span>
-                          </div>
-
-                    <div className="space-y-1.5">
-                      {players
-                        .filter((p) => p.teamId === selectedGameForModal.teamAId && selectedGameForModal.playerStats?.[p.id])
-                        .map((p) => {
-                          const stat = selectedGameForModal.playerStats?.[p.id] as any;
-                          return (
-                            <div key={p.id} className="flex items-center justify-between text-xs py-1">
-                              <span className="text-zinc-300">#{p.number} {p.name}</span>
-                              <span className="font-mono font-bold text-blue-400">{stat.points || 0} pts</span>
-                            </div>
-                          );
-                        })}
-                    </div>
-                  </div>
-
-                  {/* Jugadores Equipo B */}
-                  <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 space-y-2">
-                    <div className="font-bold text-white text-xs border-b border-zinc-800 pb-1.5 flex items-center justify-between">
-                      <span>{selectedGameForModal.teamBName}</span>
-                      <span className="text-blue-400">{selectedGameForModal.scoreB} PTS</span>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      {players
-                        .filter((p) => p.teamId === selectedGameForModal.teamBId && selectedGameForModal.playerStats?.[p.id])
-                        .map((p) => {
-                          const stat = selectedGameForModal.playerStats?.[p.id] as any;
-                          return (
-                            <div key={p.id} className="flex items-center justify-between text-xs py-1">
-                              <span className="text-zinc-300">#{p.number} {p.name}</span>
-                              <span className="font-mono font-bold text-blue-400">{stat.points || 0} pts</span>
-                            </div>
-                          );
-                        })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="py-8 text-center text-xs text-zinc-500 italic bg-zinc-950 rounded-xl border border-zinc-800">
-                Este partido no tiene estadísticas individuales detalladas de jugadores cargadas aún.
-              </div>
-            )}
-            </>
-            );
-            })()}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
