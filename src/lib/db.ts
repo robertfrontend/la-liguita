@@ -1116,3 +1116,69 @@ export const claimTournamentWithAccessCode = async (tournamentId: string, userEm
     return false;
   }
 };
+
+export const grantAdminTournamentAccess = async (tournamentId: string, email: string): Promise<void> => {
+  if (!tournamentId || !email) return;
+  const cleanEmail = email.trim().toLowerCase();
+  const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId);
+  const snap = await getDoc(docRef);
+  if (!snap.exists()) return;
+
+  const data = snap.data() as Tournament;
+  const existing = (data.adminEmails || []).map(e => e.trim().toLowerCase());
+  if (!existing.includes(cleanEmail)) {
+    existing.push(cleanEmail);
+    await updateDoc(docRef, {
+      adminEmails: existing,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+};
+
+export const revokeAdminTournamentAccess = async (tournamentId: string, email: string): Promise<void> => {
+  if (!tournamentId || !email) return;
+  const cleanEmail = email.trim().toLowerCase();
+  const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId);
+  const snap = await getDoc(docRef);
+  if (!snap.exists()) return;
+
+  const data = snap.data() as Tournament;
+  const existing = (data.adminEmails || [])
+    .map(e => e.trim().toLowerCase())
+    .filter(e => e !== cleanEmail && e !== cleanEmail.replace("@laliguita.com", ""));
+
+  await updateDoc(docRef, {
+    adminEmails: existing,
+    updatedAt: new Date().toISOString(),
+  });
+};
+
+export const updateAdminAssignedTournaments = async (
+  email: string,
+  selectedTournamentIds: string[],
+  allTournaments: Tournament[]
+): Promise<void> => {
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanUsername = cleanEmail.replace("@laliguita.com", "");
+
+  for (const t of allTournaments) {
+    const isSelected = selectedTournamentIds.includes(t.id);
+    const existing = (t.adminEmails || []).map(e => e.trim().toLowerCase());
+    const hasAccess = existing.includes(cleanEmail) || existing.includes(cleanUsername);
+
+    if (isSelected && !hasAccess) {
+      existing.push(cleanEmail);
+      await updateDoc(doc(db, TOURNAMENTS_COLLECTION, t.id), {
+        adminEmails: existing,
+        updatedAt: new Date().toISOString(),
+      });
+    } else if (!isSelected && hasAccess) {
+      const filtered = existing.filter(e => e !== cleanEmail && e !== cleanUsername);
+      await updateDoc(doc(db, TOURNAMENTS_COLLECTION, t.id), {
+        adminEmails: filtered,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+  }
+};
+

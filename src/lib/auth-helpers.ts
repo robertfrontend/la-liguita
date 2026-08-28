@@ -1,6 +1,12 @@
-import { User, getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { 
+  User, 
+  getAuth, 
+  createUserWithEmailAndPassword, 
+  updateProfile,
+  sendPasswordResetEmail
+} from "firebase/auth";
+import { auth, firebaseConfig } from "@/lib/firebase";
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { firebaseConfig } from "@/lib/firebase";
 import { Tournament } from "@/types/tournament";
 
 export const SUPER_ADMIN_EMAIL = (process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL || "").trim().toLowerCase();
@@ -56,3 +62,21 @@ export const createAdminAccountWithCredentials = async (username: string, passwo
   }
   return email;
 };
+
+export const sendAdminPasswordReset = async (emailOrUsername: string): Promise<{ success: boolean; message: string }> => {
+  const email = resolveLoginIdentifier(emailOrUsername);
+  try {
+    await sendPasswordResetEmail(auth, email);
+    return {
+      success: true,
+      message: `Enlace de restablecimiento enviado correctamente a "${email}".`,
+    };
+  } catch (error: any) {
+    console.error("Error enviando restablecimiento de contraseña:", error);
+    return {
+      success: false,
+      message: error?.message || "No se pudo enviar el correo de recuperación.",
+    };
+  }
+};
+
