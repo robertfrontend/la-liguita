@@ -43,6 +43,7 @@ export default function TournamentStandingsPage() {
       id: string;
       name: string;
       shortName?: string;
+      logo?: string;
       wins: number;
       losses: number;
       ties: number;
@@ -55,6 +56,7 @@ export default function TournamentStandingsPage() {
         id: t.id,
         name: t.name,
         shortName: t.shortName,
+        logo: t.logo || (t as any).logoUrl,
         wins: t.wins || 0,
         losses: t.losses || 0,
         ties: 0,
@@ -154,8 +156,12 @@ export default function TournamentStandingsPage() {
                       </span>
                     </td>
                     <td className="py-3.5 px-4 font-bold text-white flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-black text-emerald-400 border border-zinc-700">
-                        {team.shortName || team.name.slice(0, 2).toUpperCase()}
+                      <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-black text-emerald-400 border border-zinc-700 overflow-hidden shrink-0">
+                        {team.logo || (team as any).logoUrl ? (
+                          <img src={team.logo || (team as any).logoUrl} alt={team.name} className="w-full h-full object-contain p-0.5" />
+                        ) : (
+                          <span>{team.shortName || team.name.slice(0, 2).toUpperCase()}</span>
+                        )}
                       </div>
                       <span>{team.name}</span>
                     </td>

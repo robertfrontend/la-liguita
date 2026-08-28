@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { TournamentGame, Tournament, TournamentTeam } from "@/types/tournament";
+import { TournamentGame, Tournament, TournamentTeam, TournamentPlayer } from "@/types/tournament";
 import { 
   subscribeToTournamentGames, 
   subscribeToTournament, 
   subscribeToTournamentTeams,
+  subscribeToTournamentPlayers,
   createTournamentGameInDb 
 } from "@/lib/db";
 import { deleteDoc, doc } from "firebase/firestore";
@@ -39,6 +40,7 @@ export default function TournamentGamesPage() {
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [games, setGames] = useState<TournamentGame[]>([]);
   const [teams, setTeams] = useState<TournamentTeam[]>([]);
+  const [players, setPlayers] = useState<TournamentPlayer[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Modal / Formulario
@@ -72,6 +74,10 @@ export default function TournamentGamesPage() {
       }
     });
 
+    const unsubPlayers = subscribeToTournamentPlayers(tournamentId, (pList) => {
+      setPlayers(pList);
+    });
+
     const unsubGames = subscribeToTournamentGames(tournamentId, (g) => {
       setGames(g);
       setLoading(false);
@@ -80,9 +86,36 @@ export default function TournamentGamesPage() {
     return () => {
       unsubTournament();
       unsubTeams();
+      unsubPlayers();
       unsubGames();
     };
   }, [tournamentId]);
+
+  // Cálculo de marcadores efectivos
+  const getGameEffectiveScores = (g: TournamentGame) => {
+    let sA = Number(g.scoreA) || 0;
+    let sB = Number(g.scoreB) || 0;
+
+    if (sA === 0 || sB === 0 || g.isFinished || g.status === "finished") {
+      if (g.playerStats) {
+        let sumA = 0;
+        let sumB = 0;
+        Object.keys(g.playerStats).forEach((pId) => {
+          const player = players.find((p) => p.id === pId);
+          const pts = Number((g.playerStats?.[pId] as any)?.points) || 0;
+          if (player?.teamId === g.teamAId) {
+            sumA += pts;
+          } else if (player?.teamId === g.teamBId) {
+            sumB += pts;
+          }
+        });
+        if (sA === 0 && sumA > 0) sA = sumA;
+        if (sB === 0 && sumB > 0) sB = sumB;
+      }
+    }
+
+    return { scoreA: sA, scoreB: sB };
+  };
 
   const handleCreateGame = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,8 +183,10 @@ export default function TournamentGamesPage() {
 
   // Filtrado de partidos
   const filteredGames = games.filter((g) => {
-    const isFinished = g.isFinished;
-    const isLive = !isFinished && (g.scoreA > 0 || g.scoreB > 0 || g.status === "live");
+    const isFinished = g.isFinished || g.status === "finished";
+    const { scoreA, scoreB } = getGameEffectiveScores(g);
+    const hasPoints = scoreA > 0 || scoreB > 0;
+    const isLive = !isFinished && (hasPoints || g.status === "live");
     const isScheduled = !isFinished && !isLive;
 
     if (filterTab === "scheduled") return isScheduled;
@@ -160,9 +195,20 @@ export default function TournamentGamesPage() {
     return true;
   });
 
-  const scheduledCount = games.filter(g => !g.isFinished && !(g.scoreA > 0 || g.scoreB > 0 || g.status === "live")).length;
-  const liveCount = games.filter(g => !g.isFinished && (g.scoreA > 0 || g.scoreB > 0 || g.status === "live")).length;
-  const finishedCount = games.filter(g => g.isFinished).length;
+  const scheduledCount = games.filter((g) => {
+    const isFinished = g.isFinished || g.status === "finished";
+    const { scoreA, scoreB } = getGameEffectiveScores(g);
+    const isLive = !isFinished && (scoreA > 0 || scoreB > 0 || g.status === "live");
+    return !isFinished && !isLive;
+  }).length;
+
+  const liveCount = games.filter((g) => {
+    const isFinished = g.isFinished || g.status === "finished";
+    const { scoreA, scoreB } = getGameEffectiveScores(g);
+    return !isFinished && (scoreA > 0 || scoreB > 0 || g.status === "live");
+  }).length;
+
+  const finishedCount = games.filter((g) => g.isFinished || g.status === "finished").length;
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -417,8 +463,10 @@ export default function TournamentGamesPage() {
       {/* Lista de Partidos */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredGames.map((game) => {
-          const isFinished = game.isFinished;
-          const isLive = !isFinished && (game.scoreA > 0 || game.scoreB > 0 || game.status === "live");
+          const isFinished = game.isFinished || game.status === "finished";
+          const { scoreA, scoreB } = getGameEffectiveScores(game);
+          const hasPoints = scoreA > 0 || scoreB > 0;
+          const isLive = !isFinished && (hasPoints || game.status === "live");
           const isScheduled = !isFinished && !isLive;
 
           const gameDateObj = new Date(game.date);
@@ -466,7 +514,7 @@ export default function TournamentGamesPage() {
                   <div className="flex-1 text-center">
                     <h4 className="font-bold text-white text-sm truncate">{game.teamAName}</h4>
                     <span className="text-3xl font-black text-emerald-400 font-mono mt-1 block">
-                      {isScheduled ? "-" : game.scoreA}
+                      {isScheduled ? "-" : scoreA}
                     </span>
                   </div>
 
@@ -475,7 +523,7 @@ export default function TournamentGamesPage() {
                   <div className="flex-1 text-center">
                     <h4 className="font-bold text-white text-sm truncate">{game.teamBName}</h4>
                     <span className="text-3xl font-black text-blue-400 font-mono mt-1 block">
-                      {isScheduled ? "-" : game.scoreB}
+                      {isScheduled ? "-" : scoreB}
                     </span>
                   </div>
                 </div>

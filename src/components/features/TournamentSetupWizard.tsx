@@ -410,8 +410,12 @@ export function TournamentSetupWizard({ tournamentId }: { tournamentId: string }
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {teams.map((t) => (
                   <div key={t.id} className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-zinc-800 text-emerald-400 font-bold text-xs flex items-center justify-center">
-                      {t.shortName || t.name.slice(0, 2).toUpperCase()}
+                    <div className="w-8 h-8 rounded-lg bg-zinc-800 text-emerald-400 font-bold text-xs flex items-center justify-center overflow-hidden shrink-0">
+                      {t.logo ? (
+                        <img src={t.logo} alt={t.name} className="w-full h-full object-contain p-0.5" />
+                      ) : (
+                        <span>{t.shortName || t.name.slice(0, 2).toUpperCase()}</span>
+                      )}
                     </div>
                     <span className="font-bold text-xs text-white truncate">{t.name}</span>
                   </div>
