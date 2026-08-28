@@ -56,7 +56,7 @@ export default function TournamentStandingsPage() {
         id: t.id,
         name: t.name,
         shortName: t.shortName,
-        logo: t.logo || (t as any).logoUrl,
+        logo: t.logo || (t as any).logoUrl || tournament?.logoUrl,
         wins: t.wins || 0,
         losses: t.losses || 0,
         ties: 0,

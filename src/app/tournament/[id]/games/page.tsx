@@ -511,21 +511,50 @@ export default function TournamentGamesPage() {
 
                 {/* Marcador / Enfrentamiento */}
                 <div className="flex items-center justify-between py-4 border-y border-zinc-800/60 my-2">
-                  <div className="flex-1 text-center">
-                    <h4 className="font-bold text-white text-sm truncate">{game.teamAName}</h4>
-                    <span className="text-3xl font-black text-emerald-400 font-mono mt-1 block">
-                      {isScheduled ? "-" : scoreA}
-                    </span>
-                  </div>
+                  {(() => {
+                    const tA = teams.find((t) => t.id === game.teamAId);
+                    const tB = teams.find((t) => t.id === game.teamBId);
+                    const logoA = tA?.logo || (tA as any)?.logoUrl || tournament?.logoUrl;
+                    const logoB = tB?.logo || (tB as any)?.logoUrl || tournament?.logoUrl;
 
-                  <span className="text-zinc-600 font-black italic px-4 text-xs">VS</span>
+                    return (
+                      <>
+                        <div className="flex-1 flex flex-col items-center text-center">
+                          <div className="w-10 h-10 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden mb-1.5 shadow-inner">
+                            {logoA ? (
+                              <img src={logoA} alt={game.teamAName} className="w-full h-full object-contain p-1" />
+                            ) : (
+                              <span className="text-xs font-black text-emerald-400">
+                                {tA?.shortName || game.teamAName.slice(0, 2).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          <h4 className="font-bold text-white text-xs truncate max-w-[130px]">{game.teamAName}</h4>
+                          <span className="text-2xl md:text-3xl font-black text-emerald-400 font-mono mt-1 block">
+                            {isScheduled ? "-" : scoreA}
+                          </span>
+                        </div>
 
-                  <div className="flex-1 text-center">
-                    <h4 className="font-bold text-white text-sm truncate">{game.teamBName}</h4>
-                    <span className="text-3xl font-black text-blue-400 font-mono mt-1 block">
-                      {isScheduled ? "-" : scoreB}
-                    </span>
-                  </div>
+                        <span className="text-zinc-600 font-black italic px-3 text-xs">VS</span>
+
+                        <div className="flex-1 flex flex-col items-center text-center">
+                          <div className="w-10 h-10 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden mb-1.5 shadow-inner">
+                            {logoB ? (
+                              <img src={logoB} alt={game.teamBName} className="w-full h-full object-contain p-1" />
+                            ) : (
+                              <span className="text-xs font-black text-blue-400">
+                                {tB?.shortName || game.teamBName.slice(0, 2).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          <h4 className="font-bold text-white text-xs truncate max-w-[130px]">{game.teamBName}</h4>
+                          <span className="text-2xl md:text-3xl font-black text-blue-400 font-mono mt-1 block">
+                            {isScheduled ? "-" : scoreB}
+                          </span>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
 

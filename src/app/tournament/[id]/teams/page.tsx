@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
-import { TournamentTeam, TournamentPlayer } from "@/types/tournament";
+import { TournamentTeam, TournamentPlayer, Tournament } from "@/types/tournament";
 import { 
   subscribeToTournamentTeams, 
+  subscribeToTournament,
   addTournamentTeam, 
   updateTournamentTeamInDb,
   deleteTournamentTeamFromDb,
@@ -36,6 +37,7 @@ export default function TournamentTeamsPage() {
   const params = useParams();
   const tournamentId = params?.id as string;
 
+  const [tournament, setTournament] = useState<Tournament | null>(null);
   const [teams, setTeams] = useState<TournamentTeam[]>([]);
   const [players, setPlayers] = useState<TournamentPlayer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,6 +68,10 @@ export default function TournamentTeamsPage() {
   useEffect(() => {
     if (!tournamentId) return;
 
+    const unsubTournament = subscribeToTournament(tournamentId, (t) => {
+      setTournament(t);
+    });
+
     const unsubTeams = subscribeToTournamentTeams(tournamentId, (tList) => {
       setTeams(tList);
       setLoading(false);
@@ -76,6 +82,7 @@ export default function TournamentTeamsPage() {
     });
 
     return () => {
+      unsubTournament();
       unsubTeams();
       unsubPlayers();
     };
@@ -447,7 +454,7 @@ export default function TournamentTeamsPage() {
           const teamPlayers = players.filter(p => p.teamId === team.id);
           const isExpanded = expandedTeamId === team.id;
           const isAddingPlayer = isAddingPlayerToTeamId === team.id;
-          const teamLogoDisplay = team.logo || (team as any).logoUrl;
+          const teamLogoDisplay = team.logo || (team as any).logoUrl || tournament?.logoUrl;
 
           return (
             <div key={team.id} className="bg-zinc-900/70 border border-zinc-800/80 rounded-2xl overflow-hidden shadow-lg transition">

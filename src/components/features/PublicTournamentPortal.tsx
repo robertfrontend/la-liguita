@@ -493,8 +493,12 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                         <div className="space-y-2.5">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3 min-w-0">
-                              <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-blue-400 shrink-0">
-                                {teamA?.shortName || game.teamAName.slice(0, 2).toUpperCase()}
+                              <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-blue-400 shrink-0 overflow-hidden">
+                                {teamA?.logo || (teamA as any)?.logoUrl || tournament.logoUrl ? (
+                                  <img src={teamA?.logo || (teamA as any)?.logoUrl || tournament.logoUrl} alt={game.teamAName} className="w-full h-full object-contain p-1" />
+                                ) : (
+                                  <span>{teamA?.shortName || game.teamAName.slice(0, 2).toUpperCase()}</span>
+                                )}
                               </div>
                               <span className="text-sm font-bold text-white truncate">{game.teamAName}</span>
                             </div>
@@ -503,8 +507,12 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
 
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3 min-w-0">
-                              <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-indigo-400 shrink-0">
-                                {teamB?.shortName || game.teamBName.slice(0, 2).toUpperCase()}
+                              <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-indigo-400 shrink-0 overflow-hidden">
+                                {teamB?.logo || (teamB as any)?.logoUrl || tournament.logoUrl ? (
+                                  <img src={teamB?.logo || (teamB as any)?.logoUrl || tournament.logoUrl} alt={game.teamBName} className="w-full h-full object-contain p-1" />
+                                ) : (
+                                  <span>{teamB?.shortName || game.teamBName.slice(0, 2).toUpperCase()}</span>
+                                )}
                               </div>
                               <span className="text-sm font-bold text-white truncate">{game.teamBName}</span>
                             </div>
@@ -531,8 +539,12 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-blue-400 shrink-0">
-                              {teamA?.shortName || game.teamAName.slice(0, 2).toUpperCase()}
+                            <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-blue-400 shrink-0 overflow-hidden">
+                              {teamA?.logo || (teamA as any)?.logoUrl || tournament.logoUrl ? (
+                                <img src={teamA?.logo || (teamA as any)?.logoUrl || tournament.logoUrl} alt={game.teamAName} className="w-full h-full object-contain p-1" />
+                              ) : (
+                                <span>{teamA?.shortName || game.teamAName.slice(0, 2).toUpperCase()}</span>
+                              )}
                             </div>
                             <div className="min-w-0">
                               <span className={`text-sm truncate block ${
@@ -557,8 +569,12 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
 
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-indigo-400 shrink-0">
-                              {teamB?.shortName || game.teamBName.slice(0, 2).toUpperCase()}
+                            <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center font-black text-xs text-indigo-400 shrink-0 overflow-hidden">
+                              {teamB?.logo || (teamB as any)?.logoUrl || tournament.logoUrl ? (
+                                <img src={teamB?.logo || (teamB as any)?.logoUrl || tournament.logoUrl} alt={game.teamBName} className="w-full h-full object-contain p-1" />
+                              ) : (
+                                <span>{teamB?.shortName || game.teamBName.slice(0, 2).toUpperCase()}</span>
+                              )}
                             </div>
                             <div className="min-w-0">
                               <span className={`text-sm truncate block ${
@@ -667,8 +683,8 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
 
                         <td className="py-3.5 px-4 font-bold text-white flex items-center gap-3">
                           <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-black text-blue-400 border border-zinc-700 shrink-0 overflow-hidden">
-                            {team.logo || (team as any).logoUrl ? (
-                              <img src={team.logo || (team as any).logoUrl} alt={team.name} className="w-full h-full object-contain p-0.5" />
+                            {team.logo || (team as any).logoUrl || tournament.logoUrl ? (
+                              <img src={team.logo || (team as any).logoUrl || tournament.logoUrl} alt={team.name} className="w-full h-full object-contain p-0.5" />
                             ) : (
                               <span>{team.shortName || team.name.slice(0, 2).toUpperCase()}</span>
                             )}
@@ -783,9 +799,9 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
                 <div key={team.id} className="bg-zinc-900/60 border border-zinc-800 p-5 rounded-2xl space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="w-11 h-11 rounded-xl bg-zinc-800 flex items-center justify-center font-black text-blue-400 text-base border border-zinc-700 shrink-0 overflow-hidden">
-                      {team.logo || (team as any).logoUrl ? (
+                      {team.logo || (team as any).logoUrl || tournament.logoUrl ? (
                         <img
-                          src={team.logo || (team as any).logoUrl}
+                          src={team.logo || (team as any).logoUrl || tournament.logoUrl}
                           alt={team.name}
                           className="w-full h-full object-contain p-1"
                         />

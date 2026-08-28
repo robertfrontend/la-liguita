@@ -431,9 +431,9 @@ export function PublicGameDetail({ tournamentSlugOrId, gameId }: PublicGameDetai
           <div className="grid grid-cols-3 items-center gap-4 py-2">
             {/* Equipo A */}
             <div className="flex flex-col items-center text-center space-y-3">
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-zinc-950 border border-zinc-800 p-2 flex items-center justify-center shadow-lg">
-                {teamA?.logo || (teamA as any)?.logoUrl ? (
-                  <img src={teamA?.logo || (teamA as any)?.logoUrl} alt={game.teamAName} className="w-full h-full object-contain" />
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-zinc-950 border border-zinc-800 p-2 flex items-center justify-center shadow-lg overflow-hidden">
+                {teamA?.logo || (teamA as any)?.logoUrl || tournament.logoUrl ? (
+                  <img src={teamA?.logo || (teamA as any)?.logoUrl || tournament.logoUrl} alt={game.teamAName} className="w-full h-full object-contain" />
                 ) : (
                   <span className="text-xl md:text-2xl font-black text-blue-400">
                     {teamA?.shortName || game.teamAName.slice(0, 2).toUpperCase()}
@@ -499,9 +499,9 @@ export function PublicGameDetail({ tournamentSlugOrId, gameId }: PublicGameDetai
 
             {/* Equipo B */}
             <div className="flex flex-col items-center text-center space-y-3">
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-zinc-950 border border-zinc-800 p-2 flex items-center justify-center shadow-lg">
-                {teamB?.logo || (teamB as any)?.logoUrl ? (
-                  <img src={teamB?.logo || (teamB as any)?.logoUrl} alt={game.teamBName} className="w-full h-full object-contain" />
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-zinc-950 border border-zinc-800 p-2 flex items-center justify-center shadow-lg overflow-hidden">
+                {teamB?.logo || (teamB as any)?.logoUrl || tournament.logoUrl ? (
+                  <img src={teamB?.logo || (teamB as any)?.logoUrl || tournament.logoUrl} alt={game.teamBName} className="w-full h-full object-contain" />
                 ) : (
                   <span className="text-xl md:text-2xl font-black text-indigo-400">
                     {teamB?.shortName || game.teamBName.slice(0, 2).toUpperCase()}
@@ -1050,8 +1050,12 @@ export function PublicGameDetail({ tournamentSlugOrId, gameId }: PublicGameDetai
             {/* Roster Equipo A */}
             <div className="bg-zinc-900/80 border border-zinc-800 rounded-3xl p-5 md:p-6 space-y-4">
               <div className="flex items-center gap-3 border-b border-zinc-800 pb-3">
-                <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center font-bold text-xs text-blue-400">
-                  {teamA?.shortName || game.teamAName.slice(0, 2).toUpperCase()}
+                <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center font-bold text-xs text-blue-400 overflow-hidden shrink-0">
+                  {teamA?.logo || (teamA as any)?.logoUrl || tournament.logoUrl ? (
+                    <img src={teamA?.logo || (teamA as any)?.logoUrl || tournament.logoUrl} alt={game.teamAName} className="w-full h-full object-contain p-0.5" />
+                  ) : (
+                    <span>{teamA?.shortName || game.teamAName.slice(0, 2).toUpperCase()}</span>
+                  )}
                 </div>
                 <div>
                   <h4 className="font-bold text-white text-sm">{game.teamAName}</h4>
@@ -1081,8 +1085,12 @@ export function PublicGameDetail({ tournamentSlugOrId, gameId }: PublicGameDetai
             {/* Roster Equipo B */}
             <div className="bg-zinc-900/80 border border-zinc-800 rounded-3xl p-5 md:p-6 space-y-4">
               <div className="flex items-center gap-3 border-b border-zinc-800 pb-3">
-                <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center font-bold text-xs text-indigo-400">
-                  {teamB?.shortName || game.teamBName.slice(0, 2).toUpperCase()}
+                <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center font-bold text-xs text-indigo-400 overflow-hidden shrink-0">
+                  {teamB?.logo || (teamB as any)?.logoUrl || tournament.logoUrl ? (
+                    <img src={teamB?.logo || (teamB as any)?.logoUrl || tournament.logoUrl} alt={game.teamBName} className="w-full h-full object-contain p-0.5" />
+                  ) : (
+                    <span>{teamB?.shortName || game.teamBName.slice(0, 2).toUpperCase()}</span>
+                  )}
                 </div>
                 <div>
                   <h4 className="font-bold text-white text-sm">{game.teamBName}</h4>
