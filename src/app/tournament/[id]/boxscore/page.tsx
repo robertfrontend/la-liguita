@@ -103,25 +103,38 @@ function PostMatchBoxScoreContent() {
   useEffect(() => {
     if (!activeGame) return;
 
-    setScoreA(activeGame.scoreA || 0);
-    setScoreB(activeGame.scoreB || 0);
-    setRoundName(activeGame.roundName || "Jornada 1");
-    setDate(activeGame.date ? activeGame.date.slice(0, 16) : "");
-    setVenue(activeGame.venue || "");
-
     // Inicializar mapa de estadísticas con las existentes o en 0
     const initialMap: Record<string, PlayerStatRow> = {};
     const gameStats = activeGame.playerStats || {};
 
+    let sumPointsTeamA = 0;
+    let sumPointsTeamB = 0;
+
     players.forEach((p) => {
       const existing = gameStats[p.id] as any;
+      const pts = Number(existing?.points) || 0;
+      if (p.teamId === activeGame.teamAId) sumPointsTeamA += pts;
+      else if (p.teamId === activeGame.teamBId) sumPointsTeamB += pts;
+
       initialMap[p.id] = {
-        points: existing?.points || 0,
+        points: pts,
         fouls: existing?.fouls || existing?.personalFouls || 0,
         assists: existing?.assists || 0,
         rebounds: existing?.rebounds || existing?.totalRebounds || 0,
       };
     });
+
+    let initialScoreA = Number(activeGame.scoreA) || 0;
+    let initialScoreB = Number(activeGame.scoreB) || 0;
+
+    if (initialScoreA === 0 && sumPointsTeamA > 0) initialScoreA = sumPointsTeamA;
+    if (initialScoreB === 0 && sumPointsTeamB > 0) initialScoreB = sumPointsTeamB;
+
+    setScoreA(initialScoreA);
+    setScoreB(initialScoreB);
+    setRoundName(activeGame.roundName || "Jornada 1");
+    setDate(activeGame.date ? activeGame.date.slice(0, 16) : "");
+    setVenue(activeGame.venue || "");
 
     setPlayerStatsMap(initialMap);
   }, [activeGame, players]);

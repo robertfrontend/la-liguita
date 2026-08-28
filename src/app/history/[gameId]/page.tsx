@@ -59,8 +59,19 @@ export default function GameDetailPage() {
     );
   }
 
-  const isTeamAWinner = game.scoreA > game.scoreB;
-  const isTeamBWinner = game.scoreB > game.scoreA;
+  let effectiveScoreA = Number(game.scoreA) || 0;
+  let effectiveScoreB = Number(game.scoreB) || 0;
+  if (effectiveScoreA === 0 && effectiveScoreB === 0 && game.playerStats) {
+    const sumA = (game.teamA || []).reduce((acc, pid) => acc + (Number(game.playerStats?.[pid]?.points) || 0), 0);
+    const sumB = (game.teamB || []).reduce((acc, pid) => acc + (Number(game.playerStats?.[pid]?.points) || 0), 0);
+    if (sumA > 0 || sumB > 0) {
+      effectiveScoreA = sumA;
+      effectiveScoreB = sumB;
+    }
+  }
+
+  const isTeamAWinner = effectiveScoreA > effectiveScoreB;
+  const isTeamBWinner = effectiveScoreB > effectiveScoreA;
   const isBasketball = game.sport !== 'soccer';
   const teamAColor = isBasketball ? "text-blue-500" : "text-green-600";
   const teamAWinColor = isBasketball ? "text-blue-600 dark:text-blue-400" : "text-green-600 dark:text-green-400";
@@ -88,7 +99,7 @@ export default function GameDetailPage() {
           try {
               const mvpName = mvpId ? getPlayerName(mvpId) : null;
               const mvpText = mvpName ? `\n👑 MVP: ${mvpName}` : '';
-              const text = `Resultados: ${game.teamAName || 'Team A'} (${game.scoreA}) - ${game.teamBName || 'Team B'} (${game.scoreB}) 🏆${mvpText}`;
+              const text = `Resultados: ${game.teamAName || 'Team A'} (${effectiveScoreA}) - ${game.teamBName || 'Team B'} (${effectiveScoreB}) 🏆${mvpText}`;
               
               await navigator.share({
                   title: 'La Liguita',
@@ -130,7 +141,7 @@ export default function GameDetailPage() {
             <div className="flex justify-between items-center mb-8">
                 <div className="flex-1 flex flex-col items-center">
                     <span className={cn("text-5xl font-black tracking-tighter mb-2", isTeamAWinner ? teamAColor : "text-zinc-300 dark:text-zinc-700")}>
-                        {game.scoreA}
+                        {effectiveScoreA}
                     </span>
                     <span className={cn("text-xs font-black uppercase tracking-widest text-center", isTeamAWinner ? teamAWinColor : "text-zinc-400 dark:text-zinc-600")}>
                         {game.teamAName || "Team A"}
@@ -144,7 +155,7 @@ export default function GameDetailPage() {
 
                 <div className="flex-1 flex flex-col items-center">
                      <span className={cn("text-5xl font-black tracking-tighter mb-2", isTeamBWinner ? "text-blue-500" : "text-zinc-300 dark:text-zinc-700")}>
-                        {game.scoreB}
+                        {effectiveScoreB}
                     </span>
                     <span className={cn("text-xs font-black uppercase tracking-widest text-center", isTeamBWinner ? "text-blue-600 dark:text-blue-400" : "text-zinc-400 dark:text-zinc-600")}>
                         {game.teamBName || "Team B"}

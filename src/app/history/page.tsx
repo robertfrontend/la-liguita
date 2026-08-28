@@ -83,7 +83,18 @@ export default function HistoryPage() {
               
               <div className="space-y-4">
                 {games.map((game) => {
-                  const isTeamAWinner = game.scoreA > game.scoreB;
+                  let sA = Number(game.scoreA) || 0;
+                  let sB = Number(game.scoreB) || 0;
+                  if (sA === 0 && sB === 0 && game.playerStats) {
+                    const sumA = (game.teamA || []).reduce((acc, pid) => acc + (Number(game.playerStats?.[pid]?.points) || 0), 0);
+                    const sumB = (game.teamB || []).reduce((acc, pid) => acc + (Number(game.playerStats?.[pid]?.points) || 0), 0);
+                    if (sumA > 0 || sumB > 0) {
+                      sA = sumA;
+                      sB = sumB;
+                    }
+                  }
+
+                  const isTeamAWinner = sA > sB;
                   const isBasketball = game.sport !== 'soccer';
                   const teamAColor = isBasketball ? "text-blue-500" : "text-green-600";
                   const teamAWinColor = isBasketball ? "text-blue-600 dark:text-blue-400" : "text-green-600 dark:text-green-400";
@@ -129,12 +140,12 @@ export default function HistoryPage() {
 
                         <div className="flex justify-between items-center mb-6">
                           <div className="text-center w-1/3">
-                            <div className={cn("text-3xl font-black tracking-tighter", teamAColor)}>{game.scoreA}</div>
+                            <div className={cn("text-3xl font-black tracking-tighter", teamAColor)}>{sA}</div>
                             <div className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1 uppercase font-bold tracking-widest truncate">{game.teamAName || "TEAM A"}</div>
                           </div>
                           <div className="text-zinc-200 dark:text-zinc-800 font-bold italic text-xl">VS</div>
                           <div className="text-center w-1/3">
-                            <div className="text-3xl font-black text-blue-600 dark:text-blue-400 tracking-tighter">{game.scoreB}</div>
+                            <div className="text-3xl font-black text-blue-600 dark:text-blue-400 tracking-tighter">{sB}</div>
                             <div className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1 uppercase font-bold tracking-widest truncate">{game.teamBName || "TEAM B"}</div>
                           </div>
                         </div>
