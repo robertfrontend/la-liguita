@@ -413,10 +413,10 @@ export default function TournamentGamesPage() {
       )}
 
       {/* Pestañas de Filtro */}
-      <div className="flex gap-2 border-b border-zinc-800 pb-2">
+      <div className="flex gap-1.5 sm:gap-2 border-b border-zinc-800 pb-2 overflow-x-auto no-scrollbar">
         <button
           onClick={() => setFilterTab("all")}
-          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+          className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition flex items-center gap-1.5 ${
             filterTab === "all"
               ? "bg-zinc-800 text-white"
               : "text-zinc-400 hover:text-white"
@@ -576,14 +576,15 @@ export default function TournamentGamesPage() {
 
                   <Link
                     href={`/tournament/${tournamentId}/boxscore?gameId=${game.id}`}
-                    className={`px-3.5 py-1.5 font-bold rounded-xl flex items-center gap-1.5 transition text-xs shadow-sm ${
+                    className={`px-3 sm:px-3.5 py-1.5 font-bold rounded-xl flex items-center gap-1.5 transition text-xs shadow-sm ${
                       isFinished 
                         ? "bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700" 
                         : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/25"
                     }`}
                   >
                     <Layers size={13} />
-                    <span>{isFinished ? "Editar Acta & Stats" : "Cargar Resultado & Box Score"}</span>
+                    <span className="hidden sm:inline">{isFinished ? "Editar Acta & Stats" : "Cargar Resultado & Box Score"}</span>
+                    <span className="sm:hidden">{isFinished ? "Editar Acta" : "Cargar Acta"}</span>
                   </Link>
                 </div>
               </div>

@@ -32,7 +32,9 @@ import {
   Filter,
   CheckCircle2,
   Lock,
-  Layers
+  Layers,
+  Menu,
+  X
 } from "lucide-react";
 
 type ActiveSection = "tournaments" | "games" | "teams" | "referees" | "public-portals";
@@ -96,7 +98,7 @@ export function AdminPortalDashboard() {
   // Si no está autenticado, mostramos el Gatekeeper protegido por PIN único
   if (!authLoading && !user) {
     return (
-      <div className="py-8">
+      <div className="py-6 sm:py-8 px-4">
         <AdminGatekeeper
           title="Management Suite • Acceso Administrativo"
           subtitle="Para ingresar a la consola de gestión de torneos, introduce el Código o PIN Único proporcionado por el Super Administrador."
@@ -106,9 +108,11 @@ export function AdminPortalDashboard() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] bg-zinc-950 text-zinc-100 antialiased font-sans selection:bg-emerald-500/30">
-      {/* Sidebar de Navegación del SaaS */}
-      <aside className="w-64 border-r border-zinc-800/80 bg-zinc-900/40 backdrop-blur-xl flex flex-col justify-between shrink-0 p-4">
+    <div className="flex min-h-[calc(100vh-3.5rem)] bg-zinc-950 text-zinc-100 antialiased font-sans selection:bg-emerald-500/30 flex-col lg:flex-row">
+      {/* ============================================================ */}
+      {/* 1. SIDEBAR DESKTOP PROFESIONAL */}
+      {/* ============================================================ */}
+      <aside className="hidden lg:flex w-64 border-r border-zinc-800/80 bg-zinc-900/40 backdrop-blur-xl flex-col justify-between shrink-0 p-4">
         <div className="space-y-5">
           {/* Header del Perfil de Admin */}
           <div className={`p-3.5 rounded-xl border transition ${
@@ -211,12 +215,77 @@ export function AdminPortalDashboard() {
         </div>
       </aside>
 
-      {/* Contenido Principal de Operaciones */}
-      <main className="flex-1 p-6 md:p-8 overflow-y-auto space-y-6 max-w-7xl">
+      {/* ============================================================ */}
+      {/* 2. BARRA DE NAVEGACIÓN RÁPIDA MÓVIL (STICKY TABS) */}
+      {/* ============================================================ */}
+      <div className="lg:hidden bg-zinc-950/95 border-b border-zinc-800/80 px-3 py-2 overflow-x-auto no-scrollbar flex items-center gap-1.5 sticky top-14 z-30 backdrop-blur-md">
+        <button
+          onClick={() => setActiveSection("tournaments")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition ${
+            activeSection === "tournaments"
+              ? "bg-emerald-600 text-white shadow-sm"
+              : "bg-zinc-900/80 text-zinc-400 hover:text-white border border-zinc-800"
+          }`}
+        >
+          <Trophy size={13} />
+          <span>Torneos ({tournaments.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSection("games")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition ${
+            activeSection === "games"
+              ? "bg-emerald-600 text-white shadow-sm"
+              : "bg-zinc-900/80 text-zinc-400 hover:text-white border border-zinc-800"
+          }`}
+        >
+          <Calendar size={13} />
+          <span>Partidos</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSection("teams")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition ${
+            activeSection === "teams"
+              ? "bg-emerald-600 text-white shadow-sm"
+              : "bg-zinc-900/80 text-zinc-400 hover:text-white border border-zinc-800"
+          }`}
+        >
+          <Users size={13} />
+          <span>Equipos</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSection("public-portals")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition ${
+            activeSection === "public-portals"
+              ? "bg-emerald-600 text-white shadow-sm"
+              : "bg-zinc-900/80 text-zinc-400 hover:text-white border border-zinc-800"
+          }`}
+        >
+          <Globe size={13} />
+          <span>Portales</span>
+        </button>
+
+        {superAdmin && (
+          <Link
+            href="/superadmin"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+          >
+            <ShieldCheck size={13} />
+            <span>Super Admin</span>
+          </Link>
+        )}
+      </div>
+
+      {/* ============================================================ */}
+      {/* 3. CONTENIDO PRINCIPAL DE OPERACIONES */}
+      {/* ============================================================ */}
+      <main className="flex-1 p-3.5 sm:p-5 md:p-6 lg:p-8 overflow-y-auto space-y-5 max-w-7xl w-full mx-auto">
         {/* Header Superior con Botón de Creación */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-900/60 p-6 rounded-2xl border border-zinc-800/80">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-900/60 p-4 sm:p-6 rounded-2xl border border-zinc-800/80">
           <div>
-            <h1 className="text-2xl font-black text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
               {activeSection === "tournaments" && "Directorio de Torneos"}
               {activeSection === "games" && "Calendario General de Partidos"}
               {activeSection === "teams" && "Directorio de Equipos"}
@@ -231,7 +300,7 @@ export function AdminPortalDashboard() {
             {superAdmin && (
               <button
                 onClick={() => setIsCreateModalOpen(true)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow-sm"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow-md shadow-emerald-600/20"
               >
                 <Plus size={16} />
                 <span>Nuevo Torneo</span>
@@ -241,37 +310,37 @@ export function AdminPortalDashboard() {
         </div>
 
         {/* Tarjetas KPI de Resumen */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-zinc-900/50 border border-zinc-800/80 p-4 rounded-xl">
-            <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="bg-zinc-900/50 border border-zinc-800/80 p-3.5 sm:p-4 rounded-xl">
+            <div className="text-[10px] sm:text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1 flex items-center justify-between">
               <span>Torneos Activos</span>
               <Trophy size={14} className="text-zinc-500" />
             </div>
-            <div className="text-2xl font-black text-white font-mono">{totalTournaments}</div>
+            <div className="text-xl sm:text-2xl font-black text-white font-mono">{totalTournaments}</div>
           </div>
 
-          <div className="bg-zinc-900/50 border border-zinc-800/80 p-4 rounded-xl">
-            <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+          <div className="bg-zinc-900/50 border border-zinc-800/80 p-3.5 sm:p-4 rounded-xl">
+            <div className="text-[10px] sm:text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1 flex items-center justify-between">
               <span>Nivel PRO FIBA</span>
               <Sparkles size={14} className="text-emerald-400" />
             </div>
-            <div className="text-2xl font-black text-emerald-400 font-mono">{proTournaments}</div>
+            <div className="text-xl sm:text-2xl font-black text-emerald-400 font-mono">{proTournaments}</div>
           </div>
 
-          <div className="bg-zinc-900/50 border border-zinc-800/80 p-4 rounded-xl">
-            <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+          <div className="bg-zinc-900/50 border border-zinc-800/80 p-3.5 sm:p-4 rounded-xl">
+            <div className="text-[10px] sm:text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1 flex items-center justify-between">
               <span>Nivel Amateur</span>
               <Activity size={14} className="text-zinc-500" />
             </div>
-            <div className="text-2xl font-black text-zinc-300 font-mono">{amateurTournaments}</div>
+            <div className="text-xl sm:text-2xl font-black text-zinc-300 font-mono">{amateurTournaments}</div>
           </div>
 
-          <div className="bg-zinc-900/50 border border-zinc-800/80 p-4 rounded-xl">
-            <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+          <div className="bg-zinc-900/50 border border-zinc-800/80 p-3.5 sm:p-4 rounded-xl">
+            <div className="text-[10px] sm:text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1 flex items-center justify-between">
               <span>Organizadores</span>
               <Users size={14} className="text-emerald-400" />
             </div>
-            <div className="text-2xl font-black text-emerald-400 font-mono">{totalOrganizers}</div>
+            <div className="text-xl sm:text-2xl font-black text-emerald-400 font-mono">{totalOrganizers}</div>
           </div>
         </div>
 
@@ -295,9 +364,9 @@ export function AdminPortalDashboard() {
                 <select
                   value={filterSport}
                   onChange={(e) => setFilterSport(e.target.value as any)}
-                  className="px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none"
+                  className="flex-1 sm:flex-none px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none"
                 >
-                  <option value="all">Todas las Disciplinas</option>
+                  <option value="all">Disciplinas</option>
                   <option value="basketball">Baloncesto</option>
                   <option value="soccer">Fútbol</option>
                 </select>
@@ -305,17 +374,74 @@ export function AdminPortalDashboard() {
                 <select
                   value={filterTier}
                   onChange={(e) => setFilterTier(e.target.value as any)}
-                  className="px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none"
+                  className="flex-1 sm:flex-none px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-xs focus:outline-none"
                 >
-                  <option value="all">Todos los Niveles</option>
+                  <option value="all">Niveles</option>
                   <option value="pro">PRO FIBA</option>
                   <option value="amateur">Amateur</option>
                 </select>
               </div>
             </div>
 
-            {/* Tabla de Torneos */}
-            <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-2xl overflow-hidden shadow-xl">
+            {/* Vista Responsive: Tarjetas Móviles (sm:hidden) */}
+            <div className="grid grid-cols-1 gap-3 sm:hidden">
+              {filteredTournaments.map((t) => {
+                const isPro = t.tier === "pro";
+
+                return (
+                  <div
+                    key={t.id}
+                    className="bg-zinc-900/70 border border-zinc-800 p-4 rounded-2xl space-y-3 shadow-md"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center font-bold text-emerald-400 text-xs shrink-0 overflow-hidden shadow-inner">
+                          {t.logoUrl ? (
+                            <img src={t.logoUrl} alt={t.name} className="w-full h-full object-contain p-0.5" />
+                          ) : (
+                            <span>{t.name.slice(0, 2).toUpperCase()}</span>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-white text-sm truncate">{t.name}</h3>
+                          <p className="text-[11px] text-zinc-400 truncate">{t.organizationName || "Organización"}</p>
+                        </div>
+                      </div>
+
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider shrink-0 ${
+                        isPro 
+                          ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30" 
+                          : "bg-zinc-800 text-zinc-400 border border-zinc-700"
+                      }`}>
+                        {isPro ? "PRO" : "Amateur"}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-zinc-800/80">
+                      <Link
+                        href={`/tournament/${t.id}/games`}
+                        className="py-2 px-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1 shadow-sm"
+                      >
+                        <span>Administrar</span>
+                        <ArrowUpRight size={13} />
+                      </Link>
+
+                      <Link
+                        href={`/t/${t.slug || t.id}`}
+                        target="_blank"
+                        className="py-2 px-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1 border border-zinc-700"
+                      >
+                        <span>Portal Fan</span>
+                        <ExternalLink size={12} />
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Vista Desktop: Tabla Tradicional (hidden sm:block) */}
+            <div className="hidden sm:block bg-zinc-900/60 border border-zinc-800/80 rounded-2xl overflow-hidden shadow-xl">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
@@ -323,7 +449,7 @@ export function AdminPortalDashboard() {
                       <th className="py-3.5 px-5">Torneo / Organización</th>
                       <th className="py-3.5 px-3">Disciplina</th>
                       <th className="py-3.5 px-3 text-center">Nivel</th>
-                      <th className="py-3.5 px-4">Administradores Autorizados</th>
+                      <th className="py-3.5 px-4">Administradores</th>
                       <th className="py-3.5 px-4 text-center">Fecha</th>
                       <th className="py-3.5 px-5 text-right">Acciones</th>
                     </tr>
@@ -337,8 +463,12 @@ export function AdminPortalDashboard() {
                         <tr key={t.id} className="hover:bg-zinc-800/20 transition">
                           <td className="py-4 px-5">
                             <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-emerald-400 text-xs">
-                                {t.sport === "soccer" ? "FÚT" : "BAL"}
+                              <div className="w-9 h-9 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-emerald-400 text-xs overflow-hidden shrink-0">
+                                {t.logoUrl ? (
+                                  <img src={t.logoUrl} alt={t.name} className="w-full h-full object-contain p-0.5" />
+                                ) : (
+                                  <span>{t.sport === "soccer" ? "FÚT" : "BAL"}</span>
+                                )}
                               </div>
                               <div>
                                 <div className="font-bold text-white text-sm">{t.name}</div>
@@ -367,22 +497,25 @@ export function AdminPortalDashboard() {
                           </td>
 
                           <td className="py-4 px-4 font-mono text-zinc-300">
-                            <div className="flex flex-wrap gap-1 max-w-[240px]">
-                              {admins.map((email) => {
+                            <div className="flex flex-wrap gap-1 max-w-[200px]">
+                              {admins.slice(0, 2).map((email) => {
                                 const display = email.endsWith("@laliguita.com")
                                   ? email.replace("@laliguita.com", "")
                                   : email;
                                 return (
                                   <span
                                     key={email}
-                                    className="px-2 py-0.5 bg-zinc-800 rounded text-[10px] text-zinc-300 border border-zinc-700"
+                                    className="px-2 py-0.5 bg-zinc-800 rounded text-[10px] text-zinc-300 border border-zinc-700 truncate max-w-[120px]"
                                   >
                                     {display}
                                   </span>
                                 );
                               })}
+                              {admins.length > 2 && (
+                                <span className="text-[10px] text-zinc-500 font-mono">+{admins.length - 2}</span>
+                              )}
                               {admins.length === 0 && (
-                                <span className="text-[11px] text-zinc-500 italic">Sin administradores</span>
+                                <span className="text-[11px] text-zinc-500 italic">Sin admins</span>
                               )}
                             </div>
                           </td>
@@ -442,9 +575,9 @@ export function AdminPortalDashboard() {
         {/* SECCIÓN: CALENDARIO DE PARTIDOS GENERAL */}
         {activeSection === "games" && (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {tournaments.map((t) => (
-                <div key={t.id} className="bg-zinc-900/60 border border-zinc-800 p-5 rounded-2xl flex flex-col justify-between">
+                <div key={t.id} className="bg-zinc-900/60 border border-zinc-800 p-5 rounded-2xl flex flex-col justify-between space-y-4">
                   <div>
                     <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">
                       {t.sport === "soccer" ? "Fútbol" : "Baloncesto"}
@@ -455,7 +588,7 @@ export function AdminPortalDashboard() {
 
                   <Link
                     href={`/tournament/${t.id}/games`}
-                    className="mt-4 w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5"
+                    className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 border border-zinc-700"
                   >
                     <Calendar size={14} />
                     <span>Ver Calendario de Partidos</span>
@@ -469,9 +602,9 @@ export function AdminPortalDashboard() {
         {/* SECCIÓN: EQUIPOS GENERAL */}
         {activeSection === "teams" && (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {tournaments.map((t) => (
-                <div key={t.id} className="bg-zinc-900/60 border border-zinc-800 p-5 rounded-2xl flex flex-col justify-between">
+                <div key={t.id} className="bg-zinc-900/60 border border-zinc-800 p-5 rounded-2xl flex flex-col justify-between space-y-4">
                   <div>
                     <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">
                       Plantillas y Clubes
@@ -482,7 +615,7 @@ export function AdminPortalDashboard() {
 
                   <Link
                     href={`/tournament/${t.id}/teams`}
-                    className="mt-4 w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5"
+                    className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 border border-zinc-700"
                   >
                     <Users size={14} />
                     <span>Gestionar Equipos & Jugadores</span>
@@ -496,9 +629,9 @@ export function AdminPortalDashboard() {
         {/* SECCIÓN: PORTALES PÚBLICOS */}
         {activeSection === "public-portals" && (
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {tournaments.map((t) => (
-                <div key={t.id} className="bg-zinc-900/60 border border-zinc-800 p-5 rounded-2xl flex flex-col justify-between">
+                <div key={t.id} className="bg-zinc-900/60 border border-zinc-800 p-5 rounded-2xl flex flex-col justify-between space-y-4">
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Portal Público</span>
@@ -513,7 +646,7 @@ export function AdminPortalDashboard() {
                   <Link
                     href={`/t/${t.slug || t.id}`}
                     target="_blank"
-                    className="mt-4 w-full py-2 bg-blue-600/15 hover:bg-blue-600/25 text-blue-400 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 border border-blue-500/30"
+                    className="w-full py-2.5 bg-blue-600/15 hover:bg-blue-600/25 text-blue-400 font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5 border border-blue-500/30"
                   >
                     <Globe size={14} />
                     <span>Abrir Portal en Vivo</span>

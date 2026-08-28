@@ -28,12 +28,16 @@ import {
   UserCheck,
   Building2,
   Layers,
-  ChevronDown
+  ChevronDown,
+  Menu,
+  X,
+  ShieldCheck
 } from "lucide-react";
 import { SetupReminderBanner } from "@/components/features/SetupReminderBanner";
 
 interface NavItem {
   label: string;
+  shortLabel?: string;
   href: string;
   icon: React.ComponentType<{ className?: string; size?: number }>;
   proOnly?: boolean;
@@ -49,6 +53,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!tournamentId) {
@@ -76,6 +81,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
     return () => unsubscribe();
   }, [tournamentId]);
+
+  // Cerrar el menú móvil automáticamente al navegar
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   if (loading) {
     return (
@@ -137,24 +147,32 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   // Navegación Modular Profesional
   const coreNav: NavItem[] = [
-    { label: "Partidos & Calendario", href: `/tournament/${tournamentId}/games`, icon: Calendar },
-    { label: "Actas & Box Score", href: `/tournament/${tournamentId}/boxscore`, icon: Layers },
-    { label: "Equipos & Plantillas", href: `/tournament/${tournamentId}/teams`, icon: Users },
-    { label: "Tabla de Posiciones", href: `/tournament/${tournamentId}/standings`, icon: Trophy },
-    { label: "Administradores", href: `/tournament/${tournamentId}/admins`, icon: UserCheck },
+    { label: "Partidos & Calendario", shortLabel: "Partidos", href: `/tournament/${tournamentId}/games`, icon: Calendar },
+    { label: "Actas & Box Score", shortLabel: "Box Score", href: `/tournament/${tournamentId}/boxscore`, icon: Layers },
+    { label: "Equipos & Plantillas", shortLabel: "Equipos", href: `/tournament/${tournamentId}/teams`, icon: Users },
+    { label: "Tabla de Posiciones", shortLabel: "Posiciones", href: `/tournament/${tournamentId}/standings`, icon: Trophy },
+    { label: "Administradores", shortLabel: "Admins", href: `/tournament/${tournamentId}/admins`, icon: UserCheck },
   ];
 
   const proNav: NavItem[] = [
-    { label: "Rosters & Carnets Oficiales", href: `/tournament/${tournamentId}/rosters`, icon: Award, proOnly: true },
-    { label: "Estadísticas Oficiales", href: `/tournament/${tournamentId}/stats`, icon: BarChart3, proOnly: true, badge: "PRO" },
-    { label: "Cuerpo Arbitral", href: `/tournament/${tournamentId}/referees`, icon: ShieldAlert, proOnly: true },
-    { label: "Video & Transmisión", href: `/tournament/${tournamentId}/media`, icon: Video, proOnly: true },
+    { label: "Rosters & Carnets", shortLabel: "Rosters", href: `/tournament/${tournamentId}/rosters`, icon: Award, proOnly: true },
+    { label: "Estadísticas Oficiales", shortLabel: "Estadísticas", href: `/tournament/${tournamentId}/stats`, icon: BarChart3, proOnly: true, badge: "PRO" },
+    { label: "Cuerpo Arbitral", shortLabel: "Árbitros", href: `/tournament/${tournamentId}/referees`, icon: ShieldAlert, proOnly: true },
+    { label: "Video & Transmisión", shortLabel: "Media", href: `/tournament/${tournamentId}/media`, icon: Video, proOnly: true },
+  ];
+
+  const allNavItems: NavItem[] = [
+    ...coreNav, 
+    ...(isPro ? proNav : []), 
+    { label: "Configuración", shortLabel: "Ajustes", href: `/tournament/${tournamentId}/settings`, icon: Settings }
   ];
 
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] bg-zinc-950 text-zinc-100 antialiased font-sans selection:bg-emerald-500/30">
-      {/* Sidebar Desktop Profesional */}
-      <aside className="w-64 border-r border-zinc-800/80 bg-zinc-900/40 backdrop-blur-xl flex flex-col justify-between shrink-0">
+      {/* ============================================================ */}
+      {/* 1. SIDEBAR DESKTOP PROFESIONAL (SOLO PANTALLAS GRANDES) */}
+      {/* ============================================================ */}
+      <aside className="hidden lg:flex w-64 border-r border-zinc-800/80 bg-zinc-900/40 backdrop-blur-xl flex-col justify-between shrink-0">
         <div>
           {/* Header del Torneo */}
           <div className="p-4 border-b border-zinc-800/80 space-y-2">
@@ -168,7 +186,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
             <div className="pt-1 flex items-center gap-3">
               {tournament.logoUrl ? (
-                <div className="w-9 h-9 rounded-lg bg-zinc-950 border border-zinc-800 p-1 flex items-center justify-center shrink-0 overflow-hidden">
+                <div className="w-9 h-9 rounded-lg bg-zinc-950 border border-zinc-800 p-1 flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
                   <img src={tournament.logoUrl} alt={tournament.name} className="w-full h-full object-contain" />
                 </div>
               ) : (
@@ -234,33 +252,141 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Categoría 2: Módulo Profesional */}
-            <div>
-              <div className="px-2 py-1 text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center justify-between">
-                <span>Mesa Técnica & Stats</span>
-                {isPro && <span className="text-[9px] text-emerald-400 font-bold">PRO</span>}
+            {isPro && (
+              <div>
+                <div className="px-2 py-1 text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center justify-between">
+                  <span>Mesa Técnica & Stats</span>
+                  <span className="text-[9px] text-emerald-400 font-bold">PRO</span>
+                </div>
+                <nav className="space-y-0.5 mt-1">
+                  {proNav.map((item) => {
+                    const isActive = pathname === item.href || pathname.startsWith(item.href);
+                    const Icon = item.icon;
+
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition ${
+                          isActive
+                            ? "bg-zinc-800/90 text-white border-l-2 border-l-emerald-500 border border-zinc-700 font-bold shadow-sm"
+                            : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Icon size={15} className={isActive ? "text-emerald-400" : "text-zinc-500"} />
+                          <span>{item.label}</span>
+                        </div>
+
+                        {item.badge && (
+                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
+                            {item.badge}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </nav>
               </div>
-              <nav className="space-y-0.5 mt-1">
-                {proNav.map((item) => {
-                  const isActive = pathname === item.href || pathname.startsWith(item.href);
+            )}
+          </div>
+        </div>
+
+        {/* Footer del Sidebar con Configuración */}
+        <div className="p-3 border-t border-zinc-800/80">
+          <Link
+            href={`/tournament/${tournamentId}/settings`}
+            className={`flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-lg transition ${
+              pathname.includes("/settings")
+                ? "bg-zinc-800/90 text-white font-bold border border-zinc-700"
+                : "text-zinc-400 hover:text-white hover:bg-zinc-900"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Settings size={15} className={pathname.includes("/settings") ? "text-emerald-400" : "text-zinc-500"} />
+              <span>Configuración del Torneo</span>
+            </div>
+            <ChevronRight size={13} className="text-zinc-600" />
+          </Link>
+        </div>
+      </aside>
+
+      {/* ============================================================ */}
+      {/* 2. DRAWER MÓVIL (MENÚ DESPLEGABLE COMPLETO EN PANTALLAS PEQUEÑAS) */}
+      {/* ============================================================ */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex animate-in fade-in">
+          {/* Backdrop oscuro */}
+          <div 
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+
+          {/* Panel Lateral Deslizante */}
+          <div className="relative w-4/5 max-w-xs bg-zinc-950 border-r border-zinc-800 h-full flex flex-col justify-between p-5 z-10 shadow-2xl overflow-y-auto">
+            <div className="space-y-5">
+              {/* Header Drawer */}
+              <div className="flex items-center justify-between border-b border-zinc-800/80 pb-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  {tournament.logoUrl ? (
+                    <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 p-1 flex items-center justify-center shrink-0 overflow-hidden">
+                      <img src={tournament.logoUrl} alt={tournament.name} className="w-full h-full object-contain" />
+                    </div>
+                  ) : (
+                    <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center font-bold text-emerald-400 text-sm shrink-0">
+                      {tournament.name.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-white text-sm truncate">{tournament.name}</h3>
+                    <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-mono">
+                      {isPro ? "Plan PRO FIBA" : "Plan Amateur"}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="p-1.5 rounded-lg text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Enlace Volver */}
+              <Link
+                href="/"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs font-bold text-zinc-300 hover:text-white"
+              >
+                <ArrowLeft size={14} className="text-emerald-400" />
+                <span>Volver a Mis Torneos</span>
+              </Link>
+
+              {/* Lista Completa de Navegación Móvil */}
+              <nav className="space-y-1">
+                <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                  Módulos de Gestión
+                </div>
+                {allNavItems.map((item) => {
+                  const isActive = pathname === item.href || (item.href !== `/tournament/${tournamentId}` && pathname.startsWith(item.href));
                   const Icon = item.icon;
 
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition ${
+                      className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition ${
                         isActive
-                          ? "bg-zinc-800/90 text-white border-l-2 border-l-emerald-500 border border-zinc-700 font-bold shadow-sm"
-                          : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900"
+                          ? "bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/25"
+                          : "text-zinc-300 hover:bg-zinc-900 hover:text-white"
                       }`}
                     >
-                      <div className="flex items-center gap-2.5">
-                        <Icon size={15} className={isActive ? "text-emerald-400" : "text-zinc-500"} />
+                      <div className="flex items-center gap-3">
+                        <Icon size={16} className={isActive ? "text-white" : "text-zinc-400"} />
                         <span>{item.label}</span>
                       </div>
-
                       {item.badge && (
-                        <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
+                        <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-zinc-900 text-emerald-400 border border-zinc-800">
                           {item.badge}
                         </span>
                       )}
@@ -269,48 +395,85 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 })}
               </nav>
             </div>
-          </div>
-        </div>
 
-        {/* Footer del Sidebar con Configuración */}
-        <div className="p-3 border-t border-zinc-800/80">
-          <Link
-            href={`/tournament/${tournamentId}/settings`}
-            className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-lg transition"
-          >
-            <div className="flex items-center gap-2">
-              <Settings size={15} className="text-zinc-500" />
-              <span>Configuración del Torneo</span>
+            {/* Footer Drawer con Enlace Público */}
+            <div className="pt-4 border-t border-zinc-800/80">
+              <Link
+                href={`/t/${tournament.slug || tournament.id}`}
+                target="_blank"
+                className="w-full py-2.5 px-3 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white rounded-xl text-xs font-bold border border-zinc-800 transition flex items-center justify-center gap-2"
+              >
+                <ExternalLink size={14} className="text-emerald-400" />
+                <span>Ver Portal Público</span>
+              </Link>
             </div>
-            <ChevronRight size={13} className="text-zinc-600" />
-          </Link>
+          </div>
         </div>
-      </aside>
+      )}
 
-      {/* Contenido Principal con Barra Superior Contextual */}
+      {/* ============================================================ */}
+      {/* 3. CONTENIDO PRINCIPAL & CABECERA RESPONSIVE */}
+      {/* ============================================================ */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Barra Superior con Breadcrumbs */}
-        <header className="h-12 border-b border-zinc-800/80 bg-zinc-900/30 backdrop-blur-md px-6 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2 text-xs text-zinc-400">
-            <span className="text-zinc-400 font-medium">Torneo</span>
-            <ChevronRight size={12} className="text-zinc-600" />
-            <span className="font-bold text-white">{tournament.name}</span>
+        {/* Cabecera Superior (Mobile + Desktop) */}
+        <header className="h-14 border-b border-zinc-800/80 bg-zinc-900/40 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            {/* Botón Hamburguesa Móvil */}
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white transition flex items-center justify-center shrink-0"
+              aria-label="Abrir Menú de Navegación"
+            >
+              <Menu size={18} />
+            </button>
+
+            {/* Breadcrumbs / Título del Torneo */}
+            <div className="flex items-center gap-2 text-xs text-zinc-400 min-w-0">
+              <span className="text-zinc-500 font-medium hidden sm:inline">Torneo</span>
+              <ChevronRight size={12} className="text-zinc-700 hidden sm:inline" />
+              <span className="font-bold text-white truncate max-w-[160px] sm:max-w-xs md:max-w-md">
+                {tournament.name}
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <Link
               href={`/t/${tournament.slug || tournament.id}`}
               target="_blank"
-              className="flex items-center gap-1.5 px-3 py-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-lg text-xs font-semibold border border-zinc-800 transition"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl text-xs font-semibold border border-zinc-800 transition shrink-0"
             >
-              <span>Portal Público</span>
-              <ExternalLink size={12} />
+              <span className="hidden sm:inline">Portal Fan</span>
+              <ExternalLink size={13} className="text-emerald-400" />
             </Link>
           </div>
         </header>
 
-        {/* Área de Trabajo */}
-        <main className="flex-1 p-6 overflow-y-auto">
+        {/* Barra Rápida Horizontal Deslizable para Móviles (Sticky Quick Tabs) */}
+        <div className="lg:hidden bg-zinc-950/95 border-b border-zinc-800/80 px-2 py-2 overflow-x-auto no-scrollbar flex items-center gap-1.5 sticky top-14 z-30 backdrop-blur-md">
+          {allNavItems.map((item) => {
+            const isActive = pathname === item.href || (item.href !== `/tournament/${tournamentId}` && pathname.startsWith(item.href));
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition ${
+                  isActive
+                    ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
+                    : "bg-zinc-900/80 text-zinc-400 hover:text-white border border-zinc-800/80"
+                }`}
+              >
+                <Icon size={13} className={isActive ? "text-white" : "text-zinc-400"} />
+                <span>{item.shortLabel || item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Área de Trabajo con Padding Adaptativo */}
+        <main className="flex-1 p-3.5 sm:p-5 md:p-6 lg:p-8 overflow-y-auto max-w-7xl w-full mx-auto">
           {!pathname.includes("/onboarding") && (
             <SetupReminderBanner tournament={tournament} />
           )}
