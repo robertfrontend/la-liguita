@@ -181,7 +181,8 @@ export default function TournamentAdminsPage() {
   };
 
   const handleCopyInviteLink = () => {
-    const inviteUrl = `${window.location.origin}/login`;
+    const pin = tournament?.adminAccessCode || `LGT-${tournament?.id.slice(0, 4).toUpperCase()}`;
+    const inviteUrl = `${window.location.origin}/login?pin=${pin}`;
     navigator.clipboard.writeText(inviteUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
