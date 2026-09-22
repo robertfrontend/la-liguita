@@ -1,0 +1,44 @@
+# OpenSpec configuration bootstrapped by SDD init.
+project: la-liguita
+artifact_store: openspec
+sdd:
+  strict_tdd: false
+  execution_mode: auto
+  delivery_strategy: ask-on-risk
+  review_budget_lines: 400
+  size_exception_requires_explicit_acceptance: true
+  phase_rules:
+    init:
+      creates_project_context: true
+      detects_stack_and_testing: true
+    plan:
+      require_failing_test_or_validation_plan: true
+      preserve_human_controlled_gates:
+        - consent
+        - authorization
+        - security
+        - destructive_or_publishing
+        - ambiguous_scope
+        - size_exception
+    implement:
+      prefer_small_reviewable_changes: true
+      pause_on_review_budget_risk: true
+    verify:
+      require_validation_command_output: true
+workspace:
+  package_manager: npm
+  framework: Next.js App Router
+  language: TypeScript
+  styling: Tailwind CSS v4 via PostCSS
+  frontend: React 19
+  backend: Firebase Firestore/Auth
+  state_management: Zustand
+validation:
+  configured_scripts:
+    lint: npm run lint
+    build: npm run build
+  derived_commands:
+    typecheck: npx tsc --noEmit
+  test_runner:
+    status: not_configured
+    notes: No explicit workspace-wide test command covering every project and no Jest, Vitest, Playwright, or test files were detected during SDD init. Lint/build/typecheck are validation commands, not a test runner; use them as baseline validation until a test runner is added.
