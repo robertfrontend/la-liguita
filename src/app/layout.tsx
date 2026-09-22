@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { TopNav } from "@/components/layout/TopNav";
+import { RouteAwareAppShell } from "@/components/features/PublicTournamentDirectory";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
@@ -29,10 +29,7 @@ export default function RootLayout({
         <LanguageProvider>
           <ThemeProvider>
             <AuthProvider>
-              <TopNav />
-              <main className="min-h-screen pt-16">
-                {children}
-              </main>
+              <RouteAwareAppShell>{children}</RouteAwareAppShell>
             </AuthProvider>
           </ThemeProvider>
         </LanguageProvider>
