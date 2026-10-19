@@ -1,0 +1,487 @@
+.ll-home {
+  --ink: #142018;
+  --muted: #314237;
+  --paper: #e4ebd8;
+  --paper-2: #d7e2c8;
+  --line: #c3d0b4;
+  --chalk: #f4f6ef;
+  --gold: #e2b43a;
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-barlow), sans-serif;
+  overflow-x: clip;
+  color-scheme: light;
+}
+
+html:has(.ll-home),
+html:has(.ll-home) body {
+  background: #e4ebd8;
+  color: #142018;
+}
+
+.ll-home ::selection {
+  background: #e2b43a;
+  color: #142018;
+}
+
+.ll-skip {
+  position: absolute;
+  left: 0.75rem;
+  top: -4rem;
+  z-index: 5;
+  background: #142018;
+  color: #f4f6ef;
+  padding: 0.6rem 0.9rem;
+  text-decoration: none;
+}
+
+.ll-skip:focus {
+  top: 0.75rem;
+}
+
+.ll-wrap {
+  width: min(1120px, calc(100% - 1.5rem));
+  margin-inline: auto;
+}
+
+.ll-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.9rem 0 0.4rem;
+}
+
+.ll-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.ll-brand img {
+  width: 32px;
+  height: 32px;
+  display: block;
+  flex: none;
+}
+
+.ll-brand strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.ll-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: none;
+}
+
+.ll-nav a {
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.95rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 6px;
+}
+
+.ll-hero {
+  display: grid;
+  gap: 2.25rem;
+  align-items: end;
+  padding: 1.75rem 0 3rem;
+}
+
+.ll-hero h1 {
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
+  font-size: clamp(3.15rem, 11.5vw, 6.6rem);
+  line-height: 0.84;
+  letter-spacing: -0.02em;
+  max-width: 8.6em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.ll-rule {
+  width: 4.5rem;
+  height: 0.4rem;
+  margin: 1.15rem 0 1rem;
+  background: var(--gold);
+}
+
+.ll-lede {
+  max-width: 36rem;
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.ll-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.1rem;
+  margin-top: 1.5rem;
+}
+
+.ll-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0.65rem 1.15rem;
+  background: var(--ink);
+  color: var(--chalk);
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.ll-btn:hover {
+  background: #24382c;
+}
+
+.ll-textlink {
+  color: var(--ink);
+  text-underline-offset: 0.18em;
+}
+
+.ll-textlink:hover {
+  text-decoration-thickness: 2px;
+}
+
+.ll-board {
+  background: #09090b;
+  color: #fafafa;
+  border-radius: 18px;
+  padding: 0.85rem;
+  box-shadow: 10px 12px 0 #c9d4b8;
+  min-width: 0;
+}
+
+.ll-board-head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.35rem 0.4rem 0.8rem;
+}
+
+.ll-mark {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 10px;
+  background: #27272a;
+  color: #60a5fa;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.05rem;
+  flex: none;
+}
+
+.ll-board-head p {
+  margin: 0;
+  min-width: 0;
+}
+
+.ll-board-head small {
+  display: block;
+  color: #a1a1aa;
+  font-size: 0.72rem;
+}
+
+.ll-board-head strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ll-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.25rem;
+  background: #09090b;
+  border: 1px solid #27272a;
+  border-radius: 12px;
+  padding: 0.25rem;
+  margin-bottom: 0.7rem;
+}
+
+.ll-tabs span {
+  text-align: center;
+  font-size: clamp(0.62rem, 2.5vw, 0.78rem);
+  color: #a1a1aa;
+  padding: 0.45rem 0.15rem;
+  border-radius: 8px;
+  min-width: 0;
+}
+
+.ll-tabs .is-on {
+  background: #27272a;
+  color: #fff;
+}
+
+.ll-game {
+  background: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 14px;
+  padding: 0.9rem 0.95rem 0.75rem;
+}
+
+.ll-game-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: baseline;
+  color: #a1a1aa;
+  font-size: 0.78rem;
+}
+
+.ll-game-top b {
+  color: #86efac;
+  font-weight: 400;
+}
+
+.ll-team {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: baseline;
+  margin-top: 0.7rem;
+}
+
+.ll-team span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1.02rem;
+}
+
+.ll-team b {
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2rem, 7vw, 3.15rem);
+  line-height: 0.85;
+  font-weight: 700;
+}
+
+.ll-team.is-behind {
+  color: #a1a1aa;
+}
+
+.ll-note {
+  margin: 0.85rem 0 0.15rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid #27272a;
+  color: #a1a1aa;
+  font-size: 0.82rem;
+}
+
+.ll-standings {
+  margin-top: 0.7rem;
+  background: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 14px;
+  padding: 0.75rem 0.95rem 0.4rem;
+}
+
+.ll-standings p {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  color: #a1a1aa;
+}
+
+.ll-standings ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ll-standings li {
+  display: grid;
+  grid-template-columns: 1.25rem minmax(0, 1fr) auto;
+  gap: 0.45rem;
+  padding: 0.42rem 0;
+  border-top: 1px solid #27272a;
+  font-size: 0.92rem;
+}
+
+.ll-standings li span:nth-child(2) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ll-caption {
+  margin: 0.85rem 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.ll-section {
+  padding: 0.5rem 0 3.25rem;
+}
+
+.ll-split {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.ll-section h2 {
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2.4rem, 7vw, 4rem);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  margin: 0;
+  max-width: 10em;
+}
+
+.ll-benefits {
+  margin: 0;
+}
+
+.ll-benefit {
+  padding: 1rem 0 1.05rem;
+  border-top: 1px solid var(--line);
+}
+
+.ll-benefit dt {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.65rem;
+  line-height: 1;
+  margin-bottom: 0.35rem;
+}
+
+.ll-benefit dd {
+  margin: 0;
+  max-width: 42rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.ll-intro {
+  max-width: 38rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0.85rem 0 0;
+}
+
+.ll-leagues {
+  list-style: none;
+  margin: 1.25rem 0 0;
+  padding: 0;
+}
+
+.ll-leagues a {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.95rem 0;
+  border-top: 1px solid var(--line);
+  color: inherit;
+  text-decoration: none;
+}
+
+.ll-leagues li:last-child a {
+  border-bottom: 1px solid var(--line);
+}
+
+.ll-leagues a:hover {
+  background: var(--paper-2);
+}
+
+.ll-league-name {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.ll-league-meta {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.ll-empty {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  max-width: 36rem;
+  line-height: 1.5;
+}
+
+.ll-close {
+  display: grid;
+  gap: 0.8rem;
+  padding-bottom: 2rem;
+}
+
+.ll-close p {
+  margin: 0;
+  max-width: 34rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.ll-foot {
+  padding: 0.5rem 0 1.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.ll-home a:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+@media (min-width: 768px) {
+  .ll-wrap {
+    width: min(1120px, calc(100% - 3rem));
+  }
+
+  .ll-hero {
+    padding-top: 2.5rem;
+  }
+
+  .ll-leagues a {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: baseline;
+  }
+}
+
+@media (min-width: 960px) {
+  .ll-hero {
+    grid-template-columns: minmax(0, 1.12fr) minmax(280px, 0.88fr);
+    gap: 3rem;
+    padding-bottom: 4.5rem;
+  }
+
+  .ll-split {
+    grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+    gap: 3.5rem;
+    align-items: start;
+  }
+
+  .ll-section {
+    padding-bottom: 4.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ll-home * {
+    scroll-behavior: auto !important;
+  }
+}
