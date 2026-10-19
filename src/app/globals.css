@@ -3,29 +3,80 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #09090b;
-  --foreground: #fafafa;
-  --primary: #f97316;
-  --primary-foreground: #ffffff;
-  --secondary: #18181b;
-  --secondary-foreground: #fafafa;
-  --card: #18181b;
-  --card-foreground: #fafafa;
-  --border: #27272a;
-  --muted: #a1a1aa;
+  --background: #e4ebd8;
+  --foreground: #142018;
+  --primary: #142018;
+  --primary-foreground: #f4f6ef;
+  --secondary: #f4f6ef;
+  --secondary-foreground: #142018;
+  --card: #f4f6ef;
+  --card-foreground: #142018;
+  --border: #c3d0b4;
+  --muted: #314237;
+  --ink: #142018;
+  --paper: #e4ebd8;
+  --chalk: #f4f6ef;
+  --gold: #e2b43a;
 }
 
+/* Active theme is .dark (the app forces it). These overrides turn that theme
+   into the landing palette. Without .dark, Tailwind's default scale remains
+   so the light-mode utility pairs stay readable. */
 .dark {
-  --background: #09090b;
-  --foreground: #fafafa;
-  --primary: #f97316;
-  --primary-foreground: #ffffff;
-  --secondary: #18181b;
-  --secondary-foreground: #fafafa;
-  --card: #18181b;
-  --card-foreground: #fafafa;
-  --border: #27272a;
-  --muted: #a1a1aa;
+  --background: #e4ebd8;
+  --foreground: #142018;
+  --primary: #142018;
+  --primary-foreground: #f4f6ef;
+  --secondary: #f4f6ef;
+  --secondary-foreground: #142018;
+  --card: #f4f6ef;
+  --card-foreground: #142018;
+  --border: #c3d0b4;
+  --muted: #314237;
+
+  --color-zinc-950: #e4ebd8;
+  --color-zinc-900: #f4f6ef;
+  --color-zinc-800: #d7e2c8;
+  --color-zinc-700: #c3d0b4;
+  --color-zinc-600: #6d8576;
+  --color-zinc-500: #4e6758;
+  --color-zinc-400: #314237;
+  --color-zinc-300: #24352b;
+  --color-zinc-200: #1c2b22;
+  --color-zinc-100: #142018;
+
+  --color-blue-950: #f3ead2;
+  --color-blue-900: #e6d7b0;
+  --color-blue-400: #8a6212;
+  --color-blue-300: #a87416;
+  --color-blue-200: #7a5410;
+  --color-blue-500: #1c3a2a;
+  --color-blue-600: #142018;
+  --color-blue-700: #0e1812;
+  --color-blue-800: #0e1812;
+
+  --color-emerald-950: #e5f2e8;
+  --color-emerald-400: #1b7a45;
+  --color-emerald-300: #2f8f58;
+  --color-emerald-500: #24382c;
+  --color-emerald-600: #142018;
+  --color-emerald-700: #0e1812;
+
+  --color-green-600: #1b5c38;
+  --color-green-700: #14472c;
+  --color-green-500: #23724a;
+  --color-green-400: #1b7a45;
+  --color-green-950: #e3f0e4;
+
+  --color-red-400: #c4472e;
+  --color-red-500: #b42318;
+  --color-red-600: #8f1d14;
+
+  --color-yellow-400: #e2b43a;
+  --color-yellow-500: #c4922a;
+  --color-amber-400: #e2b43a;
+  --color-amber-500: #c4922a;
+  --color-orange-500: #e2b43a;
 }
 
 @theme {
@@ -40,17 +91,121 @@
   --color-border: var(--border);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted);
+
+  --radius-xl: 0.7rem;
+  --radius-2xl: 0.9rem;
+  --radius-3xl: 1.15rem;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-barlow), Arial, Helvetica, sans-serif;
   min-height: 100vh;
+}
+
+html:has(.ll-platform),
+html:has(.ll-platform) body {
+  background: #e4ebd8;
+  color: #142018;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+.ll-platform {
+  font-family: var(--font-barlow), sans-serif;
+  background: #e4ebd8;
+  color: #142018;
+  color-scheme: light;
+  overflow-x: clip;
+}
+
+.ll-platform ::selection {
+  background: #e2b43a;
+  color: #142018;
+}
+
+.dark .ll-platform :is(h1, h2, h3, .font-black) {
+  font-family: var(--font-display), sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.dark .ll-platform :is(.text-white, .dark\:text-white, .hover\:text-white:hover) {
+  color: #142018;
+}
+
+.dark .ll-platform :is(
+  .bg-blue-600,
+  .bg-blue-500,
+  .bg-blue-700,
+  .bg-emerald-600,
+  .bg-emerald-500,
+  .bg-emerald-700,
+  .bg-green-600,
+  .bg-green-700,
+  .bg-red-500,
+  .bg-red-600,
+  .bg-red-700,
+  .bg-black,
+  .bg-primary,
+  .dark\:bg-zinc-100
+) :is(.text-white, .dark\:text-white),
+.dark .ll-platform :is(
+  .bg-blue-600,
+  .bg-blue-500,
+  .bg-blue-700,
+  .bg-emerald-600,
+  .bg-emerald-500,
+  .bg-emerald-700,
+  .bg-green-600,
+  .bg-green-700,
+  .bg-red-500,
+  .bg-red-600,
+  .bg-red-700,
+  .bg-black,
+  .bg-primary,
+  .dark\:bg-zinc-100
+).text-white,
+.dark .ll-platform :is(
+  .bg-blue-600,
+  .bg-blue-500,
+  .bg-emerald-600,
+  .bg-emerald-500,
+  .bg-green-600,
+  .bg-red-500,
+  .bg-red-600
+) {
+  color: #f4f6ef;
+}
+
+.dark .ll-platform :is(input, select, textarea) {
+  background-color: #f4f6ef;
+  color: #142018;
+  border-color: #c3d0b4;
+}
+
+.dark .ll-platform :is(input, textarea)::placeholder {
+  color: #5c7364;
+}
+
+.dark .ll-platform :is(.shadow-2xl, .shadow-xl) {
+  box-shadow: 0 18px 40px -24px rgba(20, 32, 24, 0.45);
+}
+
+.dark .ll-platform .shadow-lg {
+  box-shadow: 0 10px 24px -16px rgba(20, 32, 24, 0.4);
+}
+
+.ll-platform :focus-visible {
+  outline: 2px solid #142018;
+  outline-offset: 2px;
+}
+
+.ll-platform main {
+  min-width: 0;
+  max-width: 100%;
 }

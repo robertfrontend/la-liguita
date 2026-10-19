@@ -1,12 +1,21 @@
-import { Inter } from "next/font/google";
+import { Barlow, Barlow_Condensed } from "next/font/google";
 import { TopNav } from "@/components/layout/TopNav";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
 
-const inter = Inter({
+const barlow = Barlow({
   subsets: ["latin"],
+  weight: ["400", "600", "700"],
   display: "swap",
+  variable: "--font-barlow",
+});
+
+const display = Barlow_Condensed({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  display: "swap",
+  variable: "--font-display",
 });
 
 export default function AppLayout({
@@ -16,8 +25,7 @@ export default function AppLayout({
 }>) {
   return (
     <div
-      className={`${inter.className} min-h-screen bg-zinc-950 text-zinc-100 antialiased`}
-      style={{ colorScheme: "dark" }}
+      className={`${barlow.variable} ${display.variable} ${barlow.className} ll-platform min-h-screen antialiased`}
     >
       <LanguageProvider>
         <ThemeProvider>
