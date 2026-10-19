@@ -134,6 +134,10 @@ html:has(.ll-platform) body {
   letter-spacing: -0.02em;
 }
 
+.dark .ll-platform .font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
 .dark .ll-platform :is(.text-white, .dark\:text-white, .hover\:text-white:hover) {
   color: #142018;
 }
@@ -173,12 +177,33 @@ html:has(.ll-platform) body {
 .dark .ll-platform :is(
   .bg-blue-600,
   .bg-blue-500,
+  .bg-blue-700,
   .bg-emerald-600,
   .bg-emerald-500,
+  .bg-emerald-700,
   .bg-green-600,
+  .bg-green-500,
+  .bg-green-700,
   .bg-red-500,
-  .bg-red-600
-) {
+  .bg-red-600,
+  .bg-red-700
+),
+.dark .ll-platform :is(
+  .hover\:bg-blue-600,
+  .hover\:bg-blue-500,
+  .hover\:bg-blue-700,
+  .dark\:hover\:bg-blue-600,
+  .dark\:hover\:bg-blue-700,
+  .hover\:bg-emerald-600,
+  .hover\:bg-emerald-500,
+  .hover\:bg-emerald-700,
+  .hover\:bg-green-600,
+  .hover\:bg-green-500,
+  .hover\:bg-green-700,
+  .hover\:bg-red-500,
+  .hover\:bg-red-600,
+  .hover\:bg-red-700
+):hover {
   color: #FFFFFF;
 }
 

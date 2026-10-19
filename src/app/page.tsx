@@ -6,7 +6,7 @@ import "./landing.css";
 
 const barlow = Barlow({
   subsets: ["latin"],
-  weight: "400",
+  weight: ["400", "600", "700", "800"],
   display: "swap",
   variable: "--font-barlow",
 });

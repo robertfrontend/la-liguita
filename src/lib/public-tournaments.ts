@@ -82,6 +82,7 @@ export async function listPublicTournaments(): Promise<PublicLeague[]> {
       }));
   } catch (error) {
     console.error("No se pudieron listar las ligas públicas.", error);
-    return [];
+    // A timeout or query failure must not become a cached empty homepage.
+    throw error;
   }
 }
