@@ -267,7 +267,7 @@ function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperPro
               }`}
             >
               <KeyRound size={14} />
-              <span>Canjear PIN</span>
+              <span>Código de acceso</span>
             </button>
           </div>
         )}
@@ -435,7 +435,7 @@ function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperPro
 
             <div>
               <h2 className="text-xl font-black text-white tracking-tight">
-                Canjear Código PIN de Torneo
+                Código de acceso del torneo
               </h2>
               <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
                 Ingresa el PIN único asignado por el Super Administrador para desbloquear la gestión de tu torneo.

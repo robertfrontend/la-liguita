@@ -3,29 +3,80 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #09090b;
-  --foreground: #fafafa;
-  --primary: #f97316;
-  --primary-foreground: #ffffff;
-  --secondary: #18181b;
-  --secondary-foreground: #fafafa;
-  --card: #18181b;
-  --card-foreground: #fafafa;
-  --border: #27272a;
-  --muted: #a1a1aa;
+  --background: #FFF8F1;
+  --foreground: #142018;
+  --primary: #142018;
+  --primary-foreground: #FFFFFF;
+  --secondary: #FFFFFF;
+  --secondary-foreground: #142018;
+  --card: #FFFFFF;
+  --card-foreground: #142018;
+  --border: #E7D4C3;
+  --muted: #314237;
+  --ink: #142018;
+  --paper: #FFF8F1;
+  --chalk: #FFFFFF;
+  --gold: #e2b43a;
 }
 
+/* Active theme is .dark (the app forces it). These overrides turn that theme
+   into the landing palette. Without .dark, Tailwind's default scale remains
+   so the light-mode utility pairs stay readable. */
 .dark {
-  --background: #09090b;
-  --foreground: #fafafa;
-  --primary: #f97316;
-  --primary-foreground: #ffffff;
-  --secondary: #18181b;
-  --secondary-foreground: #fafafa;
-  --card: #18181b;
-  --card-foreground: #fafafa;
-  --border: #27272a;
-  --muted: #a1a1aa;
+  --background: #FFF8F1;
+  --foreground: #142018;
+  --primary: #142018;
+  --primary-foreground: #FFFFFF;
+  --secondary: #FFFFFF;
+  --secondary-foreground: #142018;
+  --card: #FFFFFF;
+  --card-foreground: #142018;
+  --border: #E7D4C3;
+  --muted: #314237;
+
+  --color-zinc-950: #FFF8F1;
+  --color-zinc-900: #FFFFFF;
+  --color-zinc-800: #F3E3D4;
+  --color-zinc-700: #E7D4C3;
+  --color-zinc-600: #6d8576;
+  --color-zinc-500: #4e6758;
+  --color-zinc-400: #314237;
+  --color-zinc-300: #24352b;
+  --color-zinc-200: #1c2b22;
+  --color-zinc-100: #142018;
+
+  --color-blue-950: #FFF3E8;
+  --color-blue-900: #F6E0CE;
+  --color-blue-400: #8a6212;
+  --color-blue-300: #a87416;
+  --color-blue-200: #7a5410;
+  --color-blue-500: #1c3a2a;
+  --color-blue-600: #142018;
+  --color-blue-700: #0e1812;
+  --color-blue-800: #0e1812;
+
+  --color-emerald-950: #e5f2e8;
+  --color-emerald-400: #1b7a45;
+  --color-emerald-300: #2f8f58;
+  --color-emerald-500: #24382c;
+  --color-emerald-600: #142018;
+  --color-emerald-700: #0e1812;
+
+  --color-green-600: #1b5c38;
+  --color-green-700: #14472c;
+  --color-green-500: #23724a;
+  --color-green-400: #1b7a45;
+  --color-green-950: #e3f0e4;
+
+  --color-red-400: #c4472e;
+  --color-red-500: #b42318;
+  --color-red-600: #8f1d14;
+
+  --color-yellow-400: #e2b43a;
+  --color-yellow-500: #c4922a;
+  --color-amber-400: #e2b43a;
+  --color-amber-500: #c4922a;
+  --color-orange-500: #e2b43a;
 }
 
 @theme {
@@ -40,17 +91,174 @@
   --color-border: var(--border);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted);
+
+  --radius-xl: 0.7rem;
+  --radius-2xl: 0.9rem;
+  --radius-3xl: 1.15rem;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-barlow), Arial, Helvetica, sans-serif;
   min-height: 100vh;
+}
+
+html:has(.ll-platform),
+html:has(.ll-platform) body {
+  background: #FFF8F1;
+  color: #142018;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+.ll-platform {
+  font-family: var(--font-barlow), sans-serif;
+  background: #FFF8F1;
+  color: #142018;
+  color-scheme: light;
+  overflow-x: clip;
+}
+
+.ll-platform ::selection {
+  background: #e2b43a;
+  color: #142018;
+}
+
+.dark .ll-platform :is(h1, h2, h3) {
+  font-family: var(--font-display), sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.dark .ll-platform .font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.dark .ll-platform :is(.text-white, .dark\:text-white, .hover\:text-white:hover) {
+  color: #142018;
+}
+
+.dark .ll-platform :is(
+  .bg-blue-600,
+  .bg-blue-500,
+  .bg-blue-700,
+  .bg-emerald-600,
+  .bg-emerald-500,
+  .bg-emerald-700,
+  .bg-green-600,
+  .bg-green-500,
+  .bg-green-700,
+  .bg-red-500,
+  .bg-red-600,
+  .bg-red-700,
+  .bg-black,
+  .bg-primary,
+  .dark\:bg-zinc-100
+) :is(.text-white, .dark\:text-white),
+.dark .ll-platform :is(
+  .bg-blue-600,
+  .bg-blue-500,
+  .bg-blue-700,
+  .bg-emerald-600,
+  .bg-emerald-500,
+  .bg-emerald-700,
+  .bg-green-600,
+  .bg-green-500,
+  .bg-green-700,
+  .bg-red-500,
+  .bg-red-600,
+  .bg-red-700,
+  .bg-black,
+  .bg-primary,
+  .dark\:bg-zinc-100
+).text-white,
+.dark .ll-platform :is(
+  .bg-blue-600,
+  .bg-blue-500,
+  .bg-blue-700,
+  .bg-emerald-600,
+  .bg-emerald-500,
+  .bg-emerald-700,
+  .bg-green-600,
+  .bg-green-500,
+  .bg-green-700,
+  .bg-red-500,
+  .bg-red-600,
+  .bg-red-700
+),
+.dark .ll-platform :is(
+  .hover\:bg-blue-600,
+  .hover\:bg-blue-500,
+  .hover\:bg-blue-700,
+  .dark\:hover\:bg-blue-600,
+  .dark\:hover\:bg-blue-700,
+  .hover\:bg-emerald-600,
+  .hover\:bg-emerald-500,
+  .hover\:bg-emerald-700,
+  .hover\:bg-green-600,
+  .hover\:bg-green-500,
+  .hover\:bg-green-700,
+  .hover\:bg-red-500,
+  .hover\:bg-red-600,
+  .hover\:bg-red-700
+):hover {
+  color: #FFFFFF;
+}
+
+.dark .ll-platform :is(input, select, textarea) {
+  background-color: #FFFFFF;
+  color: #142018;
+  border-color: #E7D4C3;
+}
+
+.dark .ll-platform :is(input, textarea)::placeholder {
+  color: #5c7364;
+}
+
+.dark .ll-platform :is(.shadow-2xl, .shadow-xl) {
+  box-shadow: 0 18px 40px -24px rgba(20, 32, 24, 0.45);
+}
+
+.dark .ll-platform .shadow-lg {
+  box-shadow: 0 10px 24px -16px rgba(20, 32, 24, 0.4);
+}
+
+.ll-platform :focus-visible {
+  outline: 2px solid #142018;
+  outline-offset: 2px;
+}
+
+.ll-platform main {
+  min-width: 0;
+}
+
+/* iOS Safari zooms the page when a focused field is under 16px.
+   Phones in landscape are wider than 767px, so the floor covers that range.
+   Larger text utilities stay larger. Zoom stays enabled. */
+@media (max-width: 1024px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  :is(input, select, textarea).text-lg {
+    font-size: 1.125rem;
+  }
+
+  :is(input, select, textarea).text-xl {
+    font-size: 1.25rem;
+  }
+
+  :is(input, select, textarea).text-2xl {
+    font-size: 1.5rem;
+  }
+
+  :is(input, select, textarea).text-3xl {
+    font-size: 1.875rem;
   }
 }
