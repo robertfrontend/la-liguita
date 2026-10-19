@@ -3,19 +3,19 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #e4ebd8;
+  --background: #FFF8F1;
   --foreground: #142018;
   --primary: #142018;
-  --primary-foreground: #f4f6ef;
-  --secondary: #f4f6ef;
+  --primary-foreground: #FFFFFF;
+  --secondary: #FFFFFF;
   --secondary-foreground: #142018;
-  --card: #f4f6ef;
+  --card: #FFFFFF;
   --card-foreground: #142018;
-  --border: #c3d0b4;
+  --border: #E7D4C3;
   --muted: #314237;
   --ink: #142018;
-  --paper: #e4ebd8;
-  --chalk: #f4f6ef;
+  --paper: #FFF8F1;
+  --chalk: #FFFFFF;
   --gold: #e2b43a;
 }
 
@@ -23,21 +23,21 @@
    into the landing palette. Without .dark, Tailwind's default scale remains
    so the light-mode utility pairs stay readable. */
 .dark {
-  --background: #e4ebd8;
+  --background: #FFF8F1;
   --foreground: #142018;
   --primary: #142018;
-  --primary-foreground: #f4f6ef;
-  --secondary: #f4f6ef;
+  --primary-foreground: #FFFFFF;
+  --secondary: #FFFFFF;
   --secondary-foreground: #142018;
-  --card: #f4f6ef;
+  --card: #FFFFFF;
   --card-foreground: #142018;
-  --border: #c3d0b4;
+  --border: #E7D4C3;
   --muted: #314237;
 
-  --color-zinc-950: #e4ebd8;
-  --color-zinc-900: #f4f6ef;
-  --color-zinc-800: #d7e2c8;
-  --color-zinc-700: #c3d0b4;
+  --color-zinc-950: #FFF8F1;
+  --color-zinc-900: #FFFFFF;
+  --color-zinc-800: #F3E3D4;
+  --color-zinc-700: #E7D4C3;
   --color-zinc-600: #6d8576;
   --color-zinc-500: #4e6758;
   --color-zinc-400: #314237;
@@ -45,8 +45,8 @@
   --color-zinc-200: #1c2b22;
   --color-zinc-100: #142018;
 
-  --color-blue-950: #f3ead2;
-  --color-blue-900: #e6d7b0;
+  --color-blue-950: #FFF3E8;
+  --color-blue-900: #F6E0CE;
   --color-blue-400: #8a6212;
   --color-blue-300: #a87416;
   --color-blue-200: #7a5410;
@@ -106,7 +106,7 @@ body {
 
 html:has(.ll-platform),
 html:has(.ll-platform) body {
-  background: #e4ebd8;
+  background: #FFF8F1;
   color: #142018;
 }
 
@@ -118,7 +118,7 @@ html:has(.ll-platform) body {
 
 .ll-platform {
   font-family: var(--font-barlow), sans-serif;
-  background: #e4ebd8;
+  background: #FFF8F1;
   color: #142018;
   color-scheme: light;
   overflow-x: clip;
@@ -179,13 +179,13 @@ html:has(.ll-platform) body {
   .bg-red-500,
   .bg-red-600
 ) {
-  color: #f4f6ef;
+  color: #FFFFFF;
 }
 
 .dark .ll-platform :is(input, select, textarea) {
-  background-color: #f4f6ef;
+  background-color: #FFFFFF;
   color: #142018;
-  border-color: #c3d0b4;
+  border-color: #E7D4C3;
 }
 
 .dark .ll-platform :is(input, textarea)::placeholder {

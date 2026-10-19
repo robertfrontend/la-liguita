@@ -1,10 +1,10 @@
 .ll-home {
   --ink: #142018;
   --muted: #314237;
-  --paper: #e4ebd8;
-  --paper-2: #d7e2c8;
-  --line: #c3d0b4;
-  --chalk: #f4f6ef;
+  --paper: #FFF8F1;
+  --paper-2: #F3E3D4;
+  --line: #E7D4C3;
+  --chalk: #FFFFFF;
   --gold: #e2b43a;
   min-height: 100vh;
   background: var(--paper);
@@ -16,7 +16,7 @@
 
 html:has(.ll-home),
 html:has(.ll-home) body {
-  background: #e4ebd8;
+  background: #FFF8F1;
   color: #142018;
 }
 
@@ -31,7 +31,7 @@ html:has(.ll-home) body {
   top: -4rem;
   z-index: 5;
   background: #142018;
-  color: #f4f6ef;
+  color: #FFFFFF;
   padding: 0.6rem 0.9rem;
   text-decoration: none;
 }
