@@ -129,7 +129,7 @@ html:has(.ll-platform) body {
   color: #142018;
 }
 
-.dark .ll-platform :is(h1, h2, h3, .font-black) {
+.dark .ll-platform :is(h1, h2, h3) {
   font-family: var(--font-display), sans-serif;
   letter-spacing: -0.02em;
 }
@@ -207,5 +207,31 @@ html:has(.ll-platform) body {
 
 .ll-platform main {
   min-width: 0;
-  max-width: 100%;
+}
+
+/* iOS Safari zooms the page when a focused field is under 16px.
+   Phones in landscape are wider than 767px, so the floor covers that range.
+   Larger text utilities stay larger. Zoom stays enabled. */
+@media (max-width: 1024px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  :is(input, select, textarea).text-lg {
+    font-size: 1.125rem;
+  }
+
+  :is(input, select, textarea).text-xl {
+    font-size: 1.25rem;
+  }
+
+  :is(input, select, textarea).text-2xl {
+    font-size: 1.5rem;
+  }
+
+  :is(input, select, textarea).text-3xl {
+    font-size: 1.875rem;
+  }
 }

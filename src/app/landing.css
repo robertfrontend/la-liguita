@@ -160,11 +160,12 @@ html:has(.ll-home) body {
 }
 
 .ll-board {
-  background: #09090b;
-  color: #fafafa;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line);
   border-radius: 18px;
   padding: 0.85rem;
-  box-shadow: 10px 12px 0 #c9d4b8;
+  box-shadow: 0 18px 40px -24px rgba(20, 32, 24, 0.45);
   min-width: 0;
 }
 
@@ -179,12 +180,14 @@ html:has(.ll-home) body {
   width: 2.4rem;
   height: 2.4rem;
   border-radius: 10px;
-  background: #27272a;
-  color: #60a5fa;
+  background: var(--paper-2);
+  color: var(--ink);
+  border: 1px solid var(--line);
   display: grid;
   place-items: center;
-  font-family: var(--font-display), sans-serif;
+  font-family: var(--font-barlow), sans-serif;
   font-size: 1.05rem;
+  font-weight: 700;
   flex: none;
 }
 
@@ -195,14 +198,20 @@ html:has(.ll-home) body {
 
 .ll-board-head small {
   display: block;
-  color: #a1a1aa;
+  color: var(--muted);
   font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .ll-board-head strong {
   display: block;
-  font-size: 1rem;
-  font-weight: 400;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -212,8 +221,8 @@ html:has(.ll-home) body {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.25rem;
-  background: #09090b;
-  border: 1px solid #27272a;
+  background: var(--paper);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 0.25rem;
   margin-bottom: 0.7rem;
@@ -222,20 +231,22 @@ html:has(.ll-home) body {
 .ll-tabs span {
   text-align: center;
   font-size: clamp(0.62rem, 2.5vw, 0.78rem);
-  color: #a1a1aa;
+  font-weight: 600;
+  color: var(--muted);
   padding: 0.45rem 0.15rem;
   border-radius: 8px;
   min-width: 0;
 }
 
 .ll-tabs .is-on {
-  background: #27272a;
-  color: #fff;
+  background: var(--paper-2);
+  color: var(--ink);
+  font-weight: 700;
 }
 
 .ll-game {
-  background: #18181b;
-  border: 1px solid #27272a;
+  background: var(--chalk);
+  border: 1px solid var(--line);
   border-radius: 14px;
   padding: 0.9rem 0.95rem 0.75rem;
 }
@@ -244,14 +255,22 @@ html:has(.ll-home) body {
   display: flex;
   justify-content: space-between;
   gap: 0.75rem;
-  align-items: baseline;
-  color: #a1a1aa;
+  align-items: center;
+  color: var(--muted);
   font-size: 0.78rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--line);
 }
 
 .ll-game-top b {
-  color: #86efac;
-  font-weight: 400;
+  color: var(--ink);
+  background: var(--paper-2);
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.18rem 0.45rem;
+  border-radius: 6px;
 }
 
 .ll-team {
@@ -260,6 +279,7 @@ html:has(.ll-home) body {
   gap: 0.75rem;
   align-items: baseline;
   margin-top: 0.7rem;
+  color: var(--ink);
 }
 
 .ll-team span {
@@ -267,32 +287,38 @@ html:has(.ll-home) body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 1.02rem;
+  font-family: var(--font-barlow), sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.2;
 }
 
 .ll-team b {
-  font-family: var(--font-display), sans-serif;
-  font-size: clamp(2rem, 7vw, 3.15rem);
-  line-height: 0.85;
-  font-weight: 700;
+  font-family: var(--font-barlow), sans-serif;
+  font-size: 1.5rem;
+  line-height: 1;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
-.ll-team.is-behind {
-  color: #a1a1aa;
+.ll-team.is-behind span,
+.ll-team.is-behind b {
+  color: var(--muted);
+  font-weight: 600;
 }
 
 .ll-note {
   margin: 0.85rem 0 0.15rem;
   padding-top: 0.7rem;
-  border-top: 1px solid #27272a;
-  color: #a1a1aa;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
   font-size: 0.82rem;
 }
 
 .ll-standings {
   margin-top: 0.7rem;
-  background: #18181b;
-  border: 1px solid #27272a;
+  background: var(--chalk);
+  border: 1px solid var(--line);
   border-radius: 14px;
   padding: 0.75rem 0.95rem 0.4rem;
 }
@@ -300,7 +326,10 @@ html:has(.ll-home) body {
 .ll-standings p {
   margin: 0 0 0.35rem;
   font-size: 0.78rem;
-  color: #a1a1aa;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .ll-standings ol {
@@ -314,7 +343,7 @@ html:has(.ll-home) body {
   grid-template-columns: 1.25rem minmax(0, 1fr) auto;
   gap: 0.45rem;
   padding: 0.42rem 0;
-  border-top: 1px solid #27272a;
+  border-top: 1px solid var(--line);
   font-size: 0.92rem;
 }
 
