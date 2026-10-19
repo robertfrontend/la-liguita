@@ -94,7 +94,7 @@ export function SuperAdminDashboard() {
     const unsub = subscribeToAllTournaments((list) => {
       setTournaments(list);
       setLoading(false);
-    });
+    }, { includeAccessCodes: true });
     return () => unsub();
   }, []);
 
@@ -105,9 +105,8 @@ export function SuperAdminDashboard() {
   };
 
   const handleCopyInviteLink = (t: Tournament) => {
-    const pin = t.adminAccessCode || `LGT-${t.id.slice(0, 4).toUpperCase()}`;
     const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const inviteLink = `${origin}/login?pin=${pin}`;
+    const inviteLink = `${origin}/login`;
 
     navigator.clipboard.writeText(inviteLink);
     setCopiedPinId(t.id);
@@ -493,7 +492,7 @@ export function SuperAdminDashboard() {
               const isPro = t.tier === "pro";
               const adminCount = t.adminEmails ? t.adminEmails.length : 0;
               const isCopied = copiedPinId === t.id;
-              const pin = t.adminAccessCode || `LGT-${t.id.slice(0, 4).toUpperCase()}`;
+              const pin = t.adminAccessCode || "—";
 
               return (
                 <div
@@ -887,7 +886,7 @@ export function SuperAdminDashboard() {
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {tournaments.map((t) => {
-              const pin = t.adminAccessCode || `LGT-${t.id.slice(0, 4).toUpperCase()}`;
+              const pin = t.adminAccessCode || "—";
               const isCopied = copiedPinId === t.id;
               const adminCount = t.adminEmails ? t.adminEmails.length : 0;
 
@@ -947,7 +946,7 @@ export function SuperAdminDashboard() {
                     </button>
 
                     <Link
-                      href={`/admin?pin=${pin}`}
+                      href="/login"
                       target="_blank"
                       className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl transition border border-zinc-700"
                       title="Probar Acceso"

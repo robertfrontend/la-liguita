@@ -9,14 +9,21 @@ import { auth, firebaseConfig } from "@/lib/firebase";
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { Tournament } from "@/types/tournament";
 
-export const SUPER_ADMIN_EMAIL = (process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL || "").trim().toLowerCase();
+const superAdminClaims = new Map<string, boolean>();
+
+/** Called by AuthProvider after the ID token is read. Email matching is not authorization. */
+export function rememberSuperAdminClaim(uid: string, value: boolean) {
+  superAdminClaims.set(uid, value === true);
+}
+
+export function clearSuperAdminClaim(uid?: string) {
+  if (uid) superAdminClaims.delete(uid);
+  else superAdminClaims.clear();
+}
 
 export const isSuperAdmin = (user: User | null | undefined): boolean => {
-  if (!user || !user.email) return false;
-  const email = user.email.trim().toLowerCase();
-  if (SUPER_ADMIN_EMAIL && email === SUPER_ADMIN_EMAIL) return true;
-  if (email.startsWith("robert02frontend@") || email.includes("robert02frontend")) return true;
-  return false;
+  if (!user) return false;
+  return superAdminClaims.get(user.uid) === true;
 };
 
 export const canAdminTournament = (user: User | null | undefined, tournament: Tournament | null | undefined): boolean => {

@@ -90,6 +90,13 @@ function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperPro
     if (urlPin && processedPinRef.current !== urlPin) {
       processedPinRef.current = urlPin;
       setPinCode(urlPin);
+      // Drop the code from the address bar so it is not kept in history or the Referer.
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("pin");
+        url.searchParams.delete("code");
+        window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+      }
       executePinVerification(urlPin);
     } else if (!urlPin && !processedPinRef.current) {
       // Verificar si ya había un PIN desbloqueado en la sesión
@@ -105,7 +112,12 @@ function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperPro
   // Si el usuario ya está autenticado y hay un torneo desbloqueado, asegurar vinculación
   useEffect(() => {
     if (user && user.email && unlockedTournament && unlockedTournament.id !== "superadmin-root" && !isSuperAdmin(user)) {
-      claimTournamentWithAccessCode(unlockedTournament.id, user.email);
+      const savedPin = typeof window !== "undefined" ? sessionStorage.getItem("admin_unlocked_pin") || "" : "";
+      claimTournamentWithAccessCode(unlockedTournament.id, user.email, savedPin).then((ok) => {
+        if (ok && typeof window !== "undefined") {
+          sessionStorage.removeItem("admin_unlocked_pin");
+        }
+      });
     }
   }, [user, unlockedTournament]);
 
@@ -153,7 +165,7 @@ function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperPro
 
       // Si había un torneo desbloqueado, vincular el usuario al torneo
       if (unlockedTournament && unlockedTournament.id !== "superadmin-root") {
-        await claimTournamentWithAccessCode(unlockedTournament.id, resolvedIdentifier);
+        await claimTournamentWithAccessCode(unlockedTournament.id, resolvedIdentifier, pinCode);
         if (onSuccess) {
           onSuccess(unlockedTournament);
         } else {

@@ -1,6 +1,6 @@
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { slugify } from "@/lib/db";
+import { setTournamentAccessCode, slugify } from "@/lib/db";
 import { TournamentTier, Sport, TournamentGame } from "@/types/tournament";
 
 export interface ProvisionOptions {
@@ -137,7 +137,6 @@ export async function provisionConfiguredTournament(options: ProvisionOptions): 
     tier,
     ownerId,
     adminEmails: cleanEmails,
-    adminAccessCode: generatedPin,
     organizationName: organizationName.trim() || "Liga Oficial",
     status: "active",
     createdAt: new Date().toISOString(),
@@ -158,6 +157,12 @@ export async function provisionConfiguredTournament(options: ProvisionOptions): 
 
   const tournamentRef = await addDoc(collection(db, "tournaments"), tournamentDoc);
   const tournamentId = tournamentRef.id;
+  try {
+    await setTournamentAccessCode(tournamentId, generatedPin);
+  } catch (error) {
+    await deleteDoc(tournamentRef).catch(() => {});
+    throw error;
+  }
 
   // 2. Determinar la lista base de equipos según temática
   let sourceTeams = DOMINICAN_BASKETBALL_TEAMS;

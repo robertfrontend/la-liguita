@@ -1,4 +1,4 @@
-import { db } from "./firebase";
+import { auth, db } from "./firebase";
 import { 
   collection, 
   doc, 
@@ -38,6 +38,53 @@ const GAMES_SUBCOLLECTION = "games";
 const TEAMS_SUBCOLLECTION = "teams";
 const PLAY_BY_PLAY_SUBCOLLECTION = "playByPlay";
 const REFEREES_SUBCOLLECTION = "referees";
+const REFEREE_CONTACTS_SUBCOLLECTION = "refereeContacts";
+const PRIVATE_ACCESS_DOC = "access";
+
+function toPublicTournament(id: string, data: Record<string, unknown>, accessCode?: string): Tournament {
+  const tournament = { ...data, id } as Tournament;
+  delete tournament.adminAccessCode;
+  if (accessCode) tournament.adminAccessCode = accessCode;
+  return tournament;
+}
+
+async function readManagerAccessCode(tournamentId: string, legacyCode?: unknown): Promise<string | undefined> {
+  if (!auth?.currentUser) return undefined;
+  try {
+    const snap = await getDoc(doc(db, TOURNAMENTS_COLLECTION, tournamentId, "private", PRIVATE_ACCESS_DOC));
+    if (snap.exists()) {
+      const code = snap.data()?.code;
+      if (typeof code === "string" && code.trim()) return code.trim().toUpperCase();
+      return undefined;
+    }
+    return typeof legacyCode === "string" && legacyCode.trim() ? legacyCode.trim().toUpperCase() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+async function authHeaders(required: boolean): Promise<Record<string, string>> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (auth?.currentUser) {
+    headers.Authorization = `Bearer ${await auth.currentUser.getIdToken()}`;
+  } else if (required) {
+    throw new Error("Debes iniciar sesión.");
+  }
+  return headers;
+}
+
+export async function setTournamentAccessCode(tournamentId: string, code: string): Promise<string> {
+  const res = await fetch("/api/admin/access-code/set", {
+    method: "POST",
+    headers: await authHeaders(true),
+    body: JSON.stringify({ tournamentId, code }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(typeof data.message === "string" ? data.message : "No se pudo guardar el código de acceso.");
+  }
+  return String(data.code || code).trim().toUpperCase();
+}
 
 // --- User Profile ---
 
@@ -366,31 +413,42 @@ export const slugify = (text: string): string => {
 
 export const createTournamentInDb = async (tournamentData: Omit<Tournament, "id">) => {
   const cleanSlug = tournamentData.slug || slugify(tournamentData.name);
-  const payload = {
-    ...tournamentData,
-    slug: cleanSlug,
-  };
-  const docRef = await addDoc(collection(db, TOURNAMENTS_COLLECTION), payload);
-  return { id: docRef.id, ...payload } as Tournament;
+  const raw = { ...tournamentData, slug: cleanSlug } as Record<string, unknown>;
+  const accessCode = typeof raw.adminAccessCode === "string" ? raw.adminAccessCode : undefined;
+  delete raw.adminAccessCode;
+  delete raw.adminUids;
+  const docRef = await addDoc(collection(db, TOURNAMENTS_COLLECTION), raw);
+  if (accessCode) {
+    await setTournamentAccessCode(docRef.id, accessCode);
+  }
+  return toPublicTournament(docRef.id, raw, accessCode);
 };
 
 export const getTournament = async (tournamentId: string): Promise<Tournament | null> => {
   const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId);
   const snap = await getDoc(docRef);
   if (snap.exists()) {
-    return { id: snap.id, ...snap.data() } as Tournament;
+    const legacy = snap.data().adminAccessCode;
+    const code = await readManagerAccessCode(tournamentId, legacy);
+    return toPublicTournament(snap.id, snap.data(), code);
   }
   return null;
 };
 
 export const subscribeToTournament = (tournamentId: string, callback: (tournament: Tournament | null) => void) => {
   const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId);
+  let generation = 0;
   return onSnapshot(docRef, (snap) => {
-    if (snap.exists()) {
-      callback({ id: snap.id, ...snap.data() } as Tournament);
-    } else {
+    const gen = ++generation;
+    if (!snap.exists()) {
       callback(null);
+      return;
     }
+    const legacy = snap.data().adminAccessCode;
+    readManagerAccessCode(tournamentId, legacy).then((code) => {
+      if (gen !== generation) return;
+      callback(toPublicTournament(snap.id, snap.data(), code));
+    });
   }, (error) => {
     console.error("Error subscribing to tournament:", error);
     callback(null);
@@ -419,7 +477,7 @@ export const subscribeToTournamentBySlugOrId = (
   const slugUnsub = onSnapshot(qSlug, (snapshot) => {
     if (!snapshot.empty) {
       const docSnap = snapshot.docs[0];
-      callback({ ...docSnap.data(), id: docSnap.id } as Tournament);
+      callback(toPublicTournament(docSnap.id, docSnap.data()));
     } else {
       // 2. Si no se encontró por slug, escuchar por ID de documento directo
       if (!docUnsub && !isUnsubscribed) {
@@ -432,7 +490,7 @@ export const subscribeToTournamentBySlugOrId = (
               const generatedSlug = slugify(data.name);
               updateDoc(docRef, { slug: generatedSlug }).catch(() => {});
             }
-            callback({ ...data, id: snap.id } as Tournament);
+            callback(toPublicTournament(snap.id, snap.data()));
           } else {
             callback(null);
           }
@@ -470,7 +528,7 @@ export const getTournamentBySlugOrId = async (
     const snap = await getDocs(qSlug);
     if (!snap.empty) {
       const docSnap = snap.docs[0];
-      return { ...docSnap.data(), id: docSnap.id } as Tournament;
+      return toPublicTournament(docSnap.id, docSnap.data());
     }
   } catch (err) {
     console.error("Error getting tournament by slug:", err);
@@ -481,7 +539,7 @@ export const getTournamentBySlugOrId = async (
     const docRef = doc(db, TOURNAMENTS_COLLECTION, slugOrId);
     const snap = await getDoc(docRef);
     if (snap.exists()) {
-      return { ...snap.data(), id: snap.id } as Tournament;
+      return toPublicTournament(snap.id, snap.data());
     }
   } catch (err) {
     console.error("Error getting tournament by ID:", err);
@@ -494,7 +552,7 @@ export const subscribeToTournaments = (ownerId: string, callback: (tournaments: 
   if (!ownerId) return () => {};
   const q = query(collection(db, TOURNAMENTS_COLLECTION), where("ownerId", "==", ownerId));
   return onSnapshot(q, (snapshot) => {
-    const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Tournament));
+    const list = snapshot.docs.map(d => toPublicTournament(d.id, d.data()));
     callback(list);
   }, (error) => {
     console.error("Error subscribing to tournaments:", error);
@@ -502,17 +560,42 @@ export const subscribeToTournaments = (ownerId: string, callback: (tournaments: 
   });
 };
 
-export const subscribeToAllTournaments = (callback: (tournaments: Tournament[]) => void) => {
+export const subscribeToAllTournaments = (
+  callback: (tournaments: Tournament[]) => void,
+  options?: { includeAccessCodes?: boolean }
+) => {
   try {
     const q = query(collection(db, TOURNAMENTS_COLLECTION));
+    let generation = 0;
     return onSnapshot(q, (snapshot) => {
-      const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Tournament));
-      const sorted = list.sort((a, b) => {
-        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return timeB - timeA;
+      const gen = ++generation;
+      const list = snapshot.docs.map((d) => {
+        const legacy = d.data().adminAccessCode;
+        return { tournament: toPublicTournament(d.id, d.data()), legacy };
       });
-      callback(sorted);
+      const publish = (tournaments: Tournament[]) => {
+        if (gen !== generation) return;
+        tournaments.sort((a, b) => {
+          const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return timeB - timeA;
+        });
+        callback(tournaments);
+      };
+
+      if (!options?.includeAccessCodes) {
+        publish(list.map((row) => row.tournament));
+        return;
+      }
+
+      Promise.all(
+        list.map(async (row) => {
+          const code = await readManagerAccessCode(row.tournament.id, row.legacy);
+          return code ? { ...row.tournament, adminAccessCode: code } : row.tournament;
+        })
+      )
+        .then(publish)
+        .catch(() => publish(list.map((row) => row.tournament)));
     }, (error) => {
       console.error("Error subscribing to all tournaments:", error);
       callback([]);
@@ -535,7 +618,7 @@ export const subscribeToAssignedTournaments = (email: string, callback: (tournam
   const q = query(collection(db, TOURNAMENTS_COLLECTION));
   return onSnapshot(q, (snapshot) => {
     const list = snapshot.docs
-      .map(d => ({ id: d.id, ...d.data() } as Tournament))
+      .map(d => toPublicTournament(d.id, d.data()))
       .filter(t => {
         if (!t.adminEmails || !Array.isArray(t.adminEmails)) return false;
         return t.adminEmails.some(ae => {
@@ -551,8 +634,18 @@ export const subscribeToAssignedTournaments = (email: string, callback: (tournam
 };
 
 export const updateTournamentInDb = async (tournamentId: string, updates: Partial<Tournament>) => {
-  const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId);
-  await updateDoc(docRef, { ...updates, updatedAt: new Date().toISOString() });
+  const raw = { ...updates } as Record<string, unknown>;
+  const accessCode = typeof raw.adminAccessCode === "string" ? raw.adminAccessCode : undefined;
+  delete raw.adminAccessCode;
+  delete raw.ownerId;
+  delete raw.adminUids;
+  if (accessCode) {
+    await setTournamentAccessCode(tournamentId, accessCode);
+  }
+  if (Object.keys(raw).length > 0) {
+    const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId);
+    await updateDoc(docRef, { ...raw, updatedAt: new Date().toISOString() });
+  }
 };
 
 export const deleteTournamentFromDb = async (tournamentId: string) => {
@@ -571,7 +664,11 @@ export const deleteTournamentFromDb = async (tournamentId: string) => {
   const refereesSnap = await getDocs(collection(db, TOURNAMENTS_COLLECTION, tournamentId, REFEREES_SUBCOLLECTION));
   const deleteReferees = refereesSnap.docs.map(d => deleteDoc(d.ref));
 
-  await Promise.all([...deleteTeams, ...deleteGames, ...deletePlayers, ...deleteReferees]);
+  const contactsSnap = await getDocs(collection(db, TOURNAMENTS_COLLECTION, tournamentId, REFEREE_CONTACTS_SUBCOLLECTION));
+  const deleteContacts = contactsSnap.docs.map(d => deleteDoc(d.ref));
+  const deleteAccess = deleteDoc(doc(db, TOURNAMENTS_COLLECTION, tournamentId, "private", PRIVATE_ACCESS_DOC)).catch(() => {});
+
+  await Promise.all([...deleteTeams, ...deleteGames, ...deletePlayers, ...deleteReferees, ...deleteContacts, deleteAccess]);
   await deleteDoc(docRef);
 };
 
@@ -996,9 +1093,30 @@ export const deleteTournamentPlayerFromDb = async (tournamentId: string, playerI
 
 export const subscribeToReferees = (tournamentId: string, callback: (referees: Referee[]) => void) => {
   const q = query(collection(db, TOURNAMENTS_COLLECTION, tournamentId, REFEREES_SUBCOLLECTION));
+  let generation = 0;
   return onSnapshot(q, (snapshot) => {
-    const referees = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Referee));
-    callback(referees);
+    const gen = ++generation;
+    const referees = snapshot.docs.map((d) => {
+      const data = { ...d.data() } as Referee;
+      delete data.phone;
+      return { ...data, id: d.id };
+    });
+    if (!auth?.currentUser) {
+      callback(referees);
+      return;
+    }
+    getDocs(collection(db, TOURNAMENTS_COLLECTION, tournamentId, REFEREE_CONTACTS_SUBCOLLECTION))
+      .then((contacts) => {
+        if (gen !== generation) return;
+        const phones = new Map(contacts.docs.map((d) => [d.id, d.data().phone]));
+        callback(referees.map((ref) => {
+          const phone = phones.get(ref.id);
+          return typeof phone === "string" && phone ? { ...ref, phone } : ref;
+        }));
+      })
+      .catch(() => {
+        if (gen === generation) callback(referees);
+      });
   }, (error) => {
     console.error("Error in subscribeToReferees:", error);
     callback([]);
@@ -1006,8 +1124,14 @@ export const subscribeToReferees = (tournamentId: string, callback: (referees: R
 };
 
 export const addRefereeToDb = async (tournamentId: string, refData: Omit<Referee, "id">) => {
-  const docRef = await addDoc(collection(db, TOURNAMENTS_COLLECTION, tournamentId, REFEREES_SUBCOLLECTION), refData);
-  return { id: docRef.id, ...refData } as Referee;
+  const { phone, ...publicData } = refData;
+  const docRef = await addDoc(collection(db, TOURNAMENTS_COLLECTION, tournamentId, REFEREES_SUBCOLLECTION), publicData);
+  if (phone) {
+    await setDoc(doc(db, TOURNAMENTS_COLLECTION, tournamentId, REFEREE_CONTACTS_SUBCOLLECTION, docRef.id), {
+      phone,
+    });
+  }
+  return { id: docRef.id, ...publicData, phone } as Referee;
 };
 
 // --- Unique Access Codes / PIN System for Admin Gatekeeper ---
@@ -1017,64 +1141,37 @@ export const generateAdminAccessCode = (prefix: string = "LGT"): string => {
   return `${prefix.toUpperCase()}-${randomNum}`;
 };
 
-export const MASTER_SUPERADMIN_CODES = ["SUPER2026", "LGT-SUPER", "SUPERADMIN", "LGT-ROOT", "ADMIN2026", "2026", "LGT-ADMIN"];
-
-export const verifyAdminAccessCode = async (rawCode: string): Promise<{ valid: boolean; tournament?: Tournament; message?: string }> => {
+export const verifyAdminAccessCode = async (
+  rawCode: string,
+  claim = false
+): Promise<{ valid: boolean; tournament?: Tournament; message?: string }> => {
   if (!rawCode || !rawCode.trim()) {
     return { valid: false, message: "Ingresa un código de acceso válido." };
   }
 
   const cleanCode = rawCode.trim().toUpperCase();
-
-  // 0. Acceso Maestro para Super Administrador (Aislado, no asigna a torneos particulares)
-  if (MASTER_SUPERADMIN_CODES.includes(cleanCode)) {
-    return {
-      valid: true,
-      tournament: {
-        id: "superadmin-root",
-        name: "Consola de Super Administrador",
-        organizationName: "La Liguita HQ",
-        sport: "basketball",
-        tier: "pro",
-        status: "published",
-        ownerId: "superadmin",
-        slug: "superadmin",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        settings: { maxTeams: 16 }
-      } as unknown as Tournament
-    };
-  }
+  const shouldClaim = claim || Boolean(auth?.currentUser);
 
   try {
-    // 1. Búsqueda directa por adminAccessCode
-    const q = query(
-      collection(db, TOURNAMENTS_COLLECTION),
-      where("adminAccessCode", "==", cleanCode)
-    );
-    const snap = await getDocs(q);
-
-    if (!snap.empty) {
-      const docSnap = snap.docs[0];
-      const tournament = { id: docSnap.id, ...docSnap.data() } as Tournament;
-      return { valid: true, tournament };
+    const res = await fetch("/api/admin/access-code", {
+      method: "POST",
+      headers: await authHeaders(shouldClaim && claim),
+      body: JSON.stringify({ code: cleanCode, claim: shouldClaim }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 401) {
+      return { valid: false, message: data.message || "Inicia sesión para canjear el código de acceso." };
     }
-
-    // 2. Búsqueda de respaldo en todos los torneos (por derivación de ID o sin PIN previo)
-    const allSnap = await getDocs(collection(db, TOURNAMENTS_COLLECTION));
-    for (const d of allSnap.docs) {
-      const data = d.data();
-      const derivedPin = `LGT-${d.id.slice(0, 4).toUpperCase()}`;
-      if (
-        (data.adminAccessCode && data.adminAccessCode.trim().toUpperCase() === cleanCode) ||
-        cleanCode === derivedPin ||
-        cleanCode === d.id.toUpperCase()
-      ) {
-        return { valid: true, tournament: { id: d.id, ...data } as Tournament };
-      }
+    if (res.status === 429) {
+      return { valid: false, message: data.message || "Demasiados intentos. Espera un momento." };
     }
-
-    return { valid: false, message: "Código o PIN no encontrado. Usa tu PIN asignado o el código maestro de Super Admin." };
+    if (!res.ok) {
+      return { valid: false, message: data.message || "Error de conexión al verificar el código." };
+    }
+    if (data.valid && data.tournament) {
+      return { valid: true, tournament: data.tournament as Tournament };
+    }
+    return { valid: false, message: data.message || "Código o PIN no encontrado." };
   } catch (error) {
     console.error("Error verificando código de acceso:", error);
     return { valid: false, message: "Error de conexión al verificar el código." };
@@ -1083,34 +1180,21 @@ export const verifyAdminAccessCode = async (rawCode: string): Promise<{ valid: b
 
 export const regenerateTournamentAccessCode = async (tournamentId: string, customCode?: string): Promise<string> => {
   const newCode = customCode ? customCode.trim().toUpperCase() : generateAdminAccessCode();
-  const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId);
-  await updateDoc(docRef, {
-    adminAccessCode: newCode,
-    updatedAt: new Date().toISOString(),
-  });
-  return newCode;
+  return setTournamentAccessCode(tournamentId, newCode);
 };
 
-export const claimTournamentWithAccessCode = async (tournamentId: string, userEmail: string): Promise<boolean> => {
-  if (!tournamentId || !userEmail) return false;
-  const cleanEmail = userEmail.trim().toLowerCase();
+export const claimTournamentWithAccessCode = async (
+  tournamentId: string,
+  _userEmail?: string,
+  rawCode?: string
+): Promise<boolean> => {
+  const code = rawCode
+    || (typeof window !== "undefined" ? sessionStorage.getItem("admin_unlocked_pin") || "" : "");
+  if (!tournamentId || !code) return false;
 
   try {
-    const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId);
-    const snap = await getDoc(docRef);
-    if (!snap.exists()) return false;
-
-    const data = snap.data() as Tournament;
-    const existing = (data.adminEmails || []).map(e => e.trim().toLowerCase());
-
-    if (!existing.includes(cleanEmail)) {
-      existing.push(cleanEmail);
-      await updateDoc(docRef, {
-        adminEmails: existing,
-        updatedAt: new Date().toISOString(),
-      });
-    }
-    return true;
+    const result = await verifyAdminAccessCode(code, true);
+    return Boolean(result.valid && result.tournament?.id === tournamentId);
   } catch (error) {
     console.error("Error claiming tournament admin rights:", error);
     return false;

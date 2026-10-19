@@ -24,7 +24,7 @@ export interface Tournament {
   tier: TournamentTier;
   ownerId: string;
   adminEmails?: string[];
-  adminAccessCode?: string; // Código/PIN único para acceso y asignación de administradores
+  adminAccessCode?: string; // Solo en memoria para organizadores. El valor vive en private/access, no en el documento público.
   organizationName?: string;
   bannerUrl?: string;
   logoUrl?: string;
