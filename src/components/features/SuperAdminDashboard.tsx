@@ -16,7 +16,8 @@ import {
 import { 
   sendAdminPasswordReset, 
   createAdminAccountWithCredentials, 
-  resolveLoginIdentifier 
+  resolveLoginIdentifier,
+  canonicalAdminEmail
 } from "@/lib/auth-helpers";
 import { CreateTournamentModal } from "@/components/features/CreateTournamentModal";
 import { 
@@ -173,11 +174,14 @@ export function SuperAdminDashboard() {
   const adminDirectory: Record<string, Tournament[]> = {};
   tournaments.forEach((t) => {
     (t.adminEmails || []).forEach((email) => {
-      const clean = email.trim().toLowerCase();
+      const clean = canonicalAdminEmail(email);
+      if (!clean) return;
       if (!adminDirectory[clean]) {
         adminDirectory[clean] = [];
       }
-      adminDirectory[clean].push(t);
+      if (!adminDirectory[clean].some((row) => row.id === t.id)) {
+        adminDirectory[clean].push(t);
+      }
     });
   });
 
@@ -198,14 +202,13 @@ export function SuperAdminDashboard() {
 
   // Abrir Modal de Detalle de un Administrador
   const handleOpenAdminDetail = (email: string) => {
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanUsername = cleanEmail.replace("@laliguita.com", "");
+    const cleanEmail = canonicalAdminEmail(email);
     setSelectedAdminEmail(cleanEmail);
     setAdminDetailSuccessMsg(null);
     setAdminDetailErrorMsg(null);
 
     const assignedIds = tournaments
-      .filter(t => (t.adminEmails || []).map(e => e.trim().toLowerCase()).some(e => e === cleanEmail || e === cleanUsername))
+      .filter(t => (t.adminEmails || []).some(e => canonicalAdminEmail(e) === cleanEmail))
       .map(t => t.id);
 
     setSelectedAdminTournaments(assignedIds);

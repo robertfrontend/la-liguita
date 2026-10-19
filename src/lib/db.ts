@@ -1,4 +1,5 @@
 import { auth, db } from "./firebase";
+import { canonicalAdminEmail, canonicalAdminEmails } from "@/lib/admin-identity.mjs";
 import { 
   collection, 
   doc, 
@@ -613,7 +614,6 @@ export const subscribeToAssignedTournaments = (email: string, callback: (tournam
     return () => {};
   }
   const cleanEmail = email.trim().toLowerCase();
-  const userPrefix = cleanEmail.split("@")[0];
 
   const q = query(collection(db, TOURNAMENTS_COLLECTION));
   return onSnapshot(q, (snapshot) => {
@@ -621,10 +621,7 @@ export const subscribeToAssignedTournaments = (email: string, callback: (tournam
       .map(d => toPublicTournament(d.id, d.data()))
       .filter(t => {
         if (!t.adminEmails || !Array.isArray(t.adminEmails)) return false;
-        return t.adminEmails.some(ae => {
-          const c = ae.trim().toLowerCase();
-          return c === cleanEmail || c === userPrefix || c === `${userPrefix}@laliguita.com`;
-        });
+        return t.adminEmails.some(ae => ae.trim().toLowerCase() === cleanEmail);
       });
     callback(list);
   }, (error) => {
@@ -633,14 +630,32 @@ export const subscribeToAssignedTournaments = (email: string, callback: (tournam
   });
 };
 
+async function syncTournamentAdmins(tournamentId: string, adminEmails: string[]) {
+  const res = await fetch("/api/admin/roster", {
+    method: "POST",
+    headers: await authHeaders(true),
+    body: JSON.stringify({ tournamentId, adminEmails }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.message || "No se pudo actualizar los administradores.");
+  }
+}
+
 export const updateTournamentInDb = async (tournamentId: string, updates: Partial<Tournament>) => {
   const raw = { ...updates } as Record<string, unknown>;
   const accessCode = typeof raw.adminAccessCode === "string" ? raw.adminAccessCode : undefined;
+  const hasAdminEmails = Object.prototype.hasOwnProperty.call(updates, "adminEmails");
+  const adminEmails = hasAdminEmails ? canonicalAdminEmails(updates.adminEmails) : undefined;
   delete raw.adminAccessCode;
   delete raw.ownerId;
   delete raw.adminUids;
+  delete raw.adminEmails;
   if (accessCode) {
     await setTournamentAccessCode(tournamentId, accessCode);
+  }
+  if (hasAdminEmails) {
+    await syncTournamentAdmins(tournamentId, adminEmails || []);
   }
   if (Object.keys(raw).length > 0) {
     const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId);
@@ -1148,15 +1163,17 @@ export const verifyAdminAccessCode = async (
   if (!rawCode || !rawCode.trim()) {
     return { valid: false, message: "Ingresa un código de acceso válido." };
   }
+  if (!auth?.currentUser) {
+    return { valid: false, message: "Inicia sesión para validar el código de acceso." };
+  }
 
   const cleanCode = rawCode.trim().toUpperCase();
-  const shouldClaim = claim || Boolean(auth?.currentUser);
 
   try {
     const res = await fetch("/api/admin/access-code", {
       method: "POST",
-      headers: await authHeaders(shouldClaim && claim),
-      body: JSON.stringify({ code: cleanCode, claim: shouldClaim }),
+      headers: await authHeaders(true),
+      body: JSON.stringify({ code: cleanCode, claim }),
     });
     const data = await res.json().catch(() => ({}));
     if (res.status === 401) {
@@ -1183,58 +1200,60 @@ export const regenerateTournamentAccessCode = async (tournamentId: string, custo
   return setTournamentAccessCode(tournamentId, newCode);
 };
 
+export type AccessClaimResult = {
+  ok: boolean;
+  message?: string;
+  tournamentId?: string;
+};
+
 export const claimTournamentWithAccessCode = async (
   tournamentId: string,
   _userEmail?: string,
   rawCode?: string
-): Promise<boolean> => {
+): Promise<AccessClaimResult> => {
   const code = rawCode
     || (typeof window !== "undefined" ? sessionStorage.getItem("admin_unlocked_pin") || "" : "");
-  if (!tournamentId || !code) return false;
+  if (!code) {
+    return { ok: false, message: "No se pudo canjear el código de acceso." };
+  }
 
   try {
     const result = await verifyAdminAccessCode(code, true);
-    return Boolean(result.valid && result.tournament?.id === tournamentId);
+    if (result.valid && result.tournament && (!tournamentId || result.tournament.id === tournamentId)) {
+      return { ok: true, tournamentId: result.tournament.id };
+    }
+    return { ok: false, message: result.message || "No se pudo canjear el código de acceso." };
   } catch (error) {
     console.error("Error claiming tournament admin rights:", error);
-    return false;
+    return { ok: false, message: "No se pudo canjear el código de acceso." };
   }
 };
 
 export const grantAdminTournamentAccess = async (tournamentId: string, email: string): Promise<void> => {
   if (!tournamentId || !email) return;
-  const cleanEmail = email.trim().toLowerCase();
+  const cleanEmail = canonicalAdminEmail(email);
   const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId);
   const snap = await getDoc(docRef);
   if (!snap.exists()) return;
 
   const data = snap.data() as Tournament;
-  const existing = (data.adminEmails || []).map(e => e.trim().toLowerCase());
+  const existing = canonicalAdminEmails(data.adminEmails);
   if (!existing.includes(cleanEmail)) {
     existing.push(cleanEmail);
-    await updateDoc(docRef, {
-      adminEmails: existing,
-      updatedAt: new Date().toISOString(),
-    });
+    await syncTournamentAdmins(tournamentId, existing);
   }
 };
 
 export const revokeAdminTournamentAccess = async (tournamentId: string, email: string): Promise<void> => {
   if (!tournamentId || !email) return;
-  const cleanEmail = email.trim().toLowerCase();
+  const cleanEmail = canonicalAdminEmail(email);
   const docRef = doc(db, TOURNAMENTS_COLLECTION, tournamentId);
   const snap = await getDoc(docRef);
   if (!snap.exists()) return;
 
   const data = snap.data() as Tournament;
-  const existing = (data.adminEmails || [])
-    .map(e => e.trim().toLowerCase())
-    .filter(e => e !== cleanEmail && e !== cleanEmail.replace("@laliguita.com", ""));
-
-  await updateDoc(docRef, {
-    adminEmails: existing,
-    updatedAt: new Date().toISOString(),
-  });
+  const existing = canonicalAdminEmails(data.adminEmails).filter((entry) => entry !== cleanEmail);
+  await syncTournamentAdmins(tournamentId, existing);
 };
 
 export const updateAdminAssignedTournaments = async (
@@ -1242,26 +1261,17 @@ export const updateAdminAssignedTournaments = async (
   selectedTournamentIds: string[],
   allTournaments: Tournament[]
 ): Promise<void> => {
-  const cleanEmail = email.trim().toLowerCase();
-  const cleanUsername = cleanEmail.replace("@laliguita.com", "");
+  const cleanEmail = canonicalAdminEmail(email);
 
   for (const t of allTournaments) {
     const isSelected = selectedTournamentIds.includes(t.id);
-    const existing = (t.adminEmails || []).map(e => e.trim().toLowerCase());
-    const hasAccess = existing.includes(cleanEmail) || existing.includes(cleanUsername);
+    const existing = canonicalAdminEmails(t.adminEmails);
+    const hasAccess = existing.includes(cleanEmail);
 
     if (isSelected && !hasAccess) {
-      existing.push(cleanEmail);
-      await updateDoc(doc(db, TOURNAMENTS_COLLECTION, t.id), {
-        adminEmails: existing,
-        updatedAt: new Date().toISOString(),
-      });
+      await syncTournamentAdmins(t.id, [...existing, cleanEmail]);
     } else if (!isSelected && hasAccess) {
-      const filtered = existing.filter(e => e !== cleanEmail && e !== cleanUsername);
-      await updateDoc(doc(db, TOURNAMENTS_COLLECTION, t.id), {
-        adminEmails: filtered,
-        updatedAt: new Date().toISOString(),
-      });
+      await syncTournamentAdmins(t.id, existing.filter((entry) => entry !== cleanEmail));
     }
   }
 };

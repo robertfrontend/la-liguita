@@ -24,10 +24,6 @@ service cloud.firestore {
       return request.auth.token.email.lower();
     }
 
-    function emailLocal() {
-      return emailLower().split('@')[0];
-    }
-
     function isOwner(data) {
       return isSignedIn()
         && data.keys().hasAny(['ownerId'])
@@ -35,9 +31,15 @@ service cloud.firestore {
         && data.ownerId == request.auth.uid;
     }
 
-    // Tournament admins are existing adminUids, or adminEmails entries that match
-    // the signed-in email, its local part, or local-part@laliguita.com.
-    // Emails are stored lowercase by the migration script.
+    // Tournament admins match adminUids, or the full token email lowercased.
+    // Local-part and local-part@laliguita.com aliases are not a match: those
+    // strings are world-readable on the tournament document.
+    // email_verified is intentionally not required. Organizer accounts created
+    // with email/password are unverified, and requiring the flag would lock
+    // them out of Google-or-password login. Google accounts are already
+    // verified. The tradeoff is that a Firebase account whose email string
+    // equals a listed adminEmails entry is that organizer, even if the
+    // password account has not clicked a verification link.
     function isListedAdmin(data) {
       return isSignedIn() && (
         (
@@ -48,11 +50,7 @@ service cloud.firestore {
           hasEmail()
           && data.keys().hasAny(['adminEmails'])
           && data.adminEmails is list
-          && (
-            emailLower() in data.adminEmails
-            || emailLocal() in data.adminEmails
-            || (emailLocal() + '@laliguita.com') in data.adminEmails
-          )
+          && emailLower() in data.adminEmails
         )
       );
     }
@@ -93,30 +91,28 @@ service cloud.firestore {
       return request.resource.data.get('adminAccessCode', null) == resource.data.get('adminAccessCode', null);
     }
 
-    // A caller who is not already a super admin cannot insert their own email,
-    // username, or @laliguita.com alias into adminEmails. The Admin SDK claim
-    // route is the only self-serve path, and it checks the access code.
-    function addedOwnIdentity() {
+    // A caller who is not a super admin cannot insert their own exact email.
+    // The Admin SDK claim route is the only self-serve path, and it checks the code.
+    function addedOwnEmail() {
       return hasEmail() && !isSuperAdmin() && (
-        (
-          emailLower() in request.resource.data.get('adminEmails', [])
-          && !(emailLower() in resource.data.get('adminEmails', []))
-        ) || (
-          emailLocal() in request.resource.data.get('adminEmails', [])
-          && !(emailLocal() in resource.data.get('adminEmails', []))
-        ) || (
-          (emailLocal() + '@laliguita.com') in request.resource.data.get('adminEmails', [])
-          && !((emailLocal() + '@laliguita.com') in resource.data.get('adminEmails', []))
-        )
+        emailLower() in request.resource.data.get('adminEmails', [])
+        && !(emailLower() in resource.data.get('adminEmails', []))
       );
     }
 
+    // Owner and super admin may add or remove adminUids and adminEmails.
+    // Any other admin keeps adminUids frozen and still cannot add themselves
+    // or change ownerId.
     function tournamentUpdateAllowed() {
       return canManageData(resource.data)
         && ownerUnchanged()
-        && adminUidsUnchanged()
         && accessCodeUnchanged()
-        && !addedOwnIdentity();
+        && !addedOwnEmail()
+        && (
+          isSuperAdmin()
+          || isOwner(resource.data)
+          || adminUidsUnchanged()
+        );
     }
 
     function tournamentCreateAllowed() {
@@ -214,6 +210,11 @@ service cloud.firestore {
     match /early_access/{document=**} {
       allow create: if true;
       allow read, update, delete: if false;
+    }
+
+    // Access-code attempt counters. Only the Admin SDK reads or writes them.
+    match /accessCodeAttempts/{attemptId} {
+      allow read, write: if false;
     }
   }
 }

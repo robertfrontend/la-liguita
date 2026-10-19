@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { isSuperAdmin } from "@/lib/auth-helpers";
+import { decideClaimResult } from "@/lib/admin-identity.mjs";
 import { claimTournamentWithAccessCode } from "@/lib/db";
 import { useRouter } from "next/navigation";
 import { AdminGatekeeper } from "@/components/features/AdminGatekeeper";
@@ -10,6 +11,7 @@ import { AdminGatekeeper } from "@/components/features/AdminGatekeeper";
 export default function LoginPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [claimError, setClaimError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user || loading) return;
@@ -18,15 +20,25 @@ export default function LoginPage() {
     const continueToApp = async () => {
       const unlockedId = typeof window !== "undefined" ? sessionStorage.getItem("admin_unlocked_tournament_id") : null;
       const savedPin = typeof window !== "undefined" ? sessionStorage.getItem("admin_unlocked_pin") : null;
-      if (savedPin && unlockedId && unlockedId !== "superadmin-root") {
-        await claimTournamentWithAccessCode(unlockedId, user.email || "", savedPin);
+      let destinationId = unlockedId;
+
+      if (savedPin) {
+        const result = await claimTournamentWithAccessCode(unlockedId || "", user.email || "", savedPin);
+        if (cancelled) return;
+        const decision = decideClaimResult(result, unlockedId || "");
+        if (!decision.proceed) {
+          setClaimError(decision.message);
+          return;
+        }
         sessionStorage.removeItem("admin_unlocked_pin");
+        destinationId = decision.tournamentId || unlockedId;
       }
+
       if (cancelled) return;
       if (isSuperAdmin(user)) {
         router.push("/superadmin");
-      } else if (unlockedId && unlockedId !== "superadmin-root") {
-        router.push(`/tournament/${unlockedId}/games`);
+      } else if (destinationId && destinationId !== "superadmin-root") {
+        router.push(`/tournament/${destinationId}/games`);
       } else {
         router.push("/admin");
       }
@@ -47,6 +59,7 @@ export default function LoginPage() {
       <AdminGatekeeper
         title="Acceso Administrativo"
         subtitle="Ingresa el Código o PIN Único de administración para acceder a la gestión de tu torneo."
+        externalError={claimError}
       />
     </div>
   );

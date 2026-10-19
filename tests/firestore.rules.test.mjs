@@ -102,6 +102,8 @@ test("public readers can see the portal but not users, phones, or access codes",
   await assertFails(getDoc(doc(anon, "tournaments/copa/private/access")));
   await assertFails(getDoc(doc(anon, "tournaments/copa/refereeContacts/ref1")));
   await assertFails(getDocs(collection(anon, "early_access")));
+  await assertFails(getDoc(doc(anon, "accessCodeAttempts/uid-bucket")));
+  await assertFails(setDoc(doc(anon, "accessCodeAttempts/uid-bucket"), { count: 1 }));
   await assertSucceeds(setDoc(doc(anon, "early_access/lead1"), { email: "fan@example.com" }));
 });
 
@@ -146,28 +148,76 @@ test("the owner can edit the tournament but cannot change owner or self-grant", 
     adminEmails: ["coach@laliguita.com", "organizador", "owner@example.com"],
   }));
   await assertFails(updateDoc(doc(owner, "tournaments/copa"), { adminAccessCode: "LGT-9999" }));
-  await assertFails(updateDoc(doc(owner, "tournaments/copa"), { adminUids: ["owner"] }));
+  await assertSucceeds(updateDoc(doc(owner, "tournaments/copa"), { adminUids: ["coach"] }));
   await assertFails(setDoc(doc(owner, "tournaments/copa/private/access"), { code: "LGT-0000", codeHash: "nope" }));
   await assertFails(setDoc(doc(owner, "tournaments/copa/referees/ref3"), { name: "Con teléfono", phone: "809-000-0000" }));
   await assertSucceeds(deleteDoc(doc(owner, "tournaments/copa/private/access")));
 });
 
-test("listed admins can write, including username entries, and cannot seize the tournament", async () => {
+test("listed admins match the full email only, even when email_verified is false", async () => {
   await seedTournament();
-  const coach = dbFor("coach", { email: "coach@laliguita.com" });
-  const username = dbFor("org", { email: "organizador@gmail.com" });
+  const coach = dbFor("coach", { email: "Coach@LaLiguita.com", email_verified: false });
+  const gmail = dbFor("org", { email: "organizador@gmail.com" });
   const alias = dbFor("alias", { email: "organizador@laliguita.com" });
 
   await assertSucceeds(updateDoc(doc(coach, "tournaments/copa"), { name: "Copa coach" }));
   await assertSucceeds(getDoc(doc(coach, "tournaments/copa/private/access")));
-  await assertSucceeds(updateDoc(doc(username, "tournaments/copa/games/g1"), { scoreA: 4 }));
+  await assertFails(updateDoc(doc(gmail, "tournaments/copa/games/g1"), { scoreA: 4 }));
+  await assertFails(setDoc(doc(alias, "tournaments/copa/teams/t9"), { name: "Alias" }));
+
+  const owner = dbFor("owner", { email: "owner@example.com" });
+  await assertSucceeds(updateDoc(doc(owner, "tournaments/copa"), {
+    adminEmails: ["coach@laliguita.com", "organizador@laliguita.com"],
+  }));
   await assertSucceeds(setDoc(doc(alias, "tournaments/copa/teams/t9"), { name: "Alias" }));
+  await assertFails(updateDoc(doc(gmail, "tournaments/copa/games/g1"), { scoreA: 5 }));
 
   await assertFails(updateDoc(doc(coach, "tournaments/copa"), { ownerId: "coach" }));
-  await assertFails(updateDoc(doc(coach, "tournaments/copa"), {
-    adminEmails: ["coach@laliguita.com", "organizador", "coach"],
+  await assertFails(updateDoc(doc(coach, "tournaments/copa"), { adminUids: ["coach"] }));
+  await assertSucceeds(updateDoc(doc(coach, "tournaments/copa"), {
+    adminEmails: ["coach@laliguita.com", "organizador@laliguita.com", "mesa@example.com"],
   }));
   await assertFails(updateDoc(doc(coach, "tournaments/copa"), { adminAccessCode: "HACK" }));
+});
+
+test("owner and super admin can remove admin uids and emails; a co-admin cannot", async () => {
+  await seed(async (db) => {
+    await setDoc(doc(db, "tournaments/copa"), {
+      name: "Copa",
+      ownerId: "owner",
+      adminEmails: ["coach@laliguita.com"],
+      adminUids: ["coach-uid", "uid-only"],
+    });
+  });
+
+  const coach = dbFor("coach-uid", { email: "coach@laliguita.com" });
+  const uidOnly = dbFor("uid-only", { email: "uid-only@example.com" });
+  const owner = dbFor("owner", { email: "owner@example.com" });
+  const superAdmin = dbFor("robert", { email: "robert02frontend@gmail.com", superAdmin: true });
+
+  await assertSucceeds(updateDoc(doc(coach, "tournaments/copa"), { name: "Antes" }));
+  await assertSucceeds(updateDoc(doc(uidOnly, "tournaments/copa"), { name: "Por uid" }));
+  await assertFails(updateDoc(doc(coach, "tournaments/copa"), { adminUids: [] }));
+  await assertFails(updateDoc(doc(uidOnly, "tournaments/copa"), {
+    adminEmails: ["coach@laliguita.com", "uid-only@example.com"],
+  }));
+  await assertFails(updateDoc(doc(coach, "tournaments/copa"), { ownerId: "coach-uid" }));
+
+  await assertSucceeds(updateDoc(doc(owner, "tournaments/copa"), {
+    adminEmails: [],
+    adminUids: ["uid-only"],
+  }));
+  await assertFails(updateDoc(doc(coach, "tournaments/copa"), { name: "Revocado" }));
+  await assertSucceeds(updateDoc(doc(uidOnly, "tournaments/copa"), { name: "Sigue" }));
+
+  await assertSucceeds(updateDoc(doc(superAdmin, "tournaments/copa"), {
+    adminEmails: [],
+    adminUids: [],
+  }));
+  await assertFails(updateDoc(doc(uidOnly, "tournaments/copa"), { name: "Fuera" }));
+  await assertFails(updateDoc(doc(owner, "tournaments/copa"), { ownerId: "robert" }));
+  await assertFails(getDoc(doc(owner, "accessCodeAttempts/uid-bucket")));
+  await assertFails(setDoc(doc(superAdmin, "accessCodeAttempts/uid-bucket"), { count: 9 }));
 });
 
 test("an email containing robert02frontend is not a super admin without the claim", async () => {

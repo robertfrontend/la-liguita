@@ -1,7 +1,8 @@
 /**
  * Move existing tournament secrets out of publicly readable documents.
  *
- * Preserves ownerId and every adminEmails entry (lowercased). Access codes are
+ * Preserves ownerId. adminEmails are lowercased and bare usernames become
+ * username@laliguita.com (the login the app actually creates). Access codes are
  * copied into tournaments/{id}/private/access as HMAC hashes. Referee phone
  * numbers move to tournaments/{id}/refereeContacts/{refereeId}.
  *
@@ -12,6 +13,7 @@
  */
 import { randomInt } from "node:crypto";
 import { FieldValue } from "firebase-admin/firestore";
+import { canonicalAdminEmails } from "../src/lib/admin-identity.mjs";
 import { adminDb } from "../src/lib/server/firebase-admin.mjs";
 import {
   hashAccessCode,
@@ -22,16 +24,7 @@ import {
 const apply = process.argv.includes("--apply");
 
 function normalizeEmails(value) {
-  if (!Array.isArray(value)) return [];
-  const seen = new Set();
-  const next = [];
-  for (const entry of value) {
-    const clean = String(entry || "").trim().toLowerCase();
-    if (!clean || seen.has(clean)) continue;
-    seen.add(clean);
-    next.push(clean);
-  }
-  return next;
+  return canonicalAdminEmails(value);
 }
 
 function sameList(left, right) {
@@ -80,7 +73,7 @@ for (const tournament of tournaments.docs) {
     if (!sameList(original, normalized)) {
       publicUpdates.adminEmails = normalized;
       emailsNormalized += 1;
-      notes.push(`adminEmails normalized (${normalized.length} kept)`);
+      notes.push(`adminEmails normalized to full emails (${normalized.length} kept)`);
     } else {
       notes.push(`adminEmails unchanged (${normalized.length})`);
     }

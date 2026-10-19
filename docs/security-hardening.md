@@ -27,7 +27,7 @@ The service account needs Firebase Authentication admin and Cloud Firestore read
 
 ## Order of operations
 
-Existing owners and `adminEmails` entries keep access without a code. People who only know a code need that code copied into `private/access` before the new server is the only thing checking it. Email checks in the rules are case-sensitive, so lowercase `adminEmails` **before** the rules go live.
+Existing owners keep access without a code. `adminEmails` must be full lowercase addresses before the rules go live: the rules compare the entire token email and do not match a bare username or another domain with the same local part. People who only know a code need that code copied into `private/access` before the new server is the only thing checking it.
 
 Do it in this order:
 
@@ -57,7 +57,7 @@ If the Firestore console asks for a collection-group index on `private.codeHash`
 For every `tournaments/{id}` document:
 
 - `ownerId` is not modified. Tournaments with no owner can be managed only by a super admin until an owner is set in the console.
-- `adminEmails` entries are trimmed, lowercased, and de-duplicated. Usernames without `@` stay, so existing organizer logins still match the rules.
+- `adminEmails` entries are trimmed, lowercased, and de-duplicated. A username without `@` is rewritten to `username@laliguita.com`, which is the account `resolveLoginIdentifier` creates. `organizador@gmail.com` does not match a stored `organizador` or `organizador@laliguita.com`. Run this before deploying rules or those organizers lose access.
 - A real `adminAccessCode` is copied to `tournaments/{id}/private/access` as `{ code, codeHash }` and then **deleted** from the public document. The code organizers already know keeps working.
 - Retired master codes (`SUPER2026`, `ADMIN2026`, `2026`, `LGT-ROOT`, and the other old client backdoors) are not copied. The script prints a replacement `LGT-####` for that tournament. Share the new code out of band.
 - Codes that were never stored (the old client accepted `LGT-` + the id prefix, or the raw id) are **not** invented. Set a code in the super admin console after deploy. Those patterns no longer unlock anything.
@@ -69,7 +69,11 @@ The script is safe to re-run. Pass no flag for a dry run.
 
 - Organizers still open **Código de acceso**, type the PIN, and sign in. The form is unchanged.
 - Invite links copied from the admin UI go to `/login` and do not put the PIN in `?pin=`. Old links that still have `?pin=` are accepted once and then stripped from the address bar.
-- Validation is `POST /api/admin/access-code`. Claiming an admin seat requires a Firebase ID token. The server HMACs the code, compares it in constant time, and only then appends the token email and uid. The client cannot add itself to `adminEmails`.
+- Validation is `POST /api/admin/access-code`. Every call requires a Firebase ID token, including a preview. The server does not look up the code until the token verifies. It then HMACs the code, compares it in constant time, and, only when `claim` is set, appends the token email and uid. The client cannot add itself to `adminEmails`.
+- Attempts are counted in Firestore (`accessCodeAttempts`, Admin SDK only) per uid and per IP. Eight attempts in fifteen minutes locks that bucket until the window ends. The response is HTTP 429. The uid bucket is the one that cannot be spoofed. The IP is the first `X-Forwarded-For` hop, or `X-Real-IP`, and is only as trustworthy as the host.
+- `email_verified` is not required. Email/password organizer accounts are unverified; requiring the flag would lock them out. Google accounts are already verified. A listed admin is the Firebase account whose full email matches `adminEmails`.
+- The owner and a super admin can remove people from `adminEmails` and `adminUids`. Another admin cannot change `adminUids`, cannot add their own exact email, and cannot change `ownerId`. Removing an organizer from the admin UI goes through `POST /api/admin/roster`, which rewrites both lists and drops the Auth uid. Removing only the email and leaving the uid would keep access.
+- A failed PIN claim stays on the login screen, shows the existing error alert, and does not delete the saved PIN.
 - Setting or regenerating a code is `POST /api/admin/access-code/set`, and only an owner, tournament admin, or super admin can call it.
 - Plaintext codes are readable only by people who already manage that tournament (`private/access`). Everyone else is denied.
 
@@ -80,4 +84,4 @@ npm run test:access-code
 npm run test:rules
 ```
 
-`test:rules` starts the Firestore emulator and checks that strangers cannot write, that owner changes and self-grants are rejected, and that phones, user profiles, and access codes are not public.
+`test:rules` starts the Firestore emulator and checks that strangers cannot write, that owner changes and self-grants are rejected, that revoking `adminUids` removes access, that only the full email matches, and that phones, user profiles, access codes, and attempt counters are not public. `test:access-code` also covers the lockout window and a failed claim keeping the PIN.

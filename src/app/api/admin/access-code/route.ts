@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  enforceAccessCodeRateLimit,
+  consumeAccessAttempt,
   verifyAccessCode,
   verifyIdToken,
 } from "@/lib/server/tournament-access.mjs";
@@ -8,10 +8,11 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function clientKey(request: NextRequest) {
+function clientIp(request: NextRequest) {
   const forwarded = request.headers.get("x-forwarded-for") || "";
-  const ip = forwarded.split(",")[0]?.trim() || "unknown";
-  return ip;
+  const first = forwarded.split(",")[0]?.trim() || "";
+  if (first) return first;
+  return request.headers.get("x-real-ip")?.trim() || "";
 }
 
 export async function POST(request: NextRequest) {
@@ -24,18 +25,26 @@ export async function POST(request: NextRequest) {
 
   const code = typeof body.code === "string" ? body.code : "";
   const claim = body.claim === true;
-  const key = `${clientKey(request)}:${claim ? "claim" : "preview"}`;
-  if (!enforceAccessCodeRateLimit(key)) {
+  const decoded = await verifyIdToken(request.headers.get("authorization"));
+  if (!decoded?.uid) {
     return NextResponse.json(
-      { valid: false, message: "Demasiados intentos. Espera unos minutos e inténtalo de nuevo." },
-      { status: 429 }
+      { valid: false, message: "Inicia sesión para validar el código de acceso." },
+      { status: 401 }
     );
   }
 
   try {
-    const decoded = await verifyIdToken(request.headers.get("authorization"));
+    const attempt = await consumeAccessAttempt({ uid: decoded.uid, ip: clientIp(request) });
+    if (!attempt.allowed) {
+      const retryAfter = Math.max(1, Math.ceil((attempt.retryAfterMs || 0) / 1000));
+      return NextResponse.json(
+        { valid: false, message: "Demasiados intentos. Espera unos minutos e inténtalo de nuevo." },
+        { status: 429, headers: { "Retry-After": String(retryAfter) } }
+      );
+    }
+
     const result = await verifyAccessCode({ rawCode: code, decoded, claim });
-    const status = result.status || (result.valid ? 200 : 200);
+    const status = result.status || 200;
     return NextResponse.json(
       {
         valid: result.valid === true,

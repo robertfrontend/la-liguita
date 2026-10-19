@@ -1,4 +1,5 @@
 import { FieldValue } from "firebase-admin/firestore";
+import { canonicalAdminEmails, emailIsListed } from "../admin-identity.mjs";
 import { adminAuth, adminDb } from "./firebase-admin.mjs";
 import {
   hashAccessCode,
@@ -6,27 +7,46 @@ import {
   isBlockedAccessCode,
   normalizeAccessCode,
 } from "./access-code.mjs";
+import { attemptDocId, planAttemptUpdates } from "./access-attempts.mjs";
 
 const TOURNAMENTS = "tournaments";
 const ACCESS_DOC = "access";
+const ATTEMPTS = "accessCodeAttempts";
 
-const rateBuckets = new Map();
-
-export function resetAccessCodeRateLimit() {
-  rateBuckets.clear();
-}
-
-export function enforceAccessCodeRateLimit(key, limit = 30, windowMs = 10 * 60 * 1000) {
-  const now = Date.now();
-  const bucket = rateBuckets.get(key) || [];
-  const recent = bucket.filter((ts) => now - ts < windowMs);
-  if (recent.length >= limit) {
-    rateBuckets.set(key, recent);
-    return false;
+/**
+ * Firestore-backed lockout, per uid and per IP. The uid bucket cannot be
+ * spoofed once the ID token is verified. The IP bucket uses the platform's
+ * forwarding header and is defense in depth only.
+ */
+export async function consumeAccessAttempt({ uid, ip, now = Date.now() }) {
+  const ids = [];
+  if (uid) ids.push(attemptDocId("uid", uid));
+  if (ip) ids.push(attemptDocId("ip", ip));
+  if (ids.length === 0) {
+    return { allowed: false, retryAfterMs: 15 * 60 * 1000 };
   }
-  recent.push(now);
-  rateBuckets.set(key, recent);
-  return true;
+
+  const db = adminDb();
+  return db.runTransaction(async (tx) => {
+    const refs = ids.map((id) => db.collection(ATTEMPTS).doc(id));
+    const snaps = [];
+    for (const ref of refs) snaps.push(await tx.get(ref));
+    const plan = planAttemptUpdates(
+      snaps.map((snap) => (snap.exists ? snap.data() : null)),
+      now
+    );
+    if (plan.writes) {
+      plan.writes.forEach((decision, index) => {
+        tx.set(refs[index], {
+          count: decision.count,
+          windowStart: decision.windowStart,
+          lockedUntil: decision.lockedUntil,
+          updatedAt: new Date(now).toISOString(),
+        });
+      });
+    }
+    return { allowed: plan.allowed, retryAfterMs: plan.retryAfterMs };
+  });
 }
 
 export async function verifyIdToken(authorizationHeader) {
@@ -50,12 +70,7 @@ export function callerManagesTournament(decoded, tournament) {
   const adminUids = Array.isArray(tournament.adminUids) ? tournament.adminUids : [];
   if (adminUids.includes(decoded.uid)) return true;
 
-  const email = typeof decoded.email === "string" ? decoded.email.trim().toLowerCase() : "";
-  if (!email) return false;
-  const local = email.split("@")[0];
-  const aliases = new Set([email, local, `${local}@laliguita.com`]);
-  const adminEmails = Array.isArray(tournament.adminEmails) ? tournament.adminEmails : [];
-  return adminEmails.some((entry) => aliases.has(String(entry).trim().toLowerCase()));
+  return emailIsListed(tournament.adminEmails, decoded.email);
 }
 
 function publicTournament(id, data) {
@@ -172,9 +187,7 @@ async function addCallerAsAdmin(tournamentRef, data, decoded) {
     return { ok: false, status: 400, message: "Tu cuenta no tiene un correo electrónico." };
   }
 
-  const existingEmails = Array.isArray(data.adminEmails)
-    ? data.adminEmails.map((entry) => String(entry).trim().toLowerCase()).filter(Boolean)
-    : [];
+  const existingEmails = canonicalAdminEmails(data.adminEmails);
   const existingUids = Array.isArray(data.adminUids)
     ? data.adminUids.map((entry) => String(entry)).filter(Boolean)
     : [];
@@ -194,25 +207,67 @@ async function addCallerAsAdmin(tournamentRef, data, decoded) {
 }
 
 /**
+ * Replace adminEmails and recompute adminUids from Firebase Auth.
+ * Owner and super admin may remove anyone. Another admin cannot add their own email.
+ */
+export async function syncTournamentAdmins(tournamentId, rawEmails, decoded) {
+  const ref = adminDb().collection(TOURNAMENTS).doc(tournamentId);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    return { ok: false, status: 404, message: "Torneo no encontrado." };
+  }
+  const data = snap.data() || {};
+  if (!callerManagesTournament(decoded, data)) {
+    return { ok: false, status: 403, message: "No puedes editar los administradores de este torneo." };
+  }
+
+  const nextEmails = canonicalAdminEmails(rawEmails);
+  const existingCanonical = canonicalAdminEmails(data.adminEmails);
+  const callerEmail = typeof decoded.email === "string" ? decoded.email.trim().toLowerCase() : "";
+  const isOwner = Boolean(data.ownerId) && data.ownerId === decoded.uid;
+  const isSuper = decoded.superAdmin === true;
+  if (!isOwner && !isSuper && callerEmail && nextEmails.includes(callerEmail) && !existingCanonical.includes(callerEmail)) {
+    return { ok: false, status: 403, message: "No puedes agregarte como administrador." };
+  }
+
+  const nextUids = [];
+  for (const email of nextEmails) {
+    try {
+      const user = await adminAuth().getUserByEmail(email);
+      if (user?.uid && !nextUids.includes(user.uid)) nextUids.push(user.uid);
+    } catch {
+      // No Auth user yet. The exact email still grants access after they sign in.
+    }
+  }
+
+  await ref.update({
+    adminEmails: nextEmails,
+    adminUids: nextUids,
+    updatedAt: new Date().toISOString(),
+  });
+  return { ok: true, status: 200, adminEmails: nextEmails, adminUids: nextUids };
+}
+
+/**
  * Compare a submitted code with the private HMAC.
- * When `claim` is set, the Firebase ID token is required and the caller is added
- * to adminEmails / adminUids. Preview (no claim) only returns public tournament fields.
+ * A verified Firebase ID token is required for every call, including preview.
+ * When `claim` is set, the caller is added to adminEmails / adminUids.
  */
 export async function verifyAccessCode({ rawCode, decoded, claim }) {
+  if (!decoded?.uid) {
+    return {
+      ok: false,
+      status: 401,
+      valid: false,
+      message: "Inicia sesión para validar el código de acceso.",
+    };
+  }
+
   const normalized = normalizeAccessCode(rawCode);
   if (isBlockedAccessCode(normalized) || normalized.length < 4 || normalized.length > 64) {
     hashAccessCode("invalid-placeholder");
     hashesMatch(null, hashAccessCode("invalid-placeholder-b"));
     return { ok: true, status: 200, valid: false, message: "Código o PIN no encontrado." };
-  }
-
-  if (claim && !decoded) {
-    return {
-      ok: false,
-      status: 401,
-      valid: false,
-      message: "Inicia sesión para canjear el código de acceso.",
-    };
   }
 
   const codeHash = hashAccessCode(normalized);

@@ -17,6 +17,8 @@ declare module "@/lib/server/tournament-access.mjs" {
       settings?: Record<string, unknown>;
     };
     code?: string;
+    adminEmails?: string[];
+    adminUids?: string[];
   };
 
   export type DecodedAdminToken = {
@@ -25,13 +27,22 @@ declare module "@/lib/server/tournament-access.mjs" {
     superAdmin?: boolean;
   } | null;
 
-  export function enforceAccessCodeRateLimit(key: string, limit?: number, windowMs?: number): boolean;
   export function verifyIdToken(authorizationHeader: string | null): Promise<DecodedAdminToken>;
+  export function consumeAccessAttempt(input: {
+    uid?: string;
+    ip?: string;
+    now?: number;
+  }): Promise<{ allowed: boolean; retryAfterMs: number }>;
   export function verifyAccessCode(input: {
     rawCode: string;
     decoded: DecodedAdminToken;
     claim: boolean;
   }): Promise<AccessCodeResult>;
+  export function syncTournamentAdmins(
+    tournamentId: string,
+    rawEmails: unknown,
+    decoded: { uid: string; email?: string; superAdmin?: boolean }
+  ): Promise<AccessCodeResult>;
   export function setTournamentAccessCode(
     tournamentId: string,
     rawCode: string,

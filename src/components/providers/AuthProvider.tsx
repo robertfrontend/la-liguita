@@ -82,7 +82,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      router.push("/"); // Redirect after login
     } catch (error) {
       console.error("Error signing in with Google", error);
       throw error;
@@ -93,7 +92,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!auth) return;
     try {
         await signInWithEmailAndPassword(auth, email, password);
-        router.push("/");
     } catch (error) {
         console.error("Error signing in with Email", error);
         throw error;
@@ -107,10 +105,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await updateProfile(userCredential.user, {
             displayName: name
         });
-        // Force refresh user to get display name? 
-        // onAuthStateChanged handles it, but user object might need refresh.
-        // Usually updateProfile updates the current user object in place or triggers auth state change.
-        router.push("/");
     } catch (error) {
         console.error("Error signing up with Email", error);
         throw error;

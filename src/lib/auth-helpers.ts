@@ -8,6 +8,7 @@ import {
 import { auth, firebaseConfig } from "@/lib/firebase";
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { Tournament } from "@/types/tournament";
+import { canonicalAdminEmail, emailIsListed } from "@/lib/admin-identity.mjs";
 
 const superAdminClaims = new Map<string, boolean>();
 
@@ -26,28 +27,15 @@ export const isSuperAdmin = (user: User | null | undefined): boolean => {
   return superAdminClaims.get(user.uid) === true;
 };
 
+export { canonicalAdminEmail };
+
 export const canAdminTournament = (user: User | null | undefined, tournament: Tournament | null | undefined): boolean => {
   if (!user || !tournament) return false;
-  
-  // 1. Super Admin tiene acceso total a todos los torneos
-  if (isSuperAdmin(user)) return true;
-  
-  // 2. Comprobar rigurosamente si el email o username está en adminEmails asignados
-  if (user.email && tournament.adminEmails && Array.isArray(tournament.adminEmails)) {
-    const userEmail = user.email.trim().toLowerCase();
-    const userPrefix = userEmail.split("@")[0];
-    
-    return tournament.adminEmails.some(assignedEmail => {
-      const cleanAssigned = assignedEmail.trim().toLowerCase();
-      return (
-        cleanAssigned === userEmail ||
-        cleanAssigned === userPrefix ||
-        cleanAssigned === `${userPrefix}@laliguita.com`
-      );
-    });
-  }
 
-  return false;
+  if (isSuperAdmin(user)) return true;
+  if (tournament.ownerId && tournament.ownerId === user.uid) return true;
+  if (Array.isArray(tournament.adminUids) && tournament.adminUids.includes(user.uid)) return true;
+  return emailIsListed(tournament.adminEmails, user.email);
 };
 
 export const resolveLoginIdentifier = (input: string): string => {
