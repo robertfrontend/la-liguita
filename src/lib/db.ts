@@ -1,5 +1,6 @@
 import { auth, db } from "./firebase";
-import { canonicalAdminEmail, canonicalAdminEmails } from "@/lib/admin-identity.mjs";
+import { canonicalAdminEmail, canonicalAdminEmails, claimResolvedTournament } from "@/lib/admin-identity.mjs";
+import { generateAccessCode } from "@/lib/access-code-format.mjs";
 import { 
   collection, 
   doc, 
@@ -1151,10 +1152,7 @@ export const addRefereeToDb = async (tournamentId: string, refData: Omit<Referee
 
 // --- Unique Access Codes / PIN System for Admin Gatekeeper ---
 
-export const generateAdminAccessCode = (prefix: string = "LGT"): string => {
-  const randomNum = Math.floor(1000 + Math.random() * 9000);
-  return `${prefix.toUpperCase()}-${randomNum}`;
-};
+export const generateAdminAccessCode = (): string => generateAccessCode();
 
 export const verifyAdminAccessCode = async (
   rawCode: string,
@@ -1207,7 +1205,7 @@ export type AccessClaimResult = {
 };
 
 export const claimTournamentWithAccessCode = async (
-  tournamentId: string,
+  _tournamentId: string,
   _userEmail?: string,
   rawCode?: string
 ): Promise<AccessClaimResult> => {
@@ -1219,10 +1217,7 @@ export const claimTournamentWithAccessCode = async (
 
   try {
     const result = await verifyAdminAccessCode(code, true);
-    if (result.valid && result.tournament && (!tournamentId || result.tournament.id === tournamentId)) {
-      return { ok: true, tournamentId: result.tournament.id };
-    }
-    return { ok: false, message: result.message || "No se pudo canjear el código de acceso." };
+    return claimResolvedTournament(result);
   } catch (error) {
     console.error("Error claiming tournament admin rights:", error);
     return { ok: false, message: "No se pudo canjear el código de acceso." };

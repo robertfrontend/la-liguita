@@ -126,7 +126,7 @@ export function SuperAdminDashboard() {
   const handleOpenEditAdmins = (t: Tournament) => {
     setEditingAdminsTournament(t);
     setAdminEmailsInput(t.adminEmails ? t.adminEmails.join(", ") : "");
-    setAdminPinInput(t.adminAccessCode || `LGT-${Math.floor(1000 + Math.random() * 9000)}`);
+    setAdminPinInput(t.adminAccessCode || generateAdminAccessCode());
   };
 
   const handleSaveAdmins = async (e: React.FormEvent) => {
@@ -1344,7 +1344,7 @@ export function SuperAdminDashboard() {
                   </label>
                   <button
                     type="button"
-                    onClick={() => setAdminPinInput(`LGT-${Math.floor(1000 + Math.random() * 9000)}`)}
+                    onClick={() => setAdminPinInput(generateAdminAccessCode())}
                     className="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold"
                   >
                     Generar Nuevo

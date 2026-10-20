@@ -7,32 +7,46 @@ import {
   isBlockedAccessCode,
   normalizeAccessCode,
 } from "./access-code.mjs";
-import { attemptDocId, planAttemptUpdates } from "./access-attempts.mjs";
+import {
+  ACCESS_ATTEMPT_MAX,
+  ACCESS_ATTEMPT_TOURNAMENT_MAX,
+  ACCESS_ATTEMPT_WINDOW_MS,
+  attemptDocId,
+  planAttemptUpdates,
+} from "./access-attempts.mjs";
 
 const TOURNAMENTS = "tournaments";
 const ACCESS_DOC = "access";
 const ATTEMPTS = "accessCodeAttempts";
 
 /**
- * Firestore-backed lockout, per uid and per IP. The uid bucket cannot be
- * spoofed once the ID token is verified. The IP bucket uses the platform's
- * forwarding header and is defense in depth only.
+ * Firestore-backed lockout. Uid and the platform client IP share one window.
+ * A third bucket is global per tournament, so rotating accounts does not reset it.
+ * Pass only the keys that should move on this call.
  */
-export async function consumeAccessAttempt({ uid, ip, now = Date.now() }) {
-  const ids = [];
-  if (uid) ids.push(attemptDocId("uid", uid));
-  if (ip) ids.push(attemptDocId("ip", ip));
-  if (ids.length === 0) {
-    return { allowed: false, retryAfterMs: 15 * 60 * 1000 };
+export async function consumeAccessAttempt({ uid, ip, tournamentId, now = Date.now() }) {
+  const specs = [];
+  if (uid) specs.push({ kind: "uid", value: String(uid), max: ACCESS_ATTEMPT_MAX });
+  if (ip) specs.push({ kind: "ip", value: String(ip), max: ACCESS_ATTEMPT_MAX });
+  if (tournamentId) specs.push({
+    kind: "tournament",
+    value: String(tournamentId),
+    max: ACCESS_ATTEMPT_TOURNAMENT_MAX,
+  });
+  if (specs.length === 0) {
+    return { allowed: false, retryAfterMs: ACCESS_ATTEMPT_WINDOW_MS };
   }
 
   const db = adminDb();
   return db.runTransaction(async (tx) => {
-    const refs = ids.map((id) => db.collection(ATTEMPTS).doc(id));
+    const refs = specs.map((spec) => db.collection(ATTEMPTS).doc(attemptDocId(spec.kind, spec.value)));
     const snaps = [];
     for (const ref of refs) snaps.push(await tx.get(ref));
     const plan = planAttemptUpdates(
-      snaps.map((snap) => (snap.exists ? snap.data() : null)),
+      snaps.map((snap, index) => ({
+        bucket: snap.exists ? snap.data() : null,
+        max: specs[index].max,
+      })),
       now
     );
     if (plan.writes) {
@@ -317,6 +331,16 @@ export async function verifyAccessCode({ rawCode, decoded, claim }) {
 
   if (legacyDoc) {
     await writePrivateAccess(tournamentId, normalized, decoded?.uid || "legacy-migration");
+  }
+
+  const tournamentAttempt = await consumeAccessAttempt({ tournamentId });
+  if (!tournamentAttempt.allowed) {
+    return {
+      ok: false,
+      status: 429,
+      valid: false,
+      message: "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
+    };
   }
 
   const data = tournamentSnap.data() || {};

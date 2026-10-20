@@ -50,3 +50,67 @@ export function decideClaimResult(result, expectedTournamentId = "") {
     tournamentId,
   };
 }
+
+export const CLAIM_DESTINATION_STORAGE_KEY = "admin_claim_destination";
+
+/** The code picks the tournament. A previously stored id is not a constraint. */
+export function claimResolvedTournament(result) {
+  const tournamentId = result?.tournament?.id || result?.tournamentId || "";
+  if ((result?.valid || result?.ok) && tournamentId) {
+    return { ok: true, tournamentId };
+  }
+  return {
+    ok: false,
+    tournamentId: "",
+    message: result?.message || "No se pudo canjear el código de acceso.",
+  };
+}
+
+/**
+ * After sign-in, follow the tournament the access code resolved to.
+ * A stored tournament id is not a destination: a logged-out PIN cannot know it,
+ * and a leftover id from an earlier preview must not reject or redirect.
+ */
+export function decidePostLoginRedirect({ hasPin, claim, rememberedDestination, isSuperAdmin }) {
+  if (hasPin) {
+    const decision = decideClaimResult(claim, "");
+    if (!decision.proceed) {
+      return {
+        path: null,
+        clearPin: false,
+        clearStoredTournamentId: true,
+        rememberedDestination: "",
+        consumeRemembered: false,
+        message: decision.message,
+      };
+    }
+    return {
+      path: decision.tournamentId ? `/tournament/${decision.tournamentId}/games` : "/admin",
+      clearPin: true,
+      clearStoredTournamentId: true,
+      rememberedDestination: "",
+      consumeRemembered: true,
+      message: null,
+    };
+  }
+
+  if (rememberedDestination) {
+    return {
+      path: `/tournament/${rememberedDestination}/games`,
+      clearPin: false,
+      clearStoredTournamentId: true,
+      rememberedDestination: "",
+      consumeRemembered: true,
+      message: null,
+    };
+  }
+
+  return {
+    path: isSuperAdmin ? "/superadmin" : "/admin",
+    clearPin: false,
+    clearStoredTournamentId: true,
+    rememberedDestination: "",
+    consumeRemembered: false,
+    message: null,
+  };
+}

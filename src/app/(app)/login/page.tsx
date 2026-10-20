@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { isSuperAdmin } from "@/lib/auth-helpers";
-import { decideClaimResult } from "@/lib/admin-identity.mjs";
+import {
+  CLAIM_DESTINATION_STORAGE_KEY,
+  decidePostLoginRedirect,
+} from "@/lib/admin-identity.mjs";
 import { claimTournamentWithAccessCode } from "@/lib/db";
 import { useRouter } from "next/navigation";
 import { AdminGatekeeper } from "@/components/features/AdminGatekeeper";
@@ -18,30 +21,32 @@ export default function LoginPage() {
     let cancelled = false;
 
     const continueToApp = async () => {
-      const unlockedId = typeof window !== "undefined" ? sessionStorage.getItem("admin_unlocked_tournament_id") : null;
       const savedPin = typeof window !== "undefined" ? sessionStorage.getItem("admin_unlocked_pin") : null;
-      let destinationId = unlockedId;
-
-      if (savedPin) {
-        const result = await claimTournamentWithAccessCode(unlockedId || "", user.email || "", savedPin);
-        if (cancelled) return;
-        const decision = decideClaimResult(result, unlockedId || "");
-        if (!decision.proceed) {
-          setClaimError(decision.message);
-          return;
-        }
-        sessionStorage.removeItem("admin_unlocked_pin");
-        destinationId = decision.tournamentId || unlockedId;
-      }
-
+      const rememberedDestination = typeof window !== "undefined"
+        ? sessionStorage.getItem(CLAIM_DESTINATION_STORAGE_KEY)
+        : null;
+      const claim = savedPin
+        ? await claimTournamentWithAccessCode("", user.email || "", savedPin)
+        : null;
       if (cancelled) return;
-      if (isSuperAdmin(user)) {
-        router.push("/superadmin");
-      } else if (destinationId && destinationId !== "superadmin-root") {
-        router.push(`/tournament/${destinationId}/games`);
-      } else {
-        router.push("/admin");
+
+      const redirect = decidePostLoginRedirect({
+        hasPin: Boolean(savedPin),
+        claim,
+        rememberedDestination,
+        isSuperAdmin: isSuperAdmin(user),
+      });
+      if (redirect.clearPin) sessionStorage.removeItem("admin_unlocked_pin");
+      if (redirect.clearStoredTournamentId) sessionStorage.removeItem("admin_unlocked_tournament_id");
+      if (redirect.consumeRemembered) sessionStorage.removeItem(CLAIM_DESTINATION_STORAGE_KEY);
+      if (redirect.rememberedDestination) {
+        sessionStorage.setItem(CLAIM_DESTINATION_STORAGE_KEY, redirect.rememberedDestination);
       }
+      if (redirect.message) {
+        setClaimError(redirect.message);
+        return;
+      }
+      if (redirect.path) router.push(redirect.path);
     };
 
     continueToApp();

@@ -58,22 +58,34 @@ For every `tournaments/{id}` document:
 
 - `ownerId` is not modified. Tournaments with no owner can be managed only by a super admin until an owner is set in the console.
 - `adminEmails` entries are trimmed, lowercased, and de-duplicated. A username without `@` is rewritten to `username@laliguita.com`, which is the account `resolveLoginIdentifier` creates. `organizador@gmail.com` does not match a stored `organizador` or `organizador@laliguita.com`. Run this before deploying rules or those organizers lose access.
-- A real `adminAccessCode` is copied to `tournaments/{id}/private/access` as `{ code, codeHash }` and then **deleted** from the public document. The code organizers already know keeps working.
+- A real `adminAccessCode` is copied to `tournaments/{id}/private/access` as `{ code, codeHash }` and then **deleted** from the public document. The code organizers already know keeps working, including old `LGT-####` codes.
 - Retired master codes (`SUPER2026`, `ADMIN2026`, `2026`, `LGT-ROOT`, and the other old client backdoors) are not copied. The script prints a replacement `LGT-####` for that tournament. Share the new code out of band.
 - Codes that were never stored (the old client accepted `LGT-` + the id prefix, or the raw id) are **not** invented. Set a code in the super admin console after deploy. Those patterns no longer unlock anything.
 - `referees/{id}.phone` moves to `refereeContacts/{id}.phone` and is removed from the public referee document.
 
 The script is safe to re-run. Pass no flag for a dry run.
 
+## Rotating old 4-digit codes
+
+New codes are `LGT-` plus 8 unambiguous characters. Codes already stored stay valid, including `LGT-` plus four digits. To replace those weak codes and print the new value for each tournament:
+
+```bash
+node --env-file=.env.local scripts/migrate-tournament-security.mjs --rotate-weak
+node --env-file=.env.local scripts/migrate-tournament-security.mjs --apply --rotate-weak
+```
+
+The first command lists tournaments that would change and does not write. `--apply` writes `private/access` and prints `NEW CODE for <id>`. Share that code with the organizer. A code is weak when it is `LGT-` plus exactly four digits, or when it has fewer than 8 characters from the unambiguous alphabet. Strong codes are left as they are. Without `--rotate-weak`, the script only reminds you that weak codes were kept.
+
 ## Access code behavior
 
 - Organizers still open **Código de acceso**, type the PIN, and sign in. The form is unchanged.
 - Invite links copied from the admin UI go to `/login` and do not put the PIN in `?pin=`. Old links that still have `?pin=` are accepted once and then stripped from the address bar.
 - Validation is `POST /api/admin/access-code`. Every call requires a Firebase ID token, including a preview. The server does not look up the code until the token verifies. It then HMACs the code, compares it in constant time, and, only when `claim` is set, appends the token email and uid. The client cannot add itself to `adminEmails`.
-- Attempts are counted in Firestore (`accessCodeAttempts`, Admin SDK only) per uid and per IP. Eight attempts in fifteen minutes locks that bucket until the window ends. The response is HTTP 429. The uid bucket is the one that cannot be spoofed. The IP is the first `X-Forwarded-For` hop, or `X-Real-IP`, and is only as trustworthy as the host.
+- New and regenerated codes are `LGT-` plus 8 characters from an unambiguous alphabet (`A–Z` and `2–9`, without `I`, `L`, `O`, `0`, or `1`), drawn with `crypto.getRandomValues`. Existing codes, including old `LGT-` plus four digits, keep working until they are rotated.
+- Attempts are counted in Firestore (`accessCodeAttempts`, Admin SDK only) per uid, per platform client IP, and per tournament. Eight attempts in fifteen minutes locks the uid or IP bucket. Forty matches in fifteen minutes locks that tournament for every account. The response is HTTP 429. The IP is `x-vercel-forwarded-for`, then `request.ip`, then `@vercel/functions` `ipAddress` (`x-real-ip`). The first `X-Forwarded-For` hop is not used. The per-tournament bucket counts a code that actually matches that tournament, so rotating accounts does not reset it.
 - `email_verified` is not required. Email/password organizer accounts are unverified; requiring the flag would lock them out. Google accounts are already verified. A listed admin is the Firebase account whose full email matches `adminEmails`.
 - The owner and a super admin can remove people from `adminEmails` and `adminUids`. Another admin cannot change `adminUids`, cannot add their own exact email, and cannot change `ownerId`. Removing an organizer from the admin UI goes through `POST /api/admin/roster`, which rewrites both lists and drops the Auth uid. Removing only the email and leaving the uid would keep access.
-- A failed PIN claim stays on the login screen, shows the existing error alert, and does not delete the saved PIN.
+- A failed PIN claim stays on the login screen, shows the existing error alert, and does not delete the saved PIN. A successful claim redirects to the tournament the code resolved to. A tournament id left in the tab from an earlier attempt is ignored, so it cannot reject the new code or send the organizer to the wrong place.
 - Setting or regenerating a code is `POST /api/admin/access-code/set`, and only an owner, tournament admin, or super admin can call it.
 - Plaintext codes are readable only by people who already manage that tournament (`private/access`). Everyone else is denied.
 

@@ -1,6 +1,6 @@
 import { collection, addDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { setTournamentAccessCode, slugify } from "@/lib/db";
+import { generateAdminAccessCode, setTournamentAccessCode, slugify } from "@/lib/db";
 import { TournamentTier, Sport, TournamentGame } from "@/types/tournament";
 
 export interface ProvisionOptions {
@@ -127,7 +127,7 @@ export async function provisionConfiguredTournament(options: ProvisionOptions): 
   const slug = slugify(tournamentName);
 
   // Generar PIN / Código de acceso único si no viene especificado
-  const generatedPin = options.adminAccessCode?.trim().toUpperCase() || `LGT-${Math.floor(1000 + Math.random() * 9000)}`;
+  const generatedPin = options.adminAccessCode?.trim().toUpperCase() || generateAdminAccessCode();
 
   // 1. Crear Torneo en Firestore
   const tournamentDoc = {

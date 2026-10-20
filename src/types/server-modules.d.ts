@@ -31,6 +31,7 @@ declare module "@/lib/server/tournament-access.mjs" {
   export function consumeAccessAttempt(input: {
     uid?: string;
     ip?: string;
+    tournamentId?: string;
     now?: number;
   }): Promise<{ allowed: boolean; retryAfterMs: number }>;
   export function verifyAccessCode(input: {

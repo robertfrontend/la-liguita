@@ -1,4 +1,6 @@
+import { ipAddress } from "@vercel/functions";
 import { NextRequest, NextResponse } from "next/server";
+import { trustedClientIp } from "@/lib/server/access-attempts.mjs";
 import {
   consumeAccessAttempt,
   verifyAccessCode,
@@ -9,10 +11,18 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function clientIp(request: NextRequest) {
-  const forwarded = request.headers.get("x-forwarded-for") || "";
-  const first = forwarded.split(",")[0]?.trim() || "";
-  if (first) return first;
-  return request.headers.get("x-real-ip")?.trim() || "";
+  const withIp = request as NextRequest & { ip?: string | null };
+  let vercelIp = "";
+  try {
+    vercelIp = ipAddress(request) || "";
+  } catch {
+    vercelIp = "";
+  }
+  return trustedClientIp({
+    headers: request.headers,
+    requestIp: withIp.ip || "",
+    vercelIp,
+  });
 }
 
 export async function POST(request: NextRequest) {

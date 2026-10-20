@@ -3,9 +3,20 @@ import { test } from "node:test";
 import {
   canonicalAdminEmail,
   canonicalAdminEmails,
+  claimResolvedTournament,
   decideClaimResult,
+  decidePostLoginRedirect,
   emailIsListed,
 } from "../src/lib/admin-identity.mjs";
+import {
+  ACCESS_CODE_ALPHABET,
+  generateAccessCode,
+  isWeakAccessCode,
+} from "../src/lib/access-code-format.mjs";
+import {
+  ACCESS_ATTEMPT_TOURNAMENT_MAX,
+  trustedClientIp,
+} from "../src/lib/server/access-attempts.mjs";
 import {
   BLOCKED_ACCESS_CODES,
   hashAccessCode,
@@ -102,6 +113,117 @@ test("a failed claim keeps the PIN and does not navigate", () => {
   assert.equal(ok.proceed, true);
   assert.equal(ok.clearPin, true);
   assert.equal(ok.tournamentId, "copa");
+});
+
+test("post-login redirect follows the tournament the code resolved to", () => {
+  const claimed = decidePostLoginRedirect({
+    hasPin: true,
+    claim: { ok: true, tournamentId: "copa-nueva" },
+    rememberedDestination: "torneo-viejo",
+    isSuperAdmin: false,
+  });
+  assert.equal(claimed.path, "/tournament/copa-nueva/games");
+  assert.equal(claimed.clearPin, true);
+  assert.equal(claimed.clearStoredTournamentId, true);
+  assert.equal(claimed.consumeRemembered, true);
+  assert.equal(claimed.rememberedDestination, "");
+
+  const failed = decidePostLoginRedirect({
+    hasPin: true,
+    claim: { ok: false, message: "Código o PIN no encontrado." },
+    rememberedDestination: "torneo-viejo",
+  });
+  assert.equal(failed.path, null);
+  assert.equal(failed.clearPin, false);
+  assert.equal(failed.clearStoredTournamentId, true);
+  assert.equal(failed.message, "Código o PIN no encontrado.");
+
+  const alreadyClaimed = decidePostLoginRedirect({
+    hasPin: false,
+    rememberedDestination: "copa-nueva",
+    isSuperAdmin: false,
+  });
+  assert.equal(alreadyClaimed.path, "/tournament/copa-nueva/games");
+  assert.equal(alreadyClaimed.consumeRemembered, true);
+
+  const plainLogin = decidePostLoginRedirect({
+    hasPin: false,
+    rememberedDestination: "",
+    isSuperAdmin: false,
+  });
+  assert.equal(plainLogin.path, "/admin");
+  assert.equal(plainLogin.clearStoredTournamentId, true);
+});
+
+test("a claim resolves by code and ignores a stored tournament id", () => {
+  const resolved = claimResolvedTournament({
+    valid: true,
+    tournament: { id: "copa-nueva" },
+  });
+  assert.equal(resolved.ok, true);
+  assert.equal(resolved.tournamentId, "copa-nueva");
+  const decision = decideClaimResult(resolved, "");
+  assert.equal(decision.proceed, true);
+  assert.equal(decision.tournamentId, "copa-nueva");
+});
+
+test("new access codes use eight unambiguous CSPRNG characters", () => {
+  const seen = new Set();
+  for (let i = 0; i < 20; i += 1) {
+    const code = generateAccessCode();
+    assert.match(code, new RegExp(`^LGT-[${ACCESS_CODE_ALPHABET}]{8}$`));
+    for (const char of code.slice(4)) {
+      assert.equal(ACCESS_CODE_ALPHABET.includes(char), true);
+      assert.equal("ILO01".includes(char), false);
+    }
+    assert.equal(isWeakAccessCode(code), false);
+    seen.add(code);
+  }
+  assert.equal(seen.size, 20);
+  assert.equal(isWeakAccessCode("LGT-4821"), true);
+  assert.equal(isWeakAccessCode("lgt-1111"), true);
+  assert.equal(isWeakAccessCode("LGT-23456789"), false);
+});
+
+test("client IP comes from Vercel, not the first forwarded hop", () => {
+  const spoofed = new Headers();
+  spoofed.set("x-forwarded-for", "1.2.3.4, 5.6.7.8");
+  spoofed.set("x-vercel-forwarded-for", "203.0.113.9, 10.0.0.4");
+  assert.equal(
+    trustedClientIp({ headers: spoofed, requestIp: "198.51.100.4", vercelIp: "198.51.100.8" }),
+    "203.0.113.9"
+  );
+  spoofed.delete("x-vercel-forwarded-for");
+  assert.equal(trustedClientIp({ headers: spoofed, requestIp: "198.51.100.4" }), "198.51.100.4");
+  assert.equal(
+    trustedClientIp({ headers: new Headers([["x-forwarded-for", "1.2.3.4"]]), vercelIp: "198.51.100.8" }),
+    "198.51.100.8"
+  );
+  assert.equal(trustedClientIp({ headers: new Headers([["x-forwarded-for", "1.2.3.4"]]) }), "");
+});
+
+test("a tournament bucket has its own higher lockout", () => {
+  const now = 5_000_000;
+  const windowMs = 1000;
+  let uid = null;
+  for (let i = 0; i < 2; i += 1) uid = nextAttemptBucket(uid, now, { max: 2, windowMs });
+  const uidLocked = nextAttemptBucket(uid, now + 10, { max: 2, windowMs });
+  assert.equal(uidLocked.allowed, false);
+
+  let tournament = null;
+  for (let i = 0; i < 3; i += 1) {
+    tournament = nextAttemptBucket(tournament, now, { max: ACCESS_ATTEMPT_TOURNAMENT_MAX, windowMs });
+    assert.equal(tournament.allowed, true);
+  }
+  const plan = planAttemptUpdates(
+    [
+      { bucket: uidLocked, max: 2, windowMs },
+      { bucket: null, max: ACCESS_ATTEMPT_TOURNAMENT_MAX, windowMs },
+    ],
+    now + 20
+  );
+  assert.equal(plan.allowed, false);
+  assert.equal(plan.writes, null);
 });
 
 test("verifyAccessCode requires a Firebase user before any lookup", async () => {
