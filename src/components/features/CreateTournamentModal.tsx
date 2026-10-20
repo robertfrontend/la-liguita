@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { TournamentTier, Sport } from "@/types/tournament";
 import { provisionConfiguredTournament } from "@/lib/tournament-generator";
+import { generateAdminAccessCode } from "@/lib/db";
 import { 
   X, 
   Trophy, 
@@ -40,7 +41,7 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
   const [sport, setSport] = useState<Sport>("basketball");
   const [tier, setTier] = useState<TournamentTier>("pro");
   const [organizerEmail, setOrganizerEmail] = useState("");
-  const [adminAccessCode, setAdminAccessCode] = useState<string>(() => `LGT-${Math.floor(1000 + Math.random() * 9000)}`);
+  const [adminAccessCode, setAdminAccessCode] = useState<string>(() => generateAdminAccessCode());
 
   // Configuración del Auto-Provisioning
   const [numberOfTeams, setNumberOfTeams] = useState<number>(10);
@@ -324,7 +325,7 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
                 </label>
                 <button
                   type="button"
-                  onClick={() => setAdminAccessCode(`LGT-${Math.floor(1000 + Math.random() * 9000)}`)}
+                  onClick={() => setAdminAccessCode(generateAdminAccessCode())}
                   className="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold"
                 >
                   Regenerar

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { verifyAdminAccessCode, claimTournamentWithAccessCode } from "@/lib/db";
+import { CLAIM_DESTINATION_STORAGE_KEY, decideClaimResult } from "@/lib/admin-identity.mjs";
 import { Tournament } from "@/types/tournament";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -30,6 +31,7 @@ interface AdminGatekeeperProps {
   onSuccess?: (tournament: Tournament) => void;
   title?: string;
   subtitle?: string;
+  externalError?: string | null;
 }
 
 export function AdminGatekeeper(props: AdminGatekeeperProps) {
@@ -49,7 +51,7 @@ export function AdminGatekeeper(props: AdminGatekeeperProps) {
   );
 }
 
-function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperProps) {
+function AdminGatekeeperInner({ onSuccess, title, subtitle, externalError }: AdminGatekeeperProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, signInWithEmail, signUpWithEmail, signInWithGoogle, loading: authLoading } = useAuth();
@@ -65,6 +67,10 @@ function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperPro
   const [name, setName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (externalError) setAuthError(externalError);
+  }, [externalError]);
   const [isSubmittingAuth, setIsSubmittingAuth] = useState(false);
 
   // Estados de PIN & Torneo Desbloqueado
@@ -78,7 +84,7 @@ function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperPro
 
   // Detectar parámetros en la URL (PIN, Código, Usuario pre-llenado)
   useEffect(() => {
-    if (!searchParams) return;
+    if (!searchParams || authLoading) return;
 
     const urlPin = (searchParams.get("pin") || searchParams.get("code"))?.trim().toUpperCase();
     const urlUser = searchParams.get("user") || searchParams.get("username") || searchParams.get("email");
@@ -90,6 +96,13 @@ function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperPro
     if (urlPin && processedPinRef.current !== urlPin) {
       processedPinRef.current = urlPin;
       setPinCode(urlPin);
+      // Drop the code from the address bar so it is not kept in history or the Referer.
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("pin");
+        url.searchParams.delete("code");
+        window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+      }
       executePinVerification(urlPin);
     } else if (!urlPin && !processedPinRef.current) {
       // Verificar si ya había un PIN desbloqueado en la sesión
@@ -100,12 +113,29 @@ function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperPro
         executePinVerification(savedPin);
       }
     }
-  }, [searchParams]);
+  }, [searchParams, authLoading]);
 
   // Si el usuario ya está autenticado y hay un torneo desbloqueado, asegurar vinculación
   useEffect(() => {
     if (user && user.email && unlockedTournament && unlockedTournament.id !== "superadmin-root" && !isSuperAdmin(user)) {
-      claimTournamentWithAccessCode(unlockedTournament.id, user.email);
+      const savedPin = typeof window !== "undefined" ? sessionStorage.getItem("admin_unlocked_pin") || "" : "";
+      if (!savedPin) return;
+      claimTournamentWithAccessCode("", user.email, savedPin).then((result) => {
+        const decision = decideClaimResult(result, "");
+        if (decision.proceed && decision.tournamentId) {
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem(CLAIM_DESTINATION_STORAGE_KEY, decision.tournamentId);
+            sessionStorage.removeItem("admin_unlocked_tournament_id");
+            if (decision.clearPin) sessionStorage.removeItem("admin_unlocked_pin");
+          }
+          if (onSuccess && unlockedTournament.id === decision.tournamentId) onSuccess(unlockedTournament);
+          else router.push(`/tournament/${decision.tournamentId}/games`);
+          return;
+        }
+        if (typeof window !== "undefined") sessionStorage.removeItem("admin_unlocked_tournament_id");
+        setAuthError(decision.message);
+        setPinError(decision.message);
+      });
     }
   }, [user, unlockedTournament]);
 
@@ -115,6 +145,20 @@ function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperPro
 
     setIsVerifyingPin(true);
     setPinError(null);
+
+    if (!user) {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("admin_unlocked_pin", targetPin);
+        sessionStorage.removeItem("admin_unlocked_tournament_id");
+        sessionStorage.removeItem(CLAIM_DESTINATION_STORAGE_KEY);
+      }
+      const signInFirst = "Inicia sesión para validar el código de acceso.";
+      setPinError(signInFirst);
+      setAuthError(signInFirst);
+      setAuthMode("login");
+      setIsVerifyingPin(false);
+      return;
+    }
 
     try {
       const result = await verifyAdminAccessCode(targetPin);
@@ -151,18 +195,29 @@ function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperPro
         await signUpWithEmail(resolvedIdentifier, password, name);
       }
 
-      // Si había un torneo desbloqueado, vincular el usuario al torneo
-      if (unlockedTournament && unlockedTournament.id !== "superadmin-root") {
-        await claimTournamentWithAccessCode(unlockedTournament.id, resolvedIdentifier);
-        if (onSuccess) {
+      const savedPin = pinCode.trim()
+        || (typeof window !== "undefined" ? sessionStorage.getItem("admin_unlocked_pin") || "" : "");
+      if (savedPin) {
+        const claimed = await claimTournamentWithAccessCode("", resolvedIdentifier, savedPin);
+        const decision = decideClaimResult(claimed, "");
+        if (!decision.proceed || !decision.tournamentId) {
+          if (typeof window !== "undefined") sessionStorage.removeItem("admin_unlocked_tournament_id");
+          setAuthError(decision.message);
+          return;
+        }
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem(CLAIM_DESTINATION_STORAGE_KEY, decision.tournamentId);
+          sessionStorage.removeItem("admin_unlocked_tournament_id");
+          sessionStorage.removeItem("admin_unlocked_pin");
+        }
+        if (onSuccess && unlockedTournament && unlockedTournament.id === decision.tournamentId) {
           onSuccess(unlockedTournament);
         } else {
-          router.push(`/tournament/${unlockedTournament.id}/games`);
+          router.push(`/tournament/${decision.tournamentId}/games`);
         }
-      } else {
-        // Redirección general
-        router.push("/admin");
+        return;
       }
+      router.push("/admin");
     } catch (err: any) {
       console.error("Error en autenticación:", err);
       if (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
@@ -183,11 +238,25 @@ function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperPro
     setAuthError(null);
     try {
       await signInWithGoogle();
-      if (unlockedTournament && unlockedTournament.id !== "superadmin-root") {
-        router.push(`/tournament/${unlockedTournament.id}/games`);
-      } else {
-        router.push("/admin");
+      const savedPin = pinCode.trim()
+        || (typeof window !== "undefined" ? sessionStorage.getItem("admin_unlocked_pin") || "" : "");
+      if (savedPin) {
+        const claimed = await claimTournamentWithAccessCode("", "", savedPin);
+        const decision = decideClaimResult(claimed, "");
+        if (!decision.proceed || !decision.tournamentId) {
+          if (typeof window !== "undefined") sessionStorage.removeItem("admin_unlocked_tournament_id");
+          setAuthError(decision.message);
+          return;
+        }
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem(CLAIM_DESTINATION_STORAGE_KEY, decision.tournamentId);
+          sessionStorage.removeItem("admin_unlocked_tournament_id");
+          sessionStorage.removeItem("admin_unlocked_pin");
+        }
+        router.push(`/tournament/${decision.tournamentId}/games`);
+        return;
       }
+      router.push("/admin");
     } catch (error: any) {
       console.error("Error signing in with Google:", error);
       setAuthError(error?.message || "Error al iniciar con Google.");
@@ -232,6 +301,7 @@ function AdminGatekeeperInner({ onSuccess, title, subtitle }: AdminGatekeeperPro
                 if (typeof window !== "undefined") {
                   sessionStorage.removeItem("admin_unlocked_pin");
                   sessionStorage.removeItem("admin_unlocked_tournament_id");
+                  sessionStorage.removeItem(CLAIM_DESTINATION_STORAGE_KEY);
                 }
               }}
               className="text-[11px] font-bold text-zinc-400 hover:text-white underline shrink-0 px-2 py-1"

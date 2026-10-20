@@ -16,7 +16,8 @@ import {
 import { 
   sendAdminPasswordReset, 
   createAdminAccountWithCredentials, 
-  resolveLoginIdentifier 
+  resolveLoginIdentifier,
+  canonicalAdminEmail
 } from "@/lib/auth-helpers";
 import { CreateTournamentModal } from "@/components/features/CreateTournamentModal";
 import { 
@@ -94,7 +95,7 @@ export function SuperAdminDashboard() {
     const unsub = subscribeToAllTournaments((list) => {
       setTournaments(list);
       setLoading(false);
-    });
+    }, { includeAccessCodes: true });
     return () => unsub();
   }, []);
 
@@ -105,9 +106,8 @@ export function SuperAdminDashboard() {
   };
 
   const handleCopyInviteLink = (t: Tournament) => {
-    const pin = t.adminAccessCode || `LGT-${t.id.slice(0, 4).toUpperCase()}`;
     const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const inviteLink = `${origin}/login?pin=${pin}`;
+    const inviteLink = `${origin}/login`;
 
     navigator.clipboard.writeText(inviteLink);
     setCopiedPinId(t.id);
@@ -126,7 +126,7 @@ export function SuperAdminDashboard() {
   const handleOpenEditAdmins = (t: Tournament) => {
     setEditingAdminsTournament(t);
     setAdminEmailsInput(t.adminEmails ? t.adminEmails.join(", ") : "");
-    setAdminPinInput(t.adminAccessCode || `LGT-${Math.floor(1000 + Math.random() * 9000)}`);
+    setAdminPinInput(t.adminAccessCode || generateAdminAccessCode());
   };
 
   const handleSaveAdmins = async (e: React.FormEvent) => {
@@ -174,11 +174,14 @@ export function SuperAdminDashboard() {
   const adminDirectory: Record<string, Tournament[]> = {};
   tournaments.forEach((t) => {
     (t.adminEmails || []).forEach((email) => {
-      const clean = email.trim().toLowerCase();
+      const clean = canonicalAdminEmail(email);
+      if (!clean) return;
       if (!adminDirectory[clean]) {
         adminDirectory[clean] = [];
       }
-      adminDirectory[clean].push(t);
+      if (!adminDirectory[clean].some((row) => row.id === t.id)) {
+        adminDirectory[clean].push(t);
+      }
     });
   });
 
@@ -199,14 +202,13 @@ export function SuperAdminDashboard() {
 
   // Abrir Modal de Detalle de un Administrador
   const handleOpenAdminDetail = (email: string) => {
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanUsername = cleanEmail.replace("@laliguita.com", "");
+    const cleanEmail = canonicalAdminEmail(email);
     setSelectedAdminEmail(cleanEmail);
     setAdminDetailSuccessMsg(null);
     setAdminDetailErrorMsg(null);
 
     const assignedIds = tournaments
-      .filter(t => (t.adminEmails || []).map(e => e.trim().toLowerCase()).some(e => e === cleanEmail || e === cleanUsername))
+      .filter(t => (t.adminEmails || []).some(e => canonicalAdminEmail(e) === cleanEmail))
       .map(t => t.id);
 
     setSelectedAdminTournaments(assignedIds);
@@ -493,7 +495,7 @@ export function SuperAdminDashboard() {
               const isPro = t.tier === "pro";
               const adminCount = t.adminEmails ? t.adminEmails.length : 0;
               const isCopied = copiedPinId === t.id;
-              const pin = t.adminAccessCode || `LGT-${t.id.slice(0, 4).toUpperCase()}`;
+              const pin = t.adminAccessCode || "—";
 
               return (
                 <div
@@ -887,7 +889,7 @@ export function SuperAdminDashboard() {
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {tournaments.map((t) => {
-              const pin = t.adminAccessCode || `LGT-${t.id.slice(0, 4).toUpperCase()}`;
+              const pin = t.adminAccessCode || "—";
               const isCopied = copiedPinId === t.id;
               const adminCount = t.adminEmails ? t.adminEmails.length : 0;
 
@@ -947,7 +949,7 @@ export function SuperAdminDashboard() {
                     </button>
 
                     <Link
-                      href={`/admin?pin=${pin}`}
+                      href="/login"
                       target="_blank"
                       className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl transition border border-zinc-700"
                       title="Probar Acceso"
@@ -1342,7 +1344,7 @@ export function SuperAdminDashboard() {
                   </label>
                   <button
                     type="button"
-                    onClick={() => setAdminPinInput(`LGT-${Math.floor(1000 + Math.random() * 9000)}`)}
+                    onClick={() => setAdminPinInput(generateAdminAccessCode())}
                     className="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold"
                   >
                     Generar Nuevo

@@ -1,75 +1,220 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Función auxiliar para verificar autenticación
-    function isAuthenticated() {
+
+    function isSignedIn() {
       return request.auth != null;
     }
 
-    // Colección de Usuarios
-    match /users/{userId} {
-      allow read: if true;
-      allow write: if isAuthenticated() && request.auth.uid == userId;
+    // Custom claim set by scripts/set-super-admin.mjs. Email substrings are not trusted.
+    function isSuperAdmin() {
+      return isSignedIn()
+        && request.auth.token.keys().hasAny(['superAdmin'])
+        && request.auth.token.superAdmin == true;
     }
 
-    // Colección de Torneos (Multi-Tier SaaS)
-    match /tournaments/{tournamentId} {
-      allow read: if true; // Lectura pública para fans y jugadores
-      allow create: if isAuthenticated();
-      allow update, delete: if isAuthenticated() && (
-        resource.data.ownerId == request.auth.uid || 
-        request.resource.data.ownerId == request.auth.uid
-      );
+    function hasEmail() {
+      return isSignedIn()
+        && request.auth.token.keys().hasAny(['email'])
+        && request.auth.token.email is string
+        && request.auth.token.email.size() > 0;
+    }
 
-      // Subcolección Partidos
+    function emailLower() {
+      return request.auth.token.email.lower();
+    }
+
+    function isOwner(data) {
+      return isSignedIn()
+        && data.keys().hasAny(['ownerId'])
+        && data.ownerId is string
+        && data.ownerId == request.auth.uid;
+    }
+
+    // Tournament admins match adminUids, or the full token email lowercased.
+    // Local-part and local-part@laliguita.com aliases are not a match: those
+    // strings are world-readable on the tournament document.
+    // email_verified is intentionally not required. Organizer accounts created
+    // with email/password are unverified, and requiring the flag would lock
+    // them out of Google-or-password login. Google accounts are already
+    // verified. The tradeoff is that a Firebase account whose email string
+    // equals a listed adminEmails entry is that organizer, even if the
+    // password account has not clicked a verification link.
+    function isListedAdmin(data) {
+      return isSignedIn() && (
+        (
+          data.keys().hasAny(['adminUids'])
+          && data.adminUids is list
+          && request.auth.uid in data.adminUids
+        ) || (
+          hasEmail()
+          && data.keys().hasAny(['adminEmails'])
+          && data.adminEmails is list
+          && emailLower() in data.adminEmails
+        )
+      );
+    }
+
+    function canManageData(data) {
+      return isSuperAdmin() || isOwner(data) || isListedAdmin(data);
+    }
+
+    function tournamentPath(tournamentId) {
+      return /databases/$(database)/documents/tournaments/$(tournamentId);
+    }
+
+    function canManageTournament(tournamentId) {
+      return exists(tournamentPath(tournamentId))
+        && canManageData(get(tournamentPath(tournamentId)).data);
+    }
+
+    function leaguePath(leagueId) {
+      return /databases/$(database)/documents/leagues/$(leagueId);
+    }
+
+    function canManageLeague(leagueId) {
+      return exists(leaguePath(leagueId))
+        && canManageData(get(leaguePath(leagueId)).data);
+    }
+
+    function ownerUnchanged() {
+      return request.resource.data.get('ownerId', null) == resource.data.get('ownerId', null);
+    }
+
+    function adminUidsUnchanged() {
+      return request.resource.data.get('adminUids', []) == resource.data.get('adminUids', []);
+    }
+
+    // Plaintext codes are not writable from the client. The server stores a hash
+    // under tournaments/{id}/private/access and deletes this legacy field.
+    function accessCodeUnchanged() {
+      return request.resource.data.get('adminAccessCode', null) == resource.data.get('adminAccessCode', null);
+    }
+
+    // A caller who is not a super admin cannot insert their own exact email.
+    // The Admin SDK claim route is the only self-serve path, and it checks the code.
+    function addedOwnEmail() {
+      return hasEmail() && !isSuperAdmin() && (
+        emailLower() in request.resource.data.get('adminEmails', [])
+        && !(emailLower() in resource.data.get('adminEmails', []))
+      );
+    }
+
+    // Owner and super admin may add or remove adminUids and adminEmails.
+    // Any other admin keeps adminUids frozen and still cannot add themselves
+    // or change ownerId.
+    function tournamentUpdateAllowed() {
+      return canManageData(resource.data)
+        && ownerUnchanged()
+        && accessCodeUnchanged()
+        && !addedOwnEmail()
+        && (
+          isSuperAdmin()
+          || isOwner(resource.data)
+          || adminUidsUnchanged()
+        );
+    }
+
+    function tournamentCreateAllowed() {
+      return isSignedIn()
+        && request.resource.data.keys().hasAny(['ownerId'])
+        && request.resource.data.ownerId == request.auth.uid
+        && !request.resource.data.keys().hasAny(['adminAccessCode'])
+        && !request.resource.data.keys().hasAny(['adminUids']);
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isSuperAdmin());
+      allow create: if isSignedIn()
+        && request.auth.uid == userId
+        && request.resource.data.uid == userId
+        && request.resource.data.get('isPro', false) == false;
+      allow update: if isSignedIn()
+        && request.auth.uid == userId
+        && request.resource.data.uid == userId
+        && request.resource.data.get('isPro', false) == resource.data.get('isPro', false);
+      allow delete: if false;
+    }
+
+    match /tournaments/{tournamentId} {
+      // Public portal: name, slug, sport, status, teams, games, players.
+      // ownerId and adminEmails stay on this doc because organizers' clients
+      // query them; Firestore cannot hide individual fields. The access code
+      // and referee phones do not live here.
+      allow read: if true;
+      allow create: if tournamentCreateAllowed();
+      allow update: if tournamentUpdateAllowed();
+      allow delete: if canManageData(resource.data);
+
       match /games/{gameId} {
         allow read: if true;
-        allow write: if isAuthenticated();
+        allow write: if canManageTournament(tournamentId);
 
-        // Subcolección Play-by-Play (Solo Plan PRO)
         match /playByPlay/{eventId} {
           allow read: if true;
-          allow write: if isAuthenticated();
+          allow write: if canManageTournament(tournamentId);
         }
       }
 
-      // Subcolecciones Equipos, Jugadores, Árbitros
       match /teams/{teamId} {
         allow read: if true;
-        allow write: if isAuthenticated();
-      }
-      
-      match /players/{playerId} {
-        allow read: if true;
-        allow write: if isAuthenticated();
+        allow write: if canManageTournament(tournamentId);
       }
 
+      match /players/{playerId} {
+        allow read: if true;
+        allow write: if canManageTournament(tournamentId);
+      }
+
+      // Names are public (game detail). Phone numbers are not stored here.
       match /referees/{refereeId} {
         allow read: if true;
-        allow write: if isAuthenticated();
+        allow create, update: if canManageTournament(tournamentId)
+          && !request.resource.data.keys().hasAny(['phone']);
+        allow delete: if canManageTournament(tournamentId);
+      }
+
+      match /refereeContacts/{refereeId} {
+        allow read, write: if canManageTournament(tournamentId);
+      }
+
+      // Access-code hash (and the organizer-visible code). Clients may read
+      // it only when they already manage the tournament. Only the Admin SDK writes it.
+      match /private/{docId} {
+        allow read: if canManageTournament(tournamentId);
+        allow create, update: if false;
+        allow delete: if canManageTournament(tournamentId);
       }
     }
 
-    // Colección Leagues (Compatibilidad Legacy)
+    // Legacy leagues still power the public leaderboard and history.
     match /leagues/{leagueId} {
       allow read: if true;
-      allow create: if isAuthenticated();
-      allow update, delete: if isAuthenticated();
-      
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasAny(['ownerId'])
+        && request.resource.data.ownerId == request.auth.uid;
+      allow update: if canManageData(resource.data) && ownerUnchanged();
+      allow delete: if canManageData(resource.data);
+
       match /games/{gameId} {
         allow read: if true;
-        allow write: if isAuthenticated();
+        allow write: if canManageLeague(leagueId);
       }
-      
+
       match /players/{playerId} {
         allow read: if true;
-        allow write: if isAuthenticated();
+        allow write: if canManageLeague(leagueId);
       }
     }
 
     match /early_access/{document=**} {
       allow create: if true;
+      allow read, update, delete: if false;
+    }
+
+    // Access-code attempt counters. Only the Admin SDK reads or writes them.
+    match /accessCodeAttempts/{attemptId} {
+      allow read, write: if false;
     }
   }
 }
