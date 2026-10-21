@@ -1,5 +1,6 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { canonicalAdminEmails, emailIsListed } from "../admin-identity.mjs";
+import { canAddAdmin, planLimitMessage } from "../plans.mjs";
 import { adminAuth, adminDb } from "./firebase-admin.mjs";
 import {
   hashAccessCode,
@@ -209,6 +210,10 @@ async function addCallerAsAdmin(tournamentRef, data, decoded) {
   const nextEmails = existingEmails.includes(email) ? existingEmails : [...existingEmails, email];
   const nextUids = existingUids.includes(decoded.uid) ? existingUids : [...existingUids, decoded.uid];
 
+  if (!canAddAdmin(data, existingEmails.length) && nextEmails.length > existingEmails.length) {
+    return { ok: false, status: 403, message: planLimitMessage("PLAN_ADMIN_LIMIT") };
+  }
+
   if (nextEmails.length !== existingEmails.length || nextUids.length !== existingUids.length) {
     await tournamentRef.update({
       adminEmails: nextEmails,
@@ -237,6 +242,9 @@ export async function syncTournamentAdmins(tournamentId, rawEmails, decoded) {
 
   const nextEmails = canonicalAdminEmails(rawEmails);
   const existingCanonical = canonicalAdminEmails(data.adminEmails);
+  if (!canAddAdmin(data, Math.max(0, nextEmails.length - 1)) && nextEmails.length > existingCanonical.length) {
+    return { ok: false, status: 403, message: planLimitMessage("PLAN_ADMIN_LIMIT") };
+  }
   const callerEmail = typeof decoded.email === "string" ? decoded.email.trim().toLowerCase() : "";
   const isOwner = Boolean(data.ownerId) && data.ownerId === decoded.uid;
   const isSuper = decoded.superAdmin === true;

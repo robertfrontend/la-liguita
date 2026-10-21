@@ -10,6 +10,8 @@ import {
   subscribeToTournamentTeams,
   subscribeToTournamentPlayers
 } from "@/lib/db";
+import { getPlanLimits } from "@/lib/plans.mjs";
+import { usePortalBrand } from "@/components/providers/PortalBrandProvider";
 import { 
   Trophy, 
   Calendar, 
@@ -33,6 +35,7 @@ import {
 
 export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { tournamentId: string }) {
   const router = useRouter();
+  const { setBrand } = usePortalBrand();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [games, setGames] = useState<TournamentGame[]>([]);
   const [teams, setTeams] = useState<TournamentTeam[]>([]);
@@ -59,6 +62,20 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
       unsubTournament();
     };
   }, [tournamentSlugOrId]);
+
+  useEffect(() => {
+    if (!tournament) {
+      setBrand(null);
+      return;
+    }
+    const limits = getPlanLimits(tournament);
+    setBrand(
+      limits.hideBranding
+        ? { whiteLabel: true, name: tournament.name, logoUrl: tournament.logoUrl || "" }
+        : null
+    );
+    return () => setBrand(null);
+  }, [tournament, setBrand]);
 
   // 2. Suscribirse a las subcolecciones utilizando el ID resuelto del torneo
   useEffect(() => {
@@ -251,6 +268,8 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
 
   const isPro = tournament.tier === "pro";
   const isBasketball = tournament.sport === "basketball";
+  const planLimits = getPlanLimits(tournament);
+  const sponsorBanners = (tournament.sponsors || []).filter((sponsor) => sponsor.name).slice(0, planLimits.sponsorSlots || 0);
 
   const handleShare = () => {
     const shareSlug = tournament.slug || tournament.id;
@@ -394,6 +413,28 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
           </div>
         </div>
       </header>
+
+      {sponsorBanners.length > 0 && (
+        <div className="max-w-5xl mx-auto px-4 md:px-6 pt-4 flex flex-wrap gap-2">
+          {sponsorBanners.map((sponsor) => {
+            const inner = (
+              <span className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-200">
+                {sponsor.imageUrl ? (
+                  <img src={sponsor.imageUrl} alt="" className="h-6 w-6 object-contain" />
+                ) : null}
+                {sponsor.name}
+              </span>
+            );
+            return sponsor.href ? (
+              <a key={sponsor.name} href={sponsor.href} target="_blank" rel="noreferrer">
+                {inner}
+              </a>
+            ) : (
+              <span key={sponsor.name}>{inner}</span>
+            );
+          })}
+        </div>
+      )}
 
       {/* CONTENIDO PRINCIPAL */}
       <main className="max-w-5xl mx-auto px-4 md:px-6 pt-6 space-y-6">
@@ -725,7 +766,12 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
         {/* ============================================================ */}
         {/* PESTAÑA 3: LÍDERES DE ESTADÍSTICAS */}
         {/* ============================================================ */}
-        {activeTab === "leaders" && (
+        {activeTab === "leaders" && !planLimits.statsLeaders && (
+          <div className="bg-zinc-900/60 border border-zinc-800/80 p-6 rounded-2xl text-sm text-zinc-300">
+            Los líderes de estadísticas están en Liga Pro.
+          </div>
+        )}
+        {activeTab === "leaders" && planLimits.statsLeaders && (
           <div className="space-y-6">
             <div className="bg-zinc-900/60 border border-zinc-800/80 p-6 rounded-2xl">
               <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mb-4">
@@ -838,6 +884,13 @@ export function PublicTournamentPortal({ tournamentId: tournamentSlugOrId }: { t
           </div>
         )}
       </main>
+      {!planLimits.hideBranding && (
+        <footer className="max-w-5xl mx-auto px-4 md:px-6 py-8 text-center">
+          <a href="/" className="text-xs font-semibold text-zinc-500 hover:text-zinc-300">
+            Hecho con La Liguita
+          </a>
+        </footer>
+      )}
     </div>
   );
 }

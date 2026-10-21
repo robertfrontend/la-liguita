@@ -509,6 +509,196 @@ html:has(.ll-home) body {
   }
 }
 
+.ll-pricing-hero {
+  padding-bottom: 1.5rem;
+}
+
+@media (min-width: 960px) {
+  .ll-pricing-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.ll-toggle {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 1.4rem;
+  padding: 0.25rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--chalk);
+}
+
+.ll-toggle button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 700;
+  padding: 0.55rem 0.9rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ll-toggle button.is-on {
+  background: var(--ink);
+  color: var(--chalk);
+}
+
+.ll-season-note {
+  margin: 0.8rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.ll-plan-grid {
+  display: grid;
+  gap: 0.85rem;
+  padding-bottom: 2.5rem;
+}
+
+.ll-plan {
+  background: var(--chalk);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1.1rem 1.1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  min-width: 0;
+}
+
+.ll-plan.is-featured {
+  background: var(--paper-2);
+}
+
+.ll-plan h2 {
+  font-family: var(--font-display), sans-serif;
+  font-size: 2rem;
+  line-height: 0.9;
+  margin: 0;
+  max-width: none;
+}
+
+.ll-plan-price {
+  margin: 0;
+  min-height: 2.6rem;
+}
+
+.ll-plan-price strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 2.4rem;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+}
+
+.ll-plan-price span {
+  margin-left: 0.3rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.ll-plan-muted {
+  font-size: 1.05rem !important;
+  font-family: var(--font-barlow), sans-serif !important;
+  letter-spacing: 0 !important;
+  color: var(--muted);
+  line-height: 1.35 !important;
+}
+
+.ll-plan-blurb {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+  flex: 1;
+}
+
+.ll-btn-ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--ink);
+}
+
+.ll-btn-ghost:hover {
+  background: var(--ink);
+  color: var(--chalk);
+}
+
+.ll-table-wrap {
+  margin-top: 1.25rem;
+  overflow-x: auto;
+  border-top: 1px solid var(--line);
+}
+
+.ll-table {
+  width: 100%;
+  min-width: 40rem;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.ll-table th,
+.ll-table td {
+  text-align: left;
+  padding: 0.75rem 0.65rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.ll-table thead th {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.ll-table tbody th {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.ll-table td {
+  color: var(--muted);
+}
+
+.ll-faq {
+  margin-top: 1rem;
+}
+
+.ll-faq details {
+  border-top: 1px solid var(--line);
+  padding: 0.9rem 0;
+}
+
+.ll-faq details:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.ll-faq summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.ll-faq p {
+  margin: 0.55rem 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+  max-width: 40rem;
+}
+
+@media (min-width: 800px) {
+  .ll-plan-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .ll-plan-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ll-home * {
     scroll-behavior: auto !important;

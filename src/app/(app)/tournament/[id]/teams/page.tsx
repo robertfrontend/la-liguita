@@ -11,8 +11,11 @@ import {
   deleteTournamentTeamFromDb,
   subscribeToTournamentPlayers,
   addTournamentPlayerInDb,
-  deleteTournamentPlayerFromDb
+  deleteTournamentPlayerFromDb,
+  describePlanLimit,
 } from "@/lib/db";
+import { canAddTeam } from "@/lib/plans.mjs";
+import { UpgradePrompt } from "@/components/features/UpgradePrompt";
 import { 
   Users, 
   Plus, 
@@ -113,7 +116,9 @@ export default function TournamentTeamsPage() {
   const handleAddTeam = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!teamName.trim()) return;
+    if (tournament && !canAddTeam(tournament, teams.length)) return;
 
+    try {
     await addTournamentTeam(tournamentId, {
       name: teamName.trim(),
       shortName: shortName.trim().toUpperCase() || teamName.substring(0, 3).toUpperCase(),
@@ -129,6 +134,10 @@ export default function TournamentTeamsPage() {
     setShortName("");
     setTeamLogo("");
     setIsAddingTeam(false);
+    } catch (error) {
+      const message = describePlanLimit(error);
+      alert(message || "No se pudo crear el equipo.");
+    }
   };
 
   const openEditTeam = (team: TournamentTeam) => {
@@ -190,6 +199,8 @@ export default function TournamentTeamsPage() {
     return <div className="p-8 text-center text-zinc-500">Cargando equipos del torneo...</div>;
   }
 
+  const teamLimitReached = Boolean(tournament && !canAddTeam(tournament, teams.length));
+
   return (
     <div className="space-y-6 max-w-5xl">
       {/* Header */}
@@ -205,13 +216,23 @@ export default function TournamentTeamsPage() {
         </div>
 
         <button
-          onClick={() => setIsAddingTeam(!isAddingTeam)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-emerald-600/25"
+          onClick={() => {
+            if (teamLimitReached) return;
+            setIsAddingTeam(!isAddingTeam);
+          }}
+          disabled={teamLimitReached}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-emerald-600/25"
         >
           <Plus size={16} />
           <span>Crear Nuevo Equipo</span>
         </button>
       </div>
+
+      {teamLimitReached && (
+        <UpgradePrompt tournamentId={tournamentId}>
+          El plan Gratis permite hasta 8 equipos. Mejora a Liga Pro para equipos ilimitados.
+        </UpgradePrompt>
+      )}
 
       {/* Formulario Crear Equipo */}
       {isAddingTeam && (

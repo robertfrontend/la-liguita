@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test:access-code": "node --test tests/access-code.test.mjs",
+    "test:plans": "node --test tests/plans.test.mjs",
     "test:rules": "firebase emulators:exec --only firestore --project demo-la-liguita \"node --test tests/firestore.rules.test.mjs\""
   },
   "dependencies": {
@@ -21,6 +22,7 @@
     "nodemailer": "^8.0.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "stripe": "^23.0.0",
     "tailwind-merge": "^3.4.0",
     "zustand": "^5.0.11"
   },

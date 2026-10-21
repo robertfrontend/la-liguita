@@ -1,4 +1,31 @@
 export type TournamentTier = 'amateur' | 'pro';
+export type BillingPlan = 'free' | 'pro' | 'club' | 'federation';
+export type BillingInterval = 'month' | 'season' | 'year';
+export type BillingStatus =
+  | 'none'
+  | 'active'
+  | 'trialing'
+  | 'past_due'
+  | 'canceled'
+  | 'incomplete'
+  | 'unpaid'
+  | 'paused';
+
+export interface TournamentBilling {
+  plan: BillingPlan;
+  status: BillingStatus;
+  interval?: BillingInterval | null;
+  currentPeriodEnd?: string | null;
+  currentPeriodEndMs?: number | null;
+  stripeCustomerId?: string | null;
+  stripeSubscriptionId?: string | null;
+}
+
+export interface TournamentSponsor {
+  name: string;
+  href?: string;
+  imageUrl?: string;
+}
 export type Sport = 'basketball' | 'soccer';
 export type TournamentStatus = 'draft' | 'active' | 'playoffs' | 'finished';
 
@@ -32,6 +59,9 @@ export interface Tournament {
   status: TournamentStatus;
   season?: string;
   settings: TournamentSettings;
+  billing?: TournamentBilling;
+  legacyPro?: boolean;
+  sponsors?: TournamentSponsor[];
   createdAt: string;
   updatedAt: string;
 }

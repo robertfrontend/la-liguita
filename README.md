@@ -11,6 +11,7 @@ Built with **Next.js**, **Firebase**, and **Tailwind CSS**.
 *   **Player Stats**: Track points, assists, wins, and games played.
 *   **Match History**: View past game results and details.
 *   **Responsive Design**: Works great on desktop and mobile.
+*   **Plans**: Free, Liga Pro, Club, and Federation. See `docs/billing.md`.
 
 ## Tech Stack
 

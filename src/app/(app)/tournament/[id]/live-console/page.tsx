@@ -34,6 +34,7 @@ import {
   Loader2
 } from "lucide-react";
 import Link from "next/link";
+import { PlanFeatureBanner } from "@/components/features/UpgradePrompt";
 
 export default function LiveConsolePage() {
   return (
@@ -268,6 +269,7 @@ function LiveConsoleContent() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto font-sans">
+      <PlanFeatureBanner tournamentId={tournamentId} feature="liveScoreboard" />
       {/* Header Consola */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-900/60 p-5 rounded-2xl border border-zinc-800/80">
         <div>

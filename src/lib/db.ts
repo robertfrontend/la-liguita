@@ -1,5 +1,14 @@
 import { auth, db } from "./firebase";
 import { canonicalAdminEmail, canonicalAdminEmails, claimResolvedTournament } from "@/lib/admin-identity.mjs";
+import {
+  canAddTeam,
+  canOwnAnotherLeague,
+  getPlanLimits,
+  initialFreeBilling,
+  leagueAllowanceFor,
+  normalizeSponsors,
+  planLimitMessage,
+} from "@/lib/plans.mjs";
 import { generateAccessCode } from "@/lib/access-code-format.mjs";
 import { 
   collection, 
@@ -10,6 +19,7 @@ import {
   setDoc,
   addDoc, 
   deleteDoc,
+  runTransaction,
   query, 
   where, 
   orderBy, 
@@ -413,13 +423,51 @@ export const slugify = (text: string): string => {
     .replace(/-+$/, "");
 };
 
+export async function createOwnedTournament(
+  ownerId: string,
+  data: Record<string, unknown>,
+  options?: { skipLeagueCap?: boolean }
+) {
+  const tournamentRef = doc(collection(db, TOURNAMENTS_COLLECTION));
+  if (options?.skipLeagueCap) {
+    await setDoc(tournamentRef, data);
+    return tournamentRef;
+  }
+  const userRef = doc(db, "users", ownerId);
+  await runTransaction(db, async (tx) => {
+    const userSnap = await tx.get(userRef);
+    const userData = userSnap.exists() ? userSnap.data() : {};
+    const count = Number(userData.ownedTournamentCount || 0);
+    const allowance = leagueAllowanceFor(userData);
+    if (!canOwnAnotherLeague(count, allowance)) {
+      const error = new Error("PLAN_LEAGUE_LIMIT");
+      (error as { code?: string }).code = "PLAN_LEAGUE_LIMIT";
+      throw error;
+    }
+    const nextUser: Record<string, unknown> = {
+      uid: ownerId,
+      ownedTournamentCount: count + 1,
+    };
+    if (!userSnap.exists()) nextUser.isPro = false;
+    tx.set(userRef, nextUser, { merge: true });
+    tx.set(tournamentRef, data);
+  });
+  return tournamentRef;
+}
+
 export const createTournamentInDb = async (tournamentData: Omit<Tournament, "id">) => {
   const cleanSlug = tournamentData.slug || slugify(tournamentData.name);
   const raw = { ...tournamentData, slug: cleanSlug } as Record<string, unknown>;
   const accessCode = typeof raw.adminAccessCode === "string" ? raw.adminAccessCode : undefined;
   delete raw.adminAccessCode;
   delete raw.adminUids;
-  const docRef = await addDoc(collection(db, TOURNAMENTS_COLLECTION), raw);
+  delete raw.billing;
+  delete raw.legacyPro;
+  raw.legacyPro = false;
+  raw.billing = initialFreeBilling();
+  raw.sponsors = [];
+  const ownerId = String(raw.ownerId || "");
+  const docRef = await createOwnedTournament(ownerId, raw);
   if (accessCode) {
     await setTournamentAccessCode(docRef.id, accessCode);
   }
@@ -652,6 +700,14 @@ export const updateTournamentInDb = async (tournamentId: string, updates: Partia
   delete raw.ownerId;
   delete raw.adminUids;
   delete raw.adminEmails;
+  delete raw.billing;
+  delete raw.legacyPro;
+  delete raw.teamCount;
+  delete raw.stripeCustomerId;
+  delete raw.stripeSubscriptionId;
+  if (Object.prototype.hasOwnProperty.call(raw, "sponsors")) {
+    raw.sponsors = normalizeSponsors(raw.sponsors, 100);
+  }
   if (accessCode) {
     await setTournamentAccessCode(tournamentId, accessCode);
   }
@@ -685,6 +741,15 @@ export const deleteTournamentFromDb = async (tournamentId: string) => {
   const deleteAccess = deleteDoc(doc(db, TOURNAMENTS_COLLECTION, tournamentId, "private", PRIVATE_ACCESS_DOC)).catch(() => {});
 
   await Promise.all([...deleteTeams, ...deleteGames, ...deletePlayers, ...deleteReferees, ...deleteContacts, deleteAccess]);
+  try {
+    await fetch("/api/billing/release", {
+      method: "POST",
+      headers: await authHeaders(true),
+      body: JSON.stringify({ tournamentId }),
+    });
+  } catch (error) {
+    console.error("No se pudo liberar el cupo de liga:", error);
+  }
   await deleteDoc(docRef);
 };
 
@@ -702,9 +767,56 @@ export const subscribeToTournamentTeams = (tournamentId: string, callback: (team
 };
 
 export const addTournamentTeam = async (tournamentId: string, teamData: Omit<TournamentTeam, "id">) => {
+  const tournamentSnap = await getDoc(doc(db, TOURNAMENTS_COLLECTION, tournamentId));
+  const tournament = tournamentSnap.exists() ? tournamentSnap.data() : null;
+  const teamsSnap = await getDocs(collection(db, TOURNAMENTS_COLLECTION, tournamentId, TEAMS_SUBCOLLECTION));
+  if (!canAddTeam(tournament, teamsSnap.size)) {
+    const error = new Error("PLAN_TEAM_LIMIT");
+    (error as { code?: string }).code = "PLAN_TEAM_LIMIT";
+    throw error;
+  }
+
+  const limits = getPlanLimits(tournament);
+  if (Number.isFinite(limits.maxTeams)) {
+    const used = new Set(teamsSnap.docs.map((item) => item.id));
+    let slot = "";
+    for (let index = 1; index <= limits.maxTeams; index += 1) {
+      if (!used.has(String(index))) {
+        slot = String(index);
+        break;
+      }
+    }
+    if (!slot) {
+      const error = new Error("PLAN_TEAM_LIMIT");
+      (error as { code?: string }).code = "PLAN_TEAM_LIMIT";
+      throw error;
+    }
+    await setDoc(doc(db, TOURNAMENTS_COLLECTION, tournamentId, TEAMS_SUBCOLLECTION, slot), teamData);
+    return { id: slot, ...teamData } as TournamentTeam;
+  }
+
   const docRef = await addDoc(collection(db, TOURNAMENTS_COLLECTION, tournamentId, TEAMS_SUBCOLLECTION), teamData);
   return { id: docRef.id, ...teamData } as TournamentTeam;
 };
+
+export function describePlanLimit(error: unknown, language: "es" | "en" = "es") {
+  const code = (error as { code?: string; message?: string })?.code
+    || (error as { message?: string })?.message
+    || "";
+  if (code === "PLAN_LEAGUE_LIMIT" || code === "PLAN_TEAM_LIMIT" || code === "PLAN_ADMIN_LIMIT") {
+    return planLimitMessage(code, language);
+  }
+  const message = (error as { message?: string })?.message || "";
+  if (message.includes("PLAN_LEAGUE_LIMIT") || message.includes("PLAN_TEAM_LIMIT") || message.includes("PLAN_ADMIN_LIMIT")) {
+    const found = message.includes("PLAN_TEAM_LIMIT")
+      ? "PLAN_TEAM_LIMIT"
+      : message.includes("PLAN_ADMIN_LIMIT")
+        ? "PLAN_ADMIN_LIMIT"
+        : "PLAN_LEAGUE_LIMIT";
+    return planLimitMessage(found, language);
+  }
+  return "";
+}
 
 // --- Tournament Games ---
 

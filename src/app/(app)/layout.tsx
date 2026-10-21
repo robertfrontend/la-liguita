@@ -3,6 +3,7 @@ import { TopNav } from "@/components/layout/TopNav";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
+import { PortalBrandProvider } from "@/components/providers/PortalBrandProvider";
 
 const barlow = Barlow({
   subsets: ["latin"],
@@ -30,8 +31,10 @@ export default function AppLayout({
       <LanguageProvider>
         <ThemeProvider>
           <AuthProvider>
-            <TopNav />
-            <main className="min-h-screen pt-16">{children}</main>
+            <PortalBrandProvider>
+              <TopNav />
+              <main className="min-h-screen pt-16">{children}</main>
+            </PortalBrandProvider>
           </AuthProvider>
         </ThemeProvider>
       </LanguageProvider>

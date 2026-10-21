@@ -1,6 +1,7 @@
-import { collection, addDoc, deleteDoc } from "firebase/firestore";
+import { collection, addDoc, deleteDoc, doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { generateAdminAccessCode, setTournamentAccessCode, slugify } from "@/lib/db";
+import { createOwnedTournament, generateAdminAccessCode, setTournamentAccessCode, slugify } from "@/lib/db";
+import { getPlanLimits, initialFreeBilling } from "@/lib/plans.mjs";
 import { TournamentTier, Sport, TournamentGame } from "@/types/tournament";
 
 export interface ProvisionOptions {
@@ -13,6 +14,8 @@ export interface ProvisionOptions {
   ownerId: string;
   numberOfTeams: number; // 4, 6, 8, 10, 12, 16
   playersPerTeam: number; // 5, 8, 10, 12
+  bypassTeamCap?: boolean;
+  skipLeagueCap?: boolean;
   theme: "dominican" | "nba" | "european" | "cities" | "custom";
   autoGenerateSchedule: boolean;
   startDate?: string;
@@ -116,13 +119,26 @@ export async function provisionConfiguredTournament(options: ProvisionOptions): 
     playersPerTeam,
     theme,
     autoGenerateSchedule,
-    startDate
+    startDate,
+    bypassTeamCap,
+    skipLeagueCap
   } = options;
 
-  const cleanEmails = organizerEmail
+  const billing = initialFreeBilling();
+  const limits = getPlanLimits({ billing, legacyPro: false });
+  if (numberOfTeams > limits.maxTeams && !bypassTeamCap) {
+    const error = new Error("PLAN_TEAM_LIMIT") as Error & { code?: string };
+    error.code = "PLAN_TEAM_LIMIT";
+    throw error;
+  }
+
+  const parsedEmails = organizerEmail
     .split(/[,\s]+/)
     .map(e => e.trim().toLowerCase())
     .filter(e => e.length > 0 && e.includes('@'));
+  const cleanEmails = skipLeagueCap
+    ? parsedEmails
+    : parsedEmails.slice(0, Number.isFinite(limits.maxAdminEmails) ? limits.maxAdminEmails : undefined);
 
   const slug = slugify(tournamentName);
 
@@ -139,6 +155,9 @@ export async function provisionConfiguredTournament(options: ProvisionOptions): 
     adminEmails: cleanEmails,
     organizationName: organizationName.trim() || "Liga Oficial",
     status: "active",
+    legacyPro: false,
+    billing,
+    sponsors: [],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     settings: {
@@ -155,7 +174,7 @@ export async function provisionConfiguredTournament(options: ProvisionOptions): 
     },
   };
 
-  const tournamentRef = await addDoc(collection(db, "tournaments"), tournamentDoc);
+  const tournamentRef = await createOwnedTournament(ownerId, tournamentDoc, { skipLeagueCap });
   const tournamentId = tournamentRef.id;
   try {
     await setTournamentAccessCode(tournamentId, generatedPin);
@@ -201,10 +220,10 @@ export async function provisionConfiguredTournament(options: ProvisionOptions): 
       createdAt: new Date().toISOString(),
     };
 
-    const teamRef = await addDoc(
-      collection(db, "tournaments", tournamentId, "teams"),
-      teamDoc
-    );
+    const teamRef = bypassTeamCap
+      ? await addDoc(collection(db, "tournaments", tournamentId, "teams"), teamDoc)
+      : doc(db, "tournaments", tournamentId, "teams", String(i + 1));
+    if (!bypassTeamCap) await setDoc(teamRef, teamDoc);
 
     createdTeams.push({
       id: teamRef.id,
