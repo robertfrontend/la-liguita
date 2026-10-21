@@ -31,7 +31,8 @@ import {
   ChevronDown,
   Menu,
   X,
-  ShieldCheck
+  ShieldCheck,
+  CreditCard
 } from "lucide-react";
 import { SetupReminderBanner } from "@/components/features/SetupReminderBanner";
 
@@ -152,6 +153,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { label: "Equipos & Plantillas", shortLabel: "Equipos", href: `/tournament/${tournamentId}/teams`, icon: Users },
     { label: "Tabla de Posiciones", shortLabel: "Posiciones", href: `/tournament/${tournamentId}/standings`, icon: Trophy },
     { label: "Administradores", shortLabel: "Admins", href: `/tournament/${tournamentId}/admins`, icon: UserCheck },
+    { label: "Plan y facturación", shortLabel: "Plan", href: `/tournament/${tournamentId}/billing`, icon: CreditCard },
   ];
 
   const proNav: NavItem[] = [

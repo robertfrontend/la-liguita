@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { TournamentTier, Sport } from "@/types/tournament";
 import { provisionConfiguredTournament } from "@/lib/tournament-generator";
+import { describePlanLimit } from "@/lib/db";
 import { 
   Trophy, 
   Sparkles, 
@@ -29,7 +30,7 @@ export function CreateTournamentForm() {
   const [organizationName, setOrganizationName] = useState("");
 
   // Opciones de auto-generación
-  const [numberOfTeams, setNumberOfTeams] = useState<number>(10);
+  const [numberOfTeams, setNumberOfTeams] = useState<number>(8);
   const [playersPerTeam, setPlayersPerTeam] = useState<number>(8);
   const [theme, setTheme] = useState<"dominican" | "nba" | "cities">("dominican");
   const [autoGenerateSchedule, setAutoGenerateSchedule] = useState<boolean>(true);
@@ -45,6 +46,11 @@ export function CreateTournamentForm() {
     }
     if (!user) {
       setError("Debes estar autenticado para crear un torneo.");
+      return;
+    }
+
+    if (creationMode === "auto" && numberOfTeams > 8) {
+      setError("El plan Gratis incluye hasta 8 equipos. Elige 8 para crear la liga y mejora a Liga Pro para sumar más.");
       return;
     }
 
@@ -85,7 +91,7 @@ export function CreateTournamentForm() {
       }
     } catch (err: unknown) {
       console.error("Error al crear el torneo:", err);
-      setError("Ocurrió un error al registrar el torneo en Firestore.");
+      setError(describePlanLimit(err) || "Ocurrió un error al registrar el torneo en Firestore.");
     } finally {
       setIsSubmitting(false);
     }
@@ -166,10 +172,10 @@ export function CreateTournamentForm() {
                 >
                   <option value={4}>4 Equipos (Cuadrangular)</option>
                   <option value={6}>6 Equipos</option>
-                  <option value={8}>8 Equipos</option>
-                  <option value={10}>10 Equipos (Recomendado)</option>
-                  <option value={12}>12 Equipos (Torneo Superior)</option>
-                  <option value={16}>16 Equipos (Gran Torneo)</option>
+                  <option value={8}>8 Equipos (plan Gratis)</option>
+                  <option value={10}>10 Equipos (Liga Pro)</option>
+                  <option value={12}>12 Equipos (Liga Pro)</option>
+                  <option value={16}>16 Equipos (Liga Pro)</option>
                 </select>
               </div>
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { TournamentTier, Sport } from "@/types/tournament";
 import { provisionConfiguredTournament } from "@/lib/tournament-generator";
+import { describePlanLimit } from "@/lib/db";
 import { generateAdminAccessCode } from "@/lib/db";
 import { 
   X, 
@@ -44,7 +45,7 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
   const [adminAccessCode, setAdminAccessCode] = useState<string>(() => generateAdminAccessCode());
 
   // Configuración del Auto-Provisioning
-  const [numberOfTeams, setNumberOfTeams] = useState<number>(10);
+  const [numberOfTeams, setNumberOfTeams] = useState<number>(8);
   const [playersPerTeam, setPlayersPerTeam] = useState<number>(8);
   const [theme, setTheme] = useState<"dominican" | "nba" | "cities">("dominican");
   const [autoGenerateSchedule, setAutoGenerateSchedule] = useState<boolean>(true);
@@ -87,6 +88,8 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
           playersPerTeam,
           theme,
           autoGenerateSchedule,
+          bypassTeamCap: true,
+          skipLeagueCap: true,
         });
 
         onClose();
@@ -109,6 +112,7 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
           playersPerTeam: 0,
           theme: "dominican",
           autoGenerateSchedule: false,
+          skipLeagueCap: true,
         });
 
         onClose();
@@ -120,7 +124,7 @@ export function CreateTournamentModal({ isOpen, onClose, onCreated }: CreateTour
       }
     } catch (err: unknown) {
       console.error("Error al crear el torneo configurado:", err);
-      setError("Error al crear el torneo en Firestore.");
+      setError(describePlanLimit(err) || "Error al crear el torneo en Firestore.");
     } finally {
       setIsSubmitting(false);
     }

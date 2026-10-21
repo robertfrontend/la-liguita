@@ -14,6 +14,7 @@ import {
   getDocs,
   setDoc,
   updateDoc,
+  writeBatch,
 } from "firebase/firestore";
 
 const emulatorHost = process.env.FIRESTORE_EMULATOR_HOST || "127.0.0.1:8080";
@@ -235,29 +236,136 @@ test("an email containing robert02frontend is not a super admin without the clai
   await assertSucceeds(getDoc(doc(superAdmin, "users/other")));
 });
 
-test("tournament creation cannot assign another owner or publish an access code", async () => {
+function freeBilling() {
+  return {
+    plan: "free",
+    status: "none",
+    interval: null,
+    currentPeriodEnd: null,
+    currentPeriodEndMs: null,
+    stripeCustomerId: null,
+    stripeSubscriptionId: null,
+  };
+}
+
+test("tournament creation claims one league slot and cannot publish billing or an access code", async () => {
+  await seed(async (db) => {
+    await setDoc(doc(db, "users/stranger"), {
+      uid: "stranger",
+      isPro: false,
+      ownedTournamentCount: 0,
+    });
+  });
   const stranger = dbFor("stranger", { email: "stranger@example.com" });
 
-  await assertSucceeds(setDoc(doc(stranger, "tournaments/nuevo"), {
+  const batch = writeBatch(stranger);
+  batch.update(doc(stranger, "users/stranger"), { ownedTournamentCount: 1 });
+  batch.set(doc(stranger, "tournaments/nuevo"), {
     name: "Nuevo",
     ownerId: "stranger",
     slug: "nuevo",
+    legacyPro: false,
     adminEmails: ["mesa@example.com"],
+    sponsors: [],
+    billing: freeBilling(),
+  });
+  await assertSucceeds(batch.commit());
+
+  const second = writeBatch(stranger);
+  second.update(doc(stranger, "users/stranger"), { ownedTournamentCount: 2 });
+  second.set(doc(stranger, "tournaments/otra"), {
+    name: "Otra",
+    ownerId: "stranger",
+    legacyPro: false,
+    billing: freeBilling(),
+  });
+  await assertFails(second.commit());
+
+  await assertFails(setDoc(doc(stranger, "tournaments/sin-cupo"), {
+    name: "Sin cupo",
+    ownerId: "stranger",
+    legacyPro: false,
+    billing: freeBilling(),
   }));
   await assertFails(setDoc(doc(stranger, "tournaments/ajeno"), {
     name: "Ajeno",
     ownerId: "owner",
     slug: "ajeno",
+    legacyPro: false,
+    billing: freeBilling(),
   }));
   await assertFails(setDoc(doc(stranger, "tournaments/con-pin"), {
     name: "Pin",
     ownerId: "stranger",
+    legacyPro: false,
+    billing: freeBilling(),
     adminAccessCode: "LGT-1111",
   }));
   await assertFails(setDoc(doc(stranger, "tournaments/con-uids"), {
     name: "Uids",
     ownerId: "stranger",
+    legacyPro: false,
+    billing: freeBilling(),
     adminUids: ["victim"],
+  }));
+  await assertFails(setDoc(doc(stranger, "tournaments/pro-falso"), {
+    name: "Pro falso",
+    ownerId: "stranger",
+    legacyPro: true,
+    billing: { ...freeBilling(), plan: "pro", status: "active" },
+  }));
+});
+
+test("clients cannot write billing fields, and free plans cap teams and sponsors", async () => {
+  await seed(async (db) => {
+    await setDoc(doc(db, "tournaments/copa"), {
+      name: "Copa",
+      ownerId: "owner",
+      adminEmails: ["coach@laliguita.com"],
+      adminUids: [],
+    });
+    await setDoc(doc(db, "tournaments/gratis"), {
+      name: "Gratis",
+      ownerId: "owner",
+      legacyPro: false,
+      adminEmails: [],
+      sponsors: [],
+      billing: freeBilling(),
+    });
+  });
+
+  const owner = dbFor("owner", { email: "owner@example.com" });
+
+  await assertFails(updateDoc(doc(owner, "tournaments/copa"), {
+    billing: { ...freeBilling(), plan: "pro", status: "active" },
+  }));
+  await assertFails(updateDoc(doc(owner, "tournaments/copa"), { legacyPro: true }));
+  await assertFails(updateDoc(doc(owner, "tournaments/gratis"), {
+    billing: { ...freeBilling(), plan: "club", status: "active" },
+  }));
+  await assertSucceeds(updateDoc(doc(owner, "tournaments/copa"), { name: "Copa sigue" }));
+  await assertSucceeds(setDoc(doc(owner, "tournaments/copa/teams/t-libre"), { name: "Libre" }));
+
+  await assertSucceeds(setDoc(doc(owner, "tournaments/gratis/teams/1"), { name: "Uno" }));
+  await assertSucceeds(setDoc(doc(owner, "tournaments/gratis/teams/8"), { name: "Ocho" }));
+  await assertFails(setDoc(doc(owner, "tournaments/gratis/teams/9"), { name: "Nueve" }));
+  await assertFails(setDoc(doc(owner, "tournaments/gratis/teams/extra"), { name: "Extra" }));
+
+  await assertSucceeds(updateDoc(doc(owner, "tournaments/gratis"), {
+    adminEmails: ["mesa@example.com"],
+  }));
+  await assertFails(updateDoc(doc(owner, "tournaments/gratis"), {
+    adminEmails: ["mesa@example.com", "otra@example.com"],
+  }));
+  await assertFails(updateDoc(doc(owner, "tournaments/gratis"), {
+    sponsors: [{ name: "Banco" }],
+  }));
+
+  await assertSucceeds(updateDoc(doc(owner, "tournaments/copa"), {
+    sponsors: [{ name: "A" }, { name: "B" }, { name: "C" }],
+  }));
+  await assertFails(updateDoc(doc(owner, "tournaments/copa"), {
+    sponsors: [{ name: "A" }, { name: "B" }, { name: "C" }, { name: "D" }],
   }));
 });
 

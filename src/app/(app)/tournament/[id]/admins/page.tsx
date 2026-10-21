@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Tournament } from "@/types/tournament";
-import { subscribeToTournament, updateTournamentInDb, revokeAdminTournamentAccess } from "@/lib/db";
+import { describePlanLimit, subscribeToTournament, updateTournamentInDb, revokeAdminTournamentAccess } from "@/lib/db";
+import { canAddAdmin } from "@/lib/plans.mjs";
+import { UpgradePrompt } from "@/components/features/UpgradePrompt";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { 
   isSuperAdmin, 
@@ -95,6 +97,11 @@ export default function TournamentAdminsPage() {
     setError(null);
     setCreatedCredentialsAlert(null);
 
+    if (!canAddAdmin(tournament, currentAdmins.length)) {
+      setError("El plan Gratis incluye 1 administrador. Mejora a Liga Pro para sumar organizadores.");
+      return;
+    }
+
     const cleanUsername = username.trim().toLowerCase().replace(/[^a-z0-9_.-]/g, "");
     if (!cleanUsername || cleanUsername.length < 3) {
       setError("El nombre de usuario debe tener al menos 3 caracteres alfanuméricos.");
@@ -132,7 +139,7 @@ export default function TournamentAdminsPage() {
       if (err.code === "auth/email-already-in-use") {
         setError(`El usuario "${cleanUsername}" ya existe. Puedes asignarlo por su correo.`);
       } else {
-        setError(err.message || "Error al crear la cuenta de administrador.");
+        setError(describePlanLimit(err) || err.message || "Error al crear la cuenta de administrador.");
       }
     } finally {
       setIsSubmitting(false);
@@ -146,6 +153,11 @@ export default function TournamentAdminsPage() {
 
     if (!cleanEmail || !cleanEmail.includes("@")) {
       setError("Por favor ingresa un correo electrónico válido.");
+      return;
+    }
+
+    if (!canAddAdmin(tournament, currentAdmins.length)) {
+      setError("El plan Gratis incluye 1 administrador. Mejora a Liga Pro para sumar organizadores.");
       return;
     }
 
@@ -165,7 +177,7 @@ export default function TournamentAdminsPage() {
       setNewEmail("");
     } catch (err) {
       console.error("Error al agregar admin:", err);
-      setError("Error al guardar en Firestore.");
+      setError(describePlanLimit(err) || "Error al guardar en Firestore.");
     } finally {
       setIsSubmitting(false);
     }
@@ -261,6 +273,12 @@ export default function TournamentAdminsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {!canAddAdmin(tournament, currentAdmins.length) && (
+        <UpgradePrompt tournamentId={tournamentId}>
+          El plan Gratis incluye 1 administrador. Mejora a Liga Pro para sumar organizadores con el código de acceso.
+        </UpgradePrompt>
       )}
 
       {/* Formulario de Alta de Administradores */}

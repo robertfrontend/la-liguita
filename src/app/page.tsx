@@ -58,6 +58,7 @@ export default async function HomePage() {
           </a>
           <nav className="ll-nav" aria-label="Principal">
             <a href="#ligas">Ligas</a>
+            <a href="/precios">Precios</a>
             <a href="/login">Entrar</a>
           </nav>
         </header>
@@ -215,9 +216,12 @@ export default async function HomePage() {
               Crea el torneo, carga los equipos y abre el marcador el día del
               partido.
             </p>
-            <div>
+            <div className="ll-actions">
               <a className="ll-btn" href="/login">
                 Empezar a gestionar
+              </a>
+              <a className="ll-textlink" href="/precios">
+                Ver precios
               </a>
             </div>
           </section>

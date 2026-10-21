@@ -107,6 +107,9 @@ service cloud.firestore {
       return canManageData(resource.data)
         && ownerUnchanged()
         && accessCodeUnchanged()
+        && billingUnchanged()
+        && adminEmailsOk()
+        && sponsorsOk()
         && !addedOwnEmail()
         && (
           isSuperAdmin()
@@ -115,12 +118,119 @@ service cloud.firestore {
         );
     }
 
+    function userPath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+
+    function userCountBefore() {
+      return exists(userPath()) && get(userPath()).data.get('ownedTournamentCount', 0) is number
+        ? get(userPath()).data.get('ownedTournamentCount', 0)
+        : 0;
+    }
+
+    function userAllowanceBefore() {
+      return exists(userPath()) && get(userPath()).data.get('leagueAllowance', 1) is number
+        ? get(userPath()).data.get('leagueAllowance', 1)
+        : 1;
+    }
+
+    // A new league consumes one account slot. Clients cannot lower the counter
+    // or raise leagueAllowance / accountPlan. The Admin SDK releases a slot on delete.
+    function leagueSlotClaimed() {
+      return existsAfter(userPath())
+        && getAfter(userPath()).data.get('ownedTournamentCount', 0) == userCountBefore() + 1
+        && userCountBefore() < userAllowanceBefore()
+        && getAfter(userPath()).data.get('leagueAllowance', 1) == userAllowanceBefore()
+        && getAfter(userPath()).data.get('accountPlan', 'free') == (
+          exists(userPath()) ? get(userPath()).data.get('accountPlan', 'free') : 'free'
+        )
+        && getAfter(userPath()).data.get('isPro', false) == (
+          exists(userPath()) ? get(userPath()).data.get('isPro', false) : false
+        );
+    }
+
+    // Billing and the grandfather flag are Admin SDK only.
+    function billingUnchanged() {
+      return request.resource.data.get('billing', null) == resource.data.get('billing', null)
+        && request.resource.data.get('legacyPro', false) == resource.data.get('legacyPro', false);
+    }
+
+    function isGrandfathered(data) {
+      return data.get('legacyPro', false) == true || !data.keys().hasAny(['billing']);
+    }
+
+    function periodRemaining(data) {
+      return data.billing.get('currentPeriodEndMs', 0) is number
+        && data.billing.currentPeriodEndMs > request.time.toMillis();
+    }
+
+    function seasonOpen(data) {
+      return data.billing.get('interval', '') != 'season' || periodRemaining(data);
+    }
+
+    function paidActive(data) {
+      return isGrandfathered(data) || (
+        data.keys().hasAny(['billing'])
+        && (
+          data.billing.plan == 'pro'
+          || data.billing.plan == 'club'
+          || data.billing.plan == 'federation'
+        )
+        && (
+          data.billing.status == 'active'
+          || data.billing.status == 'trialing'
+          || data.billing.status == 'past_due'
+          || (data.billing.status == 'canceled' && periodRemaining(data))
+        )
+        && seasonOpen(data)
+      );
+    }
+
+    function adminCap(data) {
+      return paidActive(data) ? 100 : 1;
+    }
+
+    function sponsorCap(data) {
+      return paidActive(data) == false
+        ? 0
+        : (isGrandfathered(data) || data.billing.plan == 'pro')
+          ? 3
+          : 100;
+    }
+
+    function adminEmailsOk() {
+      return request.resource.data.get('adminEmails', []).size() <= adminCap(resource.data);
+    }
+
+    function sponsorsOk() {
+      return request.resource.data.get('sponsors', []) == resource.data.get('sponsors', [])
+        || (
+          request.resource.data.get('sponsors', []) is list
+          && request.resource.data.sponsors.size() <= sponsorCap(resource.data)
+        );
+    }
+
+    function freeBillingOnCreate() {
+      return request.resource.data.get('legacyPro', true) == false
+        && request.resource.data.keys().hasAny(['billing'])
+        && request.resource.data.billing.plan == 'free'
+        && request.resource.data.billing.status == 'none'
+        && request.resource.data.billing.get('stripeCustomerId', null) == null
+        && request.resource.data.billing.get('stripeSubscriptionId', null) == null
+        && request.resource.data.get('adminEmails', []).size() <= 1
+        && request.resource.data.get('sponsors', []).size() == 0;
+    }
+
     function tournamentCreateAllowed() {
       return isSignedIn()
         && request.resource.data.keys().hasAny(['ownerId'])
         && request.resource.data.ownerId == request.auth.uid
         && !request.resource.data.keys().hasAny(['adminAccessCode'])
-        && !request.resource.data.keys().hasAny(['adminUids']);
+        && !request.resource.data.keys().hasAny(['adminUids'])
+        && (
+          isSuperAdmin()
+          || (freeBillingOnCreate() && leagueSlotClaimed())
+        );
     }
 
     match /users/{userId} {
@@ -128,11 +238,20 @@ service cloud.firestore {
       allow create: if isSignedIn()
         && request.auth.uid == userId
         && request.resource.data.uid == userId
-        && request.resource.data.get('isPro', false) == false;
+        && request.resource.data.get('isPro', false) == false
+        && request.resource.data.get('leagueAllowance', 1) == 1
+        && request.resource.data.get('accountPlan', 'free') == 'free'
+        && request.resource.data.get('ownedTournamentCount', 0) <= 1;
       allow update: if isSignedIn()
         && request.auth.uid == userId
         && request.resource.data.uid == userId
-        && request.resource.data.get('isPro', false) == resource.data.get('isPro', false);
+        && request.resource.data.get('isPro', false) == resource.data.get('isPro', false)
+        && request.resource.data.get('leagueAllowance', 1) == resource.data.get('leagueAllowance', 1)
+        && request.resource.data.get('accountPlan', 'free') == resource.data.get('accountPlan', 'free')
+        && (
+          request.resource.data.get('ownedTournamentCount', 0) == resource.data.get('ownedTournamentCount', 0)
+          || request.resource.data.get('ownedTournamentCount', 0) == resource.data.get('ownedTournamentCount', 0) + 1
+        );
       allow delete: if false;
     }
 
@@ -158,7 +277,14 @@ service cloud.firestore {
 
       match /teams/{teamId} {
         allow read: if true;
-        allow write: if canManageTournament(tournamentId);
+        // Free plans can only occupy team ids 1–8. Paid and grandfathered leagues
+        // keep arbitrary ids. The cap is the id set, so a 9th team cannot be created.
+        allow create: if canManageTournament(tournamentId) && (
+          isSuperAdmin()
+          || paidActive(get(tournamentPath(tournamentId)).data)
+          || teamId.matches('^[1-8]$')
+        );
+        allow update, delete: if canManageTournament(tournamentId);
       }
 
       match /players/{playerId} {

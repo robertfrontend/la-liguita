@@ -2,15 +2,23 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { usePortalBrand } from "@/components/providers/PortalBrandProvider";
 import { isSuperAdmin } from "@/lib/auth-helpers";
 import { User as UserIcon, ShieldCheck, LogOut, Globe, Lock } from "lucide-react";
 
 export function TopNav() {
   const { user, logout } = useAuth();
   const { language, setLanguage, t } = useLanguage();
+  const pathname = usePathname();
+  const { brand } = usePortalBrand();
   const [isMounted, setIsMounted] = useState(false);
+  const whiteLabel = pathname.startsWith("/t/") && brand.whiteLabel;
+  const portalHref = pathname.startsWith("/t/")
+    ? `/${pathname.split("/").slice(1, 3).join("/")}`
+    : "/";
 
   useEffect(() => {
     setIsMounted(true);
@@ -22,17 +30,23 @@ export function TopNav() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800/80 h-14 flex items-center justify-between px-5 transition-colors">
       {/* Brand / Logo */}
       <div className="flex items-center gap-3">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center font-black text-white text-xs shadow-sm shadow-blue-600/25">
-            L
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-sm font-black tracking-tight text-white uppercase">
-              La Liguita
+        <Link href={whiteLabel ? portalHref : "/"} className="flex items-center gap-2 group min-w-0">
+          {whiteLabel && brand.logoUrl ? (
+            <img src={brand.logoUrl} alt="" className="w-7 h-7 rounded-lg object-contain bg-zinc-900 border border-zinc-800" />
+          ) : (
+            <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center font-black text-white text-xs shadow-sm shadow-blue-600/25">
+              {whiteLabel ? (brand.name || "L").slice(0, 1).toUpperCase() : "L"}
+            </div>
+          )}
+          <div className="flex items-baseline gap-1.5 min-w-0">
+            <span className="text-sm font-black tracking-tight text-white uppercase truncate">
+              {whiteLabel ? brand.name : "La Liguita"}
             </span>
-            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest hidden sm:inline">
-              Sports Platform
-            </span>
+            {!whiteLabel && (
+              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest hidden sm:inline">
+                Sports Platform
+              </span>
+            )}
           </div>
         </Link>
       </div>

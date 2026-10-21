@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { Tournament } from "@/types/tournament";
 import { subscribeToTournament } from "@/lib/db";
 import { BarChart3, Sparkles, TrendingUp, Award, Zap, Shield, Flame } from "lucide-react";
+import { PlanFeatureBanner } from "@/components/features/UpgradePrompt";
 
 export default function TournamentStatsPage() {
   const params = useParams();
@@ -21,6 +22,7 @@ export default function TournamentStatsPage() {
 
   return (
     <div className="space-y-6">
+      <PlanFeatureBanner tournamentId={tournamentId} feature="statsLeaders" />
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-zinc-900/60 p-6 rounded-2xl border border-zinc-800/80">
         <div>
           <div className="flex items-center gap-2">
